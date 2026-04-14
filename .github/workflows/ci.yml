@@ -1,0 +1,74 @@
+﻿name: Build Sts2SeedRoller
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - "src/**"
+      - "data/**"
+      - ".github/workflows/ci.yml"
+      - "Directory.Build.*"
+      - "Sts2SeedRoller.sln"
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Restore
+        run: dotnet restore Sts2SeedRoller.sln
+
+      - name: Build
+        run: dotnet build Sts2SeedRoller.sln -c Release --no-restore
+
+      - name: Publish UI
+        run: |
+          dotnet publish src/SeedUi/SeedUi.csproj `
+            -c Release `
+            -r win-x64 `
+            --self-contained true `
+            /p:DebugType=None `
+            /p:DebugSymbols=false
+
+      - name: Publish CLI
+        run: |
+          dotnet publish src/SeedCli/SeedCli.csproj `
+            -c Release `
+            -r win-x64 `
+            --self-contained true `
+            /p:DebugType=None `
+            /p:DebugSymbols=false
+
+      - name: Package artifact
+        id: package
+        shell: pwsh
+        run: |
+          $uiPublish = Join-Path $env:GITHUB_WORKSPACE 'src/SeedUi/bin/Release/net9.0-windows/win-x64/publish'
+          $cliPublish = Join-Path $env:GITHUB_WORKSPACE 'src/SeedCli/bin/Release/net9.0/win-x64/publish'
+          $packageRoot = Join-Path $env:GITHUB_WORKSPACE 'sts2seedroller-package'
+          if (Test-Path $packageRoot) { Remove-Item $packageRoot -Recurse -Force }
+          $uiDest = Join-Path $packageRoot 'Sts2SeedRoller'
+          New-Item -ItemType Directory -Path $uiDest -Force | Out-Null
+          Copy-Item -Path (Join-Path $uiPublish '*') -Destination $uiDest -Recurse -Force
+          $cliTarget = Join-Path $packageRoot 'cli'
+          if (Test-Path $cliTarget) { Remove-Item $cliTarget -Recurse -Force }
+          Copy-Item $cliPublish $cliTarget -Recurse -Force
+          $zipPath = Join-Path $env:GITHUB_WORKSPACE 'sts2seedroller-win-x64.zip'
+          Compress-Archive -Path (Join-Path $packageRoot '*') -DestinationPath $zipPath -Force
+          "artifactPath=$zipPath" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sts2seedroller-win-x64
+          path: ${{ steps.package.outputs.artifactPath }}

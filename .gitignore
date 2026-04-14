@@ -1,0 +1,10 @@
+﻿.vs/
+Slay the Spire 2 源码（游戏源码，读取用）/
+Slay the Spire 2 源码（游戏源码，读取用）/**
+临时回收站/
+临时回收站/**
+
+bin/
+obj/
+**/bin/
+**/obj/

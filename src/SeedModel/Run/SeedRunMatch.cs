@@ -1,0 +1,19 @@
+using SeedModel.Neow;
+using SeedModel.Sts2;
+
+namespace SeedModel.Run;
+
+public sealed record SeedRunMatch
+{
+    public required IReadOnlyList<NeowOptionResult> NeowOptions { get; init; }
+
+    public required IReadOnlyList<NeowOptionResult> NeowMatches { get; init; }
+
+    public required bool NeowFilterMatched { get; init; }
+
+    public bool AncientFilterMatched { get; init; }
+
+    public bool IsFinalMatch { get; init; }
+
+    public Sts2RunPreview? Sts2Preview { get; init; }
+}
