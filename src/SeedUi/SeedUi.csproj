@@ -20,10 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="HandyControl">
-      <HintPath>..\..\libs\HandyControl\HandyControl.dll</HintPath>
-      <Private>true</Private>
-    </Reference>
+    <PackageReference Include="HandyControl" Version="3.5.1" />
   </ItemGroup>
 
 </Project>
