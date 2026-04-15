@@ -1,0 +1,41 @@
+﻿# GitHub Release Drafter 配置（放在 .github/release-drafter.yml）
+# 详情参考：https://github.com/release-drafter/release-drafter
+_template: |
+  ## 💾 变更内容
+
+  $CHANGES
+
+  ---
+  **完整变更记录**: [$BASE_REPOSITORY @$VERSION]($COMPARE_URL)
+
+# 排除的标签（带有这些标签的 PR 不会被收入变更日志）
+exclude-labels:
+  - skip-changelog
+
+# 标签模板，用于识别版本号格式
+tag-template: $RESOLVED_VERSION
+
+# 发布名称模板
+name-template: $NEXT_PATCH_VERSION
+
+# 单条变更的格式
+change-template: "- $TITLE (#$NUMBER) @ $AUTHOR"
+change-title-escapes: '\<*_&lt;>`'
+
+# 类别配置（中文分组标题）
+categories:
+  - label: "bug"
+    title: "🐛 Bug 修复"
+  - label: "enhancement"
+    title: "✨ 功能改进"
+  - label: "documentation"
+    title: "📖 文档更新"
+  - label: "refactoring"
+    title: "🔧 重构优化"
+  - label: "performance"
+    title: "⚡ 性能优化"
+  - label: "breaking"
+    title: "💥 破坏性变更"
+
+# 发布后自动删除对应的草稿标签
+delete-release-draft: true

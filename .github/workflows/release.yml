@@ -189,6 +189,13 @@ jobs:
           name: sts2seedroller-cli-single-win-x64
           path: ${{ steps.package-single.outputs.cliExePath }}
 
+      - name: Generate release notes
+        uses: release-drafter/release-drafter@v2
+        with:
+          config-name: release-drafter.yml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
@@ -198,6 +205,7 @@ jobs:
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v1
         with:
+          body_path: .release-drafter/DRAFT-NOTES.md
           tag_name: ${{ github.ref_name }}
           files: |
             sts2seedroller-win-x64.zip
