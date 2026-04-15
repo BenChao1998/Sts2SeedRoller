@@ -400,7 +400,8 @@
                                 <StackPanel>
                                     <StackPanel Orientation="Horizontal" Margin="0 0 0 16">
                                         <TextBlock Text="第二幕古神" FontSize="16" FontWeight="SemiBold" Foreground="#333"/>
-                                        <CheckBox IsChecked="{Binding IncludeAct2}" Content="启用" Margin="16 0 0 0"/>
+                                        <CheckBox IsChecked="{Binding IncludeAct2}" Content="启用" Margin="16 0 0 0" VerticalAlignment="Center"/>
+                                        <TextBlock Text="可能因局内游戏随机变化而产生变化，非100%命中" FontSize="11" Foreground="#888" Margin="8 0 0 0" VerticalAlignment="Center" TextWrapping="Wrap" MaxWidth="280"/>
                                     </StackPanel>
 
                                     <StackPanel IsEnabled="{Binding IncludeAct2}">
@@ -450,7 +451,8 @@
                                 <StackPanel>
                                     <StackPanel Orientation="Horizontal" Margin="0 0 0 16">
                                         <TextBlock Text="第三幕古神" FontSize="16" FontWeight="SemiBold" Foreground="#333"/>
-                                        <CheckBox IsChecked="{Binding IncludeAct3}" Content="启用" Margin="16 0 0 0"/>
+                                        <CheckBox IsChecked="{Binding IncludeAct3}" Content="启用" Margin="16 0 0 0" VerticalAlignment="Center"/>
+                                        <TextBlock Text="可能因局内游戏随机变化而产生变化，非100%命中" FontSize="11" Foreground="#888" Margin="8 0 0 0" VerticalAlignment="Center" TextWrapping="Wrap" MaxWidth="280"/>
                                     </StackPanel>
 
                                     <StackPanel IsEnabled="{Binding IncludeAct3}">
