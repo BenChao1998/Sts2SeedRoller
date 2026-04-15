@@ -25,25 +25,55 @@ jobs:
       - name: Build
         run: dotnet build Sts2SeedRoller.sln -c Release --no-restore
 
-      - name: Publish UI
+      - name: Publish UI (Regular)
         run: |
           dotnet publish src/SeedUi/SeedUi.csproj `
             -c Release `
             -r win-x64 `
             --self-contained true `
+            -o src/SeedUi/bin/Release/net9.0-windows/win-x64/publish `
             /p:DebugType=None `
             /p:DebugSymbols=false
 
-      - name: Publish CLI
+      - name: Publish CLI (Regular)
         run: |
           dotnet publish src/SeedCli/SeedCli.csproj `
             -c Release `
             -r win-x64 `
             --self-contained true `
+            -o src/SeedCli/bin/Release/net9.0/win-x64/publish `
             /p:DebugType=None `
             /p:DebugSymbols=false
 
-      - name: Package artifact
+      - name: Publish UI (Single File)
+        run: |
+          Copy-Item -Recurse -Path data -Destination src/SeedUi/bin/Release/net9.0-windows/
+          dotnet publish src/SeedUi/SeedUi.csproj `
+            -c Release `
+            -r win-x64 `
+            --self-contained true `
+            -o src/SeedUi/bin/Release/net9.0-windows/win-x64/single-publish `
+            /p:DebugType=None `
+            /p:DebugSymbols=false `
+            /p:PublishSingleFile=true `
+            /p:IncludeAllContentForSelfExtract=true `
+            /p:EnableCompressionInSingleFile=true
+
+      - name: Publish CLI (Single File)
+        run: |
+          Copy-Item -Recurse -Path data -Destination src/SeedCli/bin/Release/net9.0/
+          dotnet publish src/SeedCli/SeedCli.csproj `
+            -c Release `
+            -r win-x64 `
+            --self-contained true `
+            -o src/SeedCli/bin/Release/net9.0/win-x64/single-publish `
+            /p:DebugType=None `
+            /p:DebugSymbols=false `
+            /p:PublishSingleFile=true `
+            /p:IncludeAllContentForSelfExtract=true `
+            /p:EnableCompressionInSingleFile=true
+
+      - name: Package Regular artifact
         id: package
         shell: pwsh
         run: |
@@ -74,16 +104,56 @@ jobs:
           Compress-Archive -Path (Join-Path $packageRoot '*') -DestinationPath $zipPath -Force
           "artifactPath=$zipPath" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
-      - name: Upload artifact
+      - name: Package Single-File artifact
+        id: package-single
+        shell: pwsh
+        run: |
+          $uiSingle = Join-Path $env:GITHUB_WORKSPACE 'src/SeedUi/bin/Release/net9.0-windows/win-x64/single-publish'
+          $cliSingle = Join-Path $env:GITHUB_WORKSPACE 'src/SeedCli/bin/Release/net9.0/win-x64/single-publish'
+          if (-not (Test-Path $uiSingle)) { Write-Error "单文件发布目录不存在: $uiSingle" }
+          if (-not (Test-Path $cliSingle)) { Write-Error "CLI 单文件发布目录不存在: $cliSingle" }
+
+          $packageRoot = Join-Path $env:GITHUB_WORKSPACE 'sts2seedroller-single-package'
+          if (Test-Path $packageRoot) { Remove-Item $packageRoot -Recurse -Force }
+          $uiDest = Join-Path $packageRoot 'Sts2SeedRoller'
+          New-Item -ItemType Directory -Path $uiDest -Force | Out-Null
+
+          # 单文件：只复制 exe，其他文件已打包进 exe
+          Copy-Item -Path (Join-Path $uiSingle 'Sts2SeedRollerUi.exe') -Destination $uiDest -Force
+          Copy-Item -Path (Join-Path $uiSingle '*') -Destination $uiDest -Exclude 'Sts2SeedRollerUi.exe' -Force
+
+          $cliTarget = Join-Path $packageRoot 'cli'
+          if (Test-Path $cliTarget) { Remove-Item $cliTarget -Recurse -Force }
+          Copy-Item $cliSingle $cliTarget -Recurse -Force
+
+          $shortcutPath = Join-Path $packageRoot 'Sts2SeedRoller.lnk'
+          $shell = New-Object -ComObject WScript.Shell
+          $shortcut = $shell.CreateShortcut($shortcutPath)
+          $shortcut.TargetPath = Join-Path $uiDest 'Sts2SeedRollerUi.exe'
+          $shortcut.WorkingDirectory = $uiDest
+          $shortcut.IconLocation = $shortcut.TargetPath
+          $shortcut.Save()
+
+          $zipPath = Join-Path $env:GITHUB_WORKSPACE 'sts2seedroller-single-win-x64.zip'
+          Compress-Archive -Path (Join-Path $packageRoot '*') -DestinationPath $zipPath -Force
+          "artifactPath=$zipPath" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
+      - name: Upload Regular artifact
         uses: actions/upload-artifact@v4
         with:
           name: sts2seedroller-win-x64
           path: ${{ steps.package.outputs.artifactPath }}
 
+      - name: Upload Single-File artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sts2seedroller-single-win-x64
+          path: ${{ steps.package-single.outputs.artifactPath }}
+
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ github.ref_name }}
-          files: sts2seedroller-win-x64.zip
+          files: sts2seedroller-win-x64.zip;sts2seedroller-single-win-x64.zip
           draft: false
           prerelease: false
