@@ -137,30 +137,19 @@ jobs:
           if (-not (Test-Path $uiSingle)) { Write-Error "单文件发布目录不存在: $uiSingle" }
           if (-not (Test-Path $cliSingle)) { Write-Error "CLI 单文件发布目录不存在: $cliSingle" }
 
-          $packageRoot = Join-Path $env:GITHUB_WORKSPACE 'sts2seedroller-single-package'
-          if (Test-Path $packageRoot) { Remove-Item $packageRoot -Recurse -Force }
-          $uiDest = Join-Path $packageRoot 'Sts2SeedRoller'
-          New-Item -ItemType Directory -Path $uiDest -Force | Out-Null
+          # UI 单文件 exe：直接输出路径，不打包
+          $uiExe = Join-Path $uiSingle 'Sts2SeedRollerUi.exe'
+          if (-not (Test-Path $uiExe)) { Write-Error "UI 单文件 exe 不存在: $uiExe" }
+          "uiExePath=$uiExe" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
-          # 单文件：只复制 exe，其他文件已打包进 exe
-          Copy-Item -Path (Join-Path $uiSingle 'Sts2SeedRollerUi.exe') -Destination $uiDest -Force
-          Copy-Item -Path (Join-Path $uiSingle '*') -Destination $uiDest -Exclude 'Sts2SeedRollerUi.exe' -Force
-
-          $cliTarget = Join-Path $packageRoot 'cli'
+          # CLI 单文件：打包成 zip（因为可能还有其他依赖）
+          $cliTarget = Join-Path $env:GITHUB_WORKSPACE 'sts2seedroller-cli-single-package'
           if (Test-Path $cliTarget) { Remove-Item $cliTarget -Recurse -Force }
-          Copy-Item $cliSingle $cliTarget -Recurse -Force
-
-          $shortcutPath = Join-Path $packageRoot 'Sts2SeedRoller.lnk'
-          $shell = New-Object -ComObject WScript.Shell
-          $shortcut = $shell.CreateShortcut($shortcutPath)
-          $shortcut.TargetPath = Join-Path $uiDest 'Sts2SeedRollerUi.exe'
-          $shortcut.WorkingDirectory = $uiDest
-          $shortcut.IconLocation = $shortcut.TargetPath
-          $shortcut.Save()
-
-          $zipPath = Join-Path $env:GITHUB_WORKSPACE 'sts2seedroller-single-win-x64.zip'
-          Compress-Archive -Path (Join-Path $packageRoot '*') -DestinationPath $zipPath -Force
-          "artifactPath=$zipPath" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          New-Item -ItemType Directory -Path $cliTarget -Force | Out-Null
+          Copy-Item -Path (Join-Path $cliSingle '*') -Destination $cliTarget -Recurse -Force
+          $cliZip = Join-Path $env:GITHUB_WORKSPACE 'sts2seedroller-cli-single-win-x64.zip'
+          Compress-Archive -Path (Join-Path $cliTarget '*') -DestinationPath $cliZip -Force
+          "cliZipPath=$cliZip" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
       - name: Upload Regular artifact
         uses: actions/upload-artifact@v4
@@ -168,11 +157,17 @@ jobs:
           name: sts2seedroller-win-x64
           path: ${{ steps.package.outputs.artifactPath }}
 
-      - name: Upload Single-File artifact
+      - name: Upload Single-File UI artifact
         uses: actions/upload-artifact@v4
         with:
           name: sts2seedroller-single-win-x64
-          path: ${{ steps.package-single.outputs.artifactPath }}
+          path: ${{ steps.package-single.outputs.uiExePath }}
+
+      - name: Upload Single-File CLI artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sts2seedroller-cli-single-win-x64
+          path: ${{ steps.package-single.outputs.cliZipPath }}
 
       - name: Download artifacts
         uses: actions/download-artifact@v4
@@ -186,6 +181,7 @@ jobs:
           tag_name: ${{ github.ref_name }}
           files: |
             sts2seedroller-win-x64.zip
-            sts2seedroller-single-win-x64.zip
+            Sts2SeedRollerUi.exe
+            sts2seedroller-cli-single-win-x64.zip
           draft: false
           prerelease: false

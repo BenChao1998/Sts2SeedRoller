@@ -11,6 +11,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <AssemblyName>Sts2SeedRollerUi</AssemblyName>
+    <Icon>Assets\app.ico</Icon>
   </PropertyGroup>
 
   <ItemGroup>

@@ -1,61 +1,154 @@
-# Sts2SeedRoller
+# Sts2SeedRoller — 杀戮尖塔自定义 Roll 种器
 
-Standalone tooling for recreating Slay the Spire 2 Neow opening rewards without loading Godot or the official MegaCrit assemblies.
+无需运行游戏，即可模拟《杀戮尖塔 2》第一幕 Neow 奖励选择、第二幕/第三幕古神遗物选择的随机结果。支持按遗物、卡牌、药水等条件筛选种子，找出你最想要的起手组合。
 
-## Repository Layout
-- `Slay the Spire 2 源码/` - full game source dump used for data extraction (folder name intentionally matches the original instructions).
-- `data/neow/options.json` - localized Neow option metadata exported from the game data.
-- `src/SeedModel/` - reusable .NET library containing deterministic RNG helpers and the Neow option generator.
-- `src/DataExtractor/` - CLI that converts `seed_info.json` from the source dump into our standalone JSON dataset.
-- `src/SeedCli/` - thin CLI that loads the dataset and prints Neow options for one or many seeds.
-- `src/SeedUi/` - WPF 界面，直接引用 `SeedModel` 实现可视化筛选（不依赖 CLI）。
+---
 
-## Typical Workflow
-1. **Export data** (only needed when the game files change):
-   ```powershell
-   dotnet run --project src/DataExtractor/DataExtractor.csproj -- `
-     --source "Slay the Spire 2 源码/seed_info.json" --output data/neow/options.json
-   ```
-2. **Inspect Neow rolls** (single seed):
-   ```powershell
-   dotnet run --project src/SeedCli/SeedCli.csproj -- --seed 123456789 --scroll true
-   ```
-3. **使用 UI**：
-   ```powershell
-   dotnet run --project src/SeedUi/SeedUi.csproj
-   ```
-   在界面上填写数据路径（默认 `data/neow/options.json`），配置种子范围 / 筛选条件后点击“开始 Roll”即可，遗物/卡牌/药水列表均来自数据集本身。
-4. **批量 roll**（CLI 参数示例）:
-   ```powershell
-   # 连续 10 个种子，步长 1
-   dotnet run --project src/SeedCli/SeedCli.csproj -- --seed 100 --count 10
+## 下载
 
-   # 从十六进制 seed 开始，每次 +0x10，共 5 组
-   dotnet run --project src/SeedCli/SeedCli.csproj -- --seed 0xABCDEF01 --count 5 --seed-step 0x10
+前往 [Releases](https://github.com/BenChao1998/Sts2SeedRoller/releases) 页面，下载最新版本。
 
-   # 只保留出现 NEOWS_TORMENT（送 涅奥之怒）的种子
-   dotnet run --project src/SeedCli/SeedCli.csproj -- --count 200 --filter-relic NEOWS_TORMENT --filter-card NEOWS_FURY
-   ```
+提供三种下载形式：
 
-### SeedCli 参数速览
-| 参数 | 说明 | 默认值 |
-| --- | --- | --- |
-| `--seed` | 基础种子（十进制或 `0x` 十六进制） | `0` |
-| `--count` | 连续 roll 的次数 | `1` |
-| `--seed-step` | 每次 roll 种子递增值（支持十六进制） | `1` |
-| `--character` | 角色：`ironclad`/`silent`/`defect`/`necrobinder`/`regent` | `ironclad` |
-| `--players` | 玩家数量（>1 会启用多人专属选项） | `1` |
-| `--scroll` / `--scroll-boxes` | 是否允许 Scroll Boxes（true/false/1/0） | `false` |
-| `--data` | 自定义 Neow 数据集路径 | `data/neow/options.json` |
-| `--filter-kind` | 只保留 `positive` / `negative` 选项 | *(空，表示不过滤)* |
-| `--filter-relic` | 逗号分隔的遗物 ID，例如 `ARCANE_SCROLL,NEOWS_TORMENT` | *(空)* |
-| `--filter-relic-term` | 遗物关键字（大小写不敏感，支持中文），例如 `卷轴` | *(空)* |
-| `--filter-card` | 按卡牌 ID 匹配奖励（目前支持 NEOWS_FURY / GREED / STRIKE/DEFEND 系列） | *(空)* |
-| `--filter-potion` | 按药水 ID 匹配奖励（待后续实现更多奖励详情时生效） | *(空)* |
+| 下载内容 | 说明 |
+|---|---|
+| **完整安装包**（`.zip`） | 包含主程序 + 命令行工具，解压即用 |
+| **单文件主程序**（`.exe`） | 独立的 UI 程序，双击即可运行，无需安装任何依赖 |
+| **命令行工具**（`.zip`） | 适合高级用户，支持脚本化和批量筛选 |
 
-> **说明**：卡牌筛选基于我们自行重建的 Neow 奖励推导，目前已覆盖确定性的加卡奖励（如 `NEOWS_TORMENT` 送 `NEOWS_FURY`，`CURSED_PEARL` 送 `GREED`，以及 `LARGE_CAPSULE` 根据角色送基础打击/防御）。其它随机奖励会在后续补齐更完整的数据和 RNG 逻辑后陆续支持。
+> **Windows 系统要求**：Windows 10/11，64 位系统。
 
-## Next Steps
-- Flesh out modifier-driven Neow paths（当前仍未实现，会抛出 NotSupportedException）。
-- Extract card/relic lookup tables so the CLI can optionally show multi-language text or richer payloads.
-- Mirror the in-game RNG counter offsets for full parity once more systems are ported over, and add regression tests that diff against captured vanilla seeds.
+---
+
+## 功能介绍
+
+### 核心功能
+
+- **Neow 奖励预览** — 输入任意种子范围，查看 Neow（第一幕开始时的古神）为你提供的两个选项，包括获得的遗物、卡牌、药水、金币等详情
+- **古神遗物选择预览** — 查看第二幕和第三幕古神为你提供的遗物选项
+- **种子筛选** — 添加你想要的遗物、卡牌、药水条件，程序自动扫描大量种子，找出同时满足所有条件的种子
+- **支持全部角色** — 铁甲战士、静默猎手、故障机器人、亡灵契约师、储君
+- **支持进阶等级** — 可选择 0~10 级进阶，进阶等级会影响可用的选项池
+- **多语言界面** — Neow 选项、古神遗物名称等均有中文显示
+
+### 筛选条件
+
+- **遗物** — 搜索并添加想要的 Neow 遗物（如"诅咒之种"、"黄金香炉"等），支持按名称关键词过滤
+- **卡牌** — 搜索并添加 Neow 奖励的卡牌，支持按中文名、拼音或 ID 搜索
+- **药水** — 搜索并添加 Neow 奖励的药水
+- **古神类型** — 指定第二幕/第三幕遇到的古神（如"发光古神"、"被选中的古神"等）
+- **古神遗物选项** — 指定古神必须出现的具体遗物选项
+
+筛选逻辑：遗物 + 卡牌 + 药水 + 古神遗物选项需同时满足（AND），命中即停模式找到第一个匹配后立即停止。
+
+### Roll 模式
+
+- **随机模式** — 每次 Roll 生成随机种子
+- **顺序递增** — 从起始种子开始按指定步长递增扫描，适合系统性排查
+- **命中即停** — 找到第一个符合条件的种子后自动停止，无需手动中断
+
+---
+
+## 使用教程
+
+### 第一次使用
+
+1. 下载最新 release，解压（或直接运行单文件 exe）
+2. 双击 `Sts2SeedRollerUi.exe` 启动程序
+3. 程序首次运行会自动加载内置的 Neow 数据，无需额外配置
+
+### 界面概览
+
+程序有四个页面：
+
+| 页面 | 说明 |
+|---|---|
+| **配置** | 设置角色、进阶等级、种子范围、筛选条件后，点击"开始 Roll" |
+| **运行结果** | 查看扫描命中的种子和详细选项，可复制或导出 |
+| **运行日志** | 查看操作日志，如出现错误可在此查看原因 |
+
+### 步骤一：选择角色和进阶
+
+在配置页面顶部选择：
+- **角色**：决定 Neow 选项池（不同角色有不同的专属选项）
+- **进阶等级**：0~10，进阶越高可用的卡牌池越大
+
+### 步骤二：设置种子扫描范围
+
+- **Roll 数量**：每次扫描多少个种子，建议 100~10000，根据需求调整
+- **种子模式**：
+  - 随机模式：程序自动生成随机种子
+  - 顺序递增：从"起始种子"开始，每隔"种子步长"扫描一个
+  - 命中即停：找到第一个匹配后停止
+
+### 步骤三：添加筛选条件
+
+在配置页面下方有三个筛选区域，分别对应遗物、卡牌、药水：
+
+1. 在**搜索框**中输入关键词（如"诅咒"、"strike"等）
+2. 从下拉框中选择具体选项
+3. 点击**添加**按钮，选项会以标签形式显示
+4. 重复以上步骤，添加多个条件（必须全部满足）
+
+**古神筛选**（可选）：
+- 勾选"第二幕古神"，选择古神类型和具体遗物选项
+- 勾选"第三幕古神"，同样设置
+- 注意：古神预览需要程序目录下存在 `data/ancients/` 和 `data/sts2/` 文件夹，首次使用可能需要手动放入（后续版本将内置）
+
+### 步骤四：开始 Roll
+
+点击右下角蓝色大按钮 **"开始 Roll"**，进度条会实时显示扫描进度。
+
+- **停止**：扫描过程中可随时点击"停止"中断
+- **结果**：命中的种子会显示在"运行结果"页面
+
+### 步骤五：查看和复制结果
+
+在"运行结果"页面：
+- 每个命中种子显示为一张卡片，包含种子号（可点击复制）、角色标签
+- 展开后显示 Neow 选项详情（遗物、卡牌、药水、金币等）
+- 如启用了古神筛选，还会显示第二幕/第三幕古神信息
+- 点击右上角**导出结果**可将所有结果保存为 JSON 文件
+
+### 保存和加载配置
+
+点击右上角：
+- **保存配置** — 将当前所有设置（角色、进阶、筛选条件等）保存到文件
+- **加载配置** — 重新导入之前保存的配置，方便复用常用筛选条件
+
+---
+
+## 常见问题
+
+### Q: 为什么我看到的结果和游戏里不一样？
+
+请确认以下几点：
+1. **角色和进阶等级**是否与游戏内一致
+2. **玩家数量**是否为 1（当前版本仅支持单人）
+3. **数据版本**是否对应游戏版本（如游戏更新了，程序数据也可能需要更新）
+
+### Q: 筛选条件没有命中任何种子怎么办？
+
+- 扩大 **Roll 数量**（比如从 100 增加到 10000）
+- 减少筛选条件（移除一些非必需的遗物/卡牌/药水）
+- 换一批起始种子
+
+### Q: 古神预览没有显示怎么办？
+
+确保程序目录下存在 `data/ancients/` 和 `data/sts2/` 文件夹。如果这两个文件夹不存在，古神相关的筛选和预览功能将不可用。
+
+### Q: 如何查找我想要的遗物 ID 或卡牌 ID？
+
+在对应的筛选搜索框中输入中文名称或英文关键词，下拉框会实时过滤显示匹配的选项。
+
+---
+
+## 技术说明
+
+本工具通过反向工程复现了游戏的随机数生成逻辑（GameRng），不依赖游戏本体或 Godot 引擎。程序完全离线运行，无需网络连接。
+
+---
+
+## 许可证
+
+MIT License
