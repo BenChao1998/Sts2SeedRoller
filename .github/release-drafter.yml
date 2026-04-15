@@ -1,6 +1,6 @@
 ﻿# GitHub Release Drafter 配置（放在 .github/release-drafter.yml）
 # 详情参考：https://github.com/release-drafter/release-drafter
-_template: |
+template: |
   ## 💾 变更内容
 
   $CHANGES
