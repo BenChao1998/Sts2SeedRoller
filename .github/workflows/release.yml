@@ -189,6 +189,33 @@ jobs:
           name: sts2seedroller-cli-single-win-x64
           path: ${{ steps.package-single.outputs.cliExePath }}
 
+      - name: Create release notes
+        id: create-release-notes
+        run: |
+          $notes = @"
+          ## 下载说明
+
+          ### UI 版本 (sts2seedroller-win-x64.zip)
+          带快捷方式，开箱即用。解压后双击 `Sts2SeedRoller.lnk` 启动。
+
+          ### CLI 版本 (sts2seedroller-cli-win-x64.zip)
+          命令行工具，解压后将目录加入 PATH 即可使用。运行 `Sts2SeedRoller.exe --help` 查看帮助。
+
+          ### 单文件版 (Sts2SeedRollerUi.exe / Sts2SeedRoller.exe)
+          绿色单文件，无需安装。直接双击运行。
+          "@
+
+          # 获取上次正式发布以来的 changelog
+          $tagName = "${{ github.ref_name }}"
+          $previousTag = git describe --tags --abbrev=0 "$tagName^" 2>$null
+          if ($previousTag) {
+            $changelog = git log "$previousTag..$tagName" --pretty=format:"- %s" --no-merges
+            $notes += "`n`n## 变更日志`n`n" + $changelog
+          }
+
+          $notes | Out-File -FilePath release-notes.md -Encoding utf8
+          "releaseNotesPath=release-notes.md" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
@@ -198,7 +225,7 @@ jobs:
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v1
         with:
-          generate_release_notes: true
+          body_path: ${{ steps.create-release-notes.outputs.releaseNotesPath }}
           tag_name: ${{ github.ref_name }}
           files: |
             sts2seedroller-win-x64.zip
