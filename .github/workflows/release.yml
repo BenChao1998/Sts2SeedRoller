@@ -123,7 +123,7 @@ jobs:
           $shortcut = $shell.CreateShortcut($shortcutPath)
           $shortcut.TargetPath = Join-Path $uiDest 'Sts2SeedRollerUi.exe'
           $shortcut.WorkingDirectory = $uiDest
-          $shortcut.IconLocation = $shortcut.TargetPath
+          $shortcut.IconLocation = 'Sts2SeedRollerUi.exe'
           $shortcut.Save()
 
           $zipPath = Join-Path $env:GITHUB_WORKSPACE 'sts2seedroller-win-x64.zip'
