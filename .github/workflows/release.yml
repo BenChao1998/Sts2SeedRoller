@@ -192,7 +192,7 @@ jobs:
       - name: Create release notes
         id: create-release-notes
         run: |
-          $notes = @"
+          $intro = @'
           ## 下载说明
 
           ### UI 版本 (sts2seedroller-win-x64.zip)
@@ -203,14 +203,15 @@ jobs:
 
           ### 单文件版 (Sts2SeedRollerUi.exe / Sts2SeedRoller.exe)
           绿色单文件，无需安装。直接双击运行。
-          "@
+          '@
 
           # 获取上次正式发布以来的 changelog
           $tagName = "${{ github.ref_name }}"
           $previousTag = git describe --tags --abbrev=0 "$tagName^" 2>$null
+          $notes = $intro
           if ($previousTag) {
             $changelog = git log "$previousTag..$tagName" --pretty=format:"- %s" --no-merges
-            $notes += "`n`n## 变更日志`n`n" + $changelog
+            $notes = $intro + "`n`n## 变更日志`n`n" + $changelog
           }
 
           $notes | Out-File -FilePath release-notes.md -Encoding utf8
