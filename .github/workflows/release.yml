@@ -47,7 +47,9 @@ jobs:
 
       - name: Publish UI (Single File)
         run: |
-          Copy-Item -Recurse -Path data -Destination src/SeedUi/bin/Release/net9.0-windows/
+          $uiDir = Join-Path $env:GITHUB_WORKSPACE 'src/SeedUi/bin/Release/net9.0-windows'
+          if (Test-Path (Join-Path $uiDir 'data')) { Remove-Item (Join-Path $uiDir 'data') -Recurse -Force }
+          Copy-Item -Recurse -Path data -Destination $uiDir
           dotnet publish src/SeedUi/SeedUi.csproj `
             -c Release `
             -r win-x64 `
@@ -61,7 +63,9 @@ jobs:
 
       - name: Publish CLI (Single File)
         run: |
-          Copy-Item -Recurse -Path data -Destination src/SeedCli/bin/Release/net9.0/
+          $cliDir = Join-Path $env:GITHUB_WORKSPACE 'src/SeedCli/bin/Release/net9.0'
+          if (Test-Path (Join-Path $cliDir 'data')) { Remove-Item (Join-Path $cliDir 'data') -Recurse -Force }
+          Copy-Item -Recurse -Path data -Destination $cliDir
           dotnet publish src/SeedCli/SeedCli.csproj `
             -c Release `
             -r win-x64 `
