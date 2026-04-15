@@ -45,6 +45,26 @@ jobs:
             /p:DebugType=None `
             /p:DebugSymbols=false
 
+      - name: Copy data files to publish directories
+        run: |
+          # Regular UI publish: CopySeedData puts data in build output, not publish output
+          $uiBuildOut = Join-Path $env:GITHUB_WORKSPACE 'src/SeedUi/bin/Release/net9.0-windows'
+          $uiPublish = Join-Path $env:GITHUB_WORKSPACE 'src/SeedUi/bin/Release/net9.0-windows/win-x64/publish'
+          if (Test-Path (Join-Path $uiBuildOut 'data')) {
+            $dest = Join-Path $uiPublish 'data'
+            if (Test-Path $dest) { Remove-Item $dest -Recurse -Force }
+            Copy-Item -Recurse -Path (Join-Path $uiBuildOut 'data') -Destination $uiPublish
+          }
+
+          # Regular CLI publish: same issue
+          $cliBuildOut = Join-Path $env:GITHUB_WORKSPACE 'src/SeedCli/bin/Release/net9.0'
+          $cliPublish = Join-Path $env:GITHUB_WORKSPACE 'src/SeedCli/bin/Release/net9.0/win-x64/publish'
+          if (Test-Path (Join-Path $cliBuildOut 'data')) {
+            $dest = Join-Path $cliPublish 'data'
+            if (Test-Path $dest) { Remove-Item $dest -Recurse -Force }
+            Copy-Item -Recurse -Path (Join-Path $cliBuildOut 'data') -Destination $cliPublish
+          }
+
       - name: Publish UI (Single File)
         run: |
           $uiDir = Join-Path $env:GITHUB_WORKSPACE 'src/SeedUi/bin/Release/net9.0-windows'
