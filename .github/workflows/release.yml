@@ -191,8 +191,6 @@ jobs:
 
       - name: Generate release notes
         uses: release-drafter/release-drafter@v7
-        with:
-          config-name: release-drafter.yml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
