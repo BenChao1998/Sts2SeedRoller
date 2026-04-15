@@ -58,9 +58,15 @@ public sealed class Sts2RunPreviewer
             throw new FileNotFoundException("Ancient option data file not found.", optionDataPath);
         }
 
-        using var stream = File.OpenRead(optionDataPath);
-        var catalog = AncientOptionCatalog.Load(stream);
-        var world = Sts2WorldData.LoadFromFile(actDataPath);
+        using var optionStream = File.OpenRead(optionDataPath);
+        using var actStream = File.OpenRead(actDataPath);
+        return Create(optionStream, actStream);
+    }
+
+    public static Sts2RunPreviewer Create(Stream optionDataStream, Stream actDataStream)
+    {
+        var catalog = AncientOptionCatalog.Load(optionDataStream);
+        var world = Sts2WorldData.Load(actDataStream);
         return new Sts2RunPreviewer(catalog, world);
     }
 

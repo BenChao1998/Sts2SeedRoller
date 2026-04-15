@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text.Json;
 
 namespace SeedUi.ViewModels;
@@ -223,11 +224,23 @@ internal static class AncientDisplayCatalog
     {
         var metadata = new Dictionary<string, AncientOptionMetadata>(StringComparer.OrdinalIgnoreCase);
         var path = ResolveOptionDataPath();
-        if (!File.Exists(path))
+
+        // First try loading from file
+        if (File.Exists(path))
         {
-            return metadata;
+            if (TryLoadFromFile(path, metadata))
+            {
+                return metadata;
+            }
         }
 
+        // Fallback: try embedded resources
+        TryLoadFromEmbeddedResource(metadata);
+        return metadata;
+    }
+
+    private static bool TryLoadFromFile(string path, Dictionary<string, AncientOptionMetadata> metadata)
+    {
         try
         {
             using var stream = File.OpenRead(path);
@@ -238,7 +251,7 @@ internal static class AncientDisplayCatalog
 
             if (model?.Options == null)
             {
-                return metadata;
+                return false;
             }
 
             foreach (var record in model.Options)
@@ -251,13 +264,75 @@ internal static class AncientDisplayCatalog
                 var normalized = NormalizeOptionId(record.Id);
                 metadata[normalized] = new AncientOptionMetadata(normalized, record.Title, record.Description);
             }
+            return true;
         }
         catch
         {
-            // 忽略解析错误，使用空白回退。
+            return false;
+        }
+    }
+
+    private static void TryLoadFromEmbeddedResource(Dictionary<string, AncientOptionMetadata> metadata)
+    {
+        var assembly = Assembly.GetExecutingAssembly();
+        var resourceNames = assembly.GetManifestResourceNames();
+        string? bestResource = null;
+
+        // Prefer Chinese locale
+        foreach (var name in resourceNames)
+        {
+            if (name.Contains("SeedUi.Data.ancients.") &&
+                (name.EndsWith("options.zhs.json", StringComparison.OrdinalIgnoreCase) ||
+                 name.EndsWith("options.json", StringComparison.OrdinalIgnoreCase)))
+            {
+                if (bestResource == null || name.EndsWith("options.zhs.json", StringComparison.OrdinalIgnoreCase))
+                {
+                    bestResource = name;
+                }
+            }
         }
 
-        return metadata;
+        if (bestResource == null)
+        {
+            return;
+        }
+
+        try
+        {
+            using var stream = assembly.GetManifestResourceStream(bestResource);
+            if (stream == null)
+            {
+                return;
+            }
+
+            var model = JsonSerializer.Deserialize<AncientOptionFileModel>(stream, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            if (model?.Options == null)
+            {
+                return;
+            }
+
+            foreach (var record in model.Options)
+            {
+                if (string.IsNullOrWhiteSpace(record.Id))
+                {
+                    continue;
+                }
+
+                var normalized = NormalizeOptionId(record.Id);
+                if (!metadata.ContainsKey(normalized))
+                {
+                    metadata[normalized] = new AncientOptionMetadata(normalized, record.Title, record.Description);
+                }
+            }
+        }
+        catch
+        {
+            // 忽略嵌入资源加载错误
+        }
     }
 
     private static ReadOnlyCollection<AncientDisplayOption> AsReadOnly(this List<AncientDisplayOption> source) =>

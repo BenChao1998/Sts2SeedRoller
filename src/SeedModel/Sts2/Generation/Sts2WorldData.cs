@@ -42,10 +42,15 @@ internal sealed class Sts2WorldData
         }
 
         using var stream = File.OpenRead(path);
+        return Load(stream);
+    }
+
+    public static Sts2WorldData Load(Stream stream)
+    {
         var model = JsonSerializer.Deserialize<Sts2DataModel>(stream, new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true
-        }) ?? throw new InvalidDataException($"无法解析 {path} 中的 Act 数据。");
+        }) ?? throw new InvalidDataException("无法从数据流中解析 Act 数据。");
 
         if (model.Acts.Count == 0)
         {

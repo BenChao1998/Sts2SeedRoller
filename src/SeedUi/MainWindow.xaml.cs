@@ -85,6 +85,14 @@ public partial class MainWindow : HandyControl.Controls.Window
         NavigateToPage(pageIndex);
     }
 
+    private void OnResetConfig(object sender, RoutedEventArgs e)
+    {
+        if (DataContext is MainWindowViewModel vm)
+        {
+            vm.ResetConfig();
+        }
+    }
+
     private async void OnLoadConfig(object sender, RoutedEventArgs e)
     {
         var dialog = new Microsoft.Win32.OpenFileDialog

@@ -68,8 +68,16 @@ jobs:
       - name: Publish UI (Single File)
         run: |
           $uiDir = Join-Path $env:GITHUB_WORKSPACE 'src/SeedUi/bin/Release/net9.0-windows'
+          # 清理并复制 data
           if (Test-Path (Join-Path $uiDir 'data')) { Remove-Item (Join-Path $uiDir 'data') -Recurse -Force }
           Copy-Item -Recurse -Path data -Destination $uiDir
+          # 复制 Assets（图标准备）
+          $assetsSrc = Join-Path $env:GITHUB_WORKSPACE 'src/SeedUi/Assets'
+          if (Test-Path $assetsSrc) {
+            $assetsDest = Join-Path $uiDir 'Assets'
+            if (Test-Path $assetsDest) { Remove-Item $assetsDest -Recurse -Force }
+            Copy-Item -Recurse -Path $assetsSrc -Destination $uiDir
+          }
           dotnet publish src/SeedUi/SeedUi.csproj `
             -c Release `
             -r win-x64 `
@@ -97,24 +105,18 @@ jobs:
             /p:IncludeAllContentForSelfExtract=true `
             /p:EnableCompressionInSingleFile=true
 
-      - name: Package Regular artifact
-        id: package
+      - name: Package Regular UI artifact
+        id: package-ui
         shell: pwsh
         run: |
           $uiPublish = Join-Path $env:GITHUB_WORKSPACE 'src/SeedUi/bin/Release/net9.0-windows/win-x64/publish'
-          $cliPublish = Join-Path $env:GITHUB_WORKSPACE 'src/SeedCli/bin/Release/net9.0/win-x64/publish'
           if (-not (Test-Path $uiPublish)) { Write-Error "发布目录不存在: $uiPublish" }
-          if (-not (Test-Path $cliPublish)) { Write-Error "CLI 发布目录不存在: $cliPublish" }
 
           $packageRoot = Join-Path $env:GITHUB_WORKSPACE 'sts2seedroller-package'
           if (Test-Path $packageRoot) { Remove-Item $packageRoot -Recurse -Force }
           $uiDest = Join-Path $packageRoot 'Sts2SeedRoller'
           New-Item -ItemType Directory -Path $uiDest -Force | Out-Null
           Copy-Item -Path (Join-Path $uiPublish '*') -Destination $uiDest -Recurse -Force
-
-          $cliTarget = Join-Path $packageRoot 'cli'
-          if (Test-Path $cliTarget) { Remove-Item $cliTarget -Recurse -Force }
-          Copy-Item $cliPublish $cliTarget -Recurse -Force
 
           $shortcutPath = Join-Path $packageRoot 'Sts2SeedRoller.lnk'
           $shell = New-Object -ComObject WScript.Shell
@@ -126,6 +128,22 @@ jobs:
 
           $zipPath = Join-Path $env:GITHUB_WORKSPACE 'sts2seedroller-win-x64.zip'
           Compress-Archive -Path (Join-Path $packageRoot '*') -DestinationPath $zipPath -Force
+          "artifactPath=$zipPath" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
+      - name: Package Regular CLI artifact
+        id: package-cli
+        shell: pwsh
+        run: |
+          $cliPublish = Join-Path $env:GITHUB_WORKSPACE 'src/SeedCli/bin/Release/net9.0/win-x64/publish'
+          if (-not (Test-Path $cliPublish)) { Write-Error "CLI 发布目录不存在: $cliPublish" }
+
+          $cliRoot = Join-Path $env:GITHUB_WORKSPACE 'sts2seedroller-cli-package'
+          if (Test-Path $cliRoot) { Remove-Item $cliRoot -Recurse -Force }
+          New-Item -ItemType Directory -Path $cliRoot -Force | Out-Null
+          Copy-Item -Path (Join-Path $cliPublish '*') -Destination $cliRoot -Recurse -Force
+
+          $zipPath = Join-Path $env:GITHUB_WORKSPACE 'sts2seedroller-cli-win-x64.zip'
+          Compress-Archive -Path (Join-Path $cliRoot '*') -DestinationPath $zipPath -Force
           "artifactPath=$zipPath" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
       - name: Package Single-File artifact
@@ -142,20 +160,22 @@ jobs:
           if (-not (Test-Path $uiExe)) { Write-Error "UI 单文件 exe 不存在: $uiExe" }
           "uiExePath=$uiExe" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
-          # CLI 单文件：打包成 zip（因为可能还有其他依赖）
-          $cliTarget = Join-Path $env:GITHUB_WORKSPACE 'sts2seedroller-cli-single-package'
-          if (Test-Path $cliTarget) { Remove-Item $cliTarget -Recurse -Force }
-          New-Item -ItemType Directory -Path $cliTarget -Force | Out-Null
-          Copy-Item -Path (Join-Path $cliSingle '*') -Destination $cliTarget -Recurse -Force
-          $cliZip = Join-Path $env:GITHUB_WORKSPACE 'sts2seedroller-cli-single-win-x64.zip'
-          Compress-Archive -Path (Join-Path $cliTarget '*') -DestinationPath $cliZip -Force
-          "cliZipPath=$cliZip" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          # CLI 单文件 exe：直接输出路径，不打包
+          $cliExe = Join-Path $cliSingle 'Sts2SeedRoller.exe'
+          if (-not (Test-Path $cliExe)) { Write-Error "CLI 单文件 exe 不存在: $cliExe" }
+          "cliExePath=$cliExe" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
-      - name: Upload Regular artifact
+      - name: Upload Regular UI artifact
         uses: actions/upload-artifact@v4
         with:
           name: sts2seedroller-win-x64
-          path: ${{ steps.package.outputs.artifactPath }}
+          path: ${{ steps.package-ui.outputs.artifactPath }}
+
+      - name: Upload Regular CLI artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sts2seedroller-cli-win-x64
+          path: ${{ steps.package-cli.outputs.artifactPath }}
 
       - name: Upload Single-File UI artifact
         uses: actions/upload-artifact@v4
@@ -167,7 +187,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: sts2seedroller-cli-single-win-x64
-          path: ${{ steps.package-single.outputs.cliZipPath }}
+          path: ${{ steps.package-single.outputs.cliExePath }}
 
       - name: Download artifacts
         uses: actions/download-artifact@v4
@@ -181,7 +201,8 @@ jobs:
           tag_name: ${{ github.ref_name }}
           files: |
             sts2seedroller-win-x64.zip
+            sts2seedroller-cli-win-x64.zip
             Sts2SeedRollerUi.exe
-            sts2seedroller-cli-single-win-x64.zip
+            Sts2SeedRoller.exe
           draft: false
           prerelease: false

@@ -32,6 +32,9 @@ internal sealed partial class MainWindowViewModel : ObservableObject
     private const int ProgressReportMinimum = 1_000;
     private const int DefaultPartitionSize = 4_096;
     private const string EmbeddedDatasetResource = "SeedUi.Data.Neow.options.json";
+    private const string EmbeddedActsResource = "SeedUi.Data.sts2.acts.json";
+    private const string EmbeddedAncientOptionsResource = "SeedUi.Data.ancients.options.json";
+    private const string EmbeddedAncientOptionsZhResource = "SeedUi.Data.ancients.options.zhs.json";
     private static readonly char[] TermSeparators = [',', ';', ' ', '|', '/', '\n', '\r', '\t'];
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -168,31 +171,87 @@ internal sealed partial class MainWindowViewModel : ObservableObject
 
     private Sts2RunPreviewer? InitializeAncientPreviewer()
     {
+        // Try loading from files first
+        var optionPath = AncientDisplayCatalog.ResolveOptionDataPath();
+        var actDataPath = Path.Combine(AppContext.BaseDirectory, "data", "sts2", "acts.json");
+
+        if (File.Exists(optionPath) && File.Exists(actDataPath))
+        {
+            try
+            {
+                var previewer = Sts2RunPreviewer.CreateFromDataFiles(optionPath, actDataPath);
+                IsAncientPreviewAvailable = true;
+                return previewer;
+            }
+            catch (Exception ex)
+            {
+                LogWarn($"从文件加载第二/第三幕古神数据失败，尝试嵌入资源：{ex.Message}");
+            }
+        }
+
+        // Fallback: try embedded resources (for single-file deployments)
         try
         {
-            var optionPath = AncientDisplayCatalog.ResolveOptionDataPath();
-            var actDataPath = Path.Combine(AppContext.BaseDirectory, "data", "sts2", "acts.json");
-            if (!File.Exists(optionPath) || !File.Exists(actDataPath))
+            var previewer = TryCreateFromEmbeddedResources();
+            if (previewer != null)
             {
-                IsAncientPreviewAvailable = false;
-                IncludeAct2 = false;
-                IncludeAct3 = false;
-                LogWarn("未找到完整的第二/第三幕古神数据（缺少 options.json 或 acts.json），相关功能已禁用。");
-                return null;
+                IsAncientPreviewAvailable = true;
+                return previewer;
             }
-
-            var previewer = Sts2RunPreviewer.CreateFromDataFiles(optionPath, actDataPath);
-            IsAncientPreviewAvailable = true;
-            return previewer;
         }
         catch (Exception ex)
         {
-            IsAncientPreviewAvailable = false;
-            IncludeAct2 = false;
-            IncludeAct3 = false;
-            LogWarn($"加载第二/第三幕古神数据失败：{ex.Message}");
-            return null;
+            LogWarn($"从嵌入资源加载第二/第三幕古神数据失败：{ex.Message}");
         }
+
+        return DisableAncientPreview("未找到完整的第二/第三幕古神数据（缺少 options.json 或 acts.json），相关功能已禁用。");
+    }
+
+    private Sts2RunPreviewer? TryCreateFromEmbeddedResources()
+    {
+        var assembly = Assembly.GetExecutingAssembly();
+        var resourceNames = assembly.GetManifestResourceNames();
+
+        // Find the best ancient options resource (prefer zh)
+        string? ancientResource = null;
+        foreach (var name in resourceNames)
+        {
+            if (!name.Contains("SeedUi.Data.ancients."))
+                continue;
+            if (!name.EndsWith("options.json", StringComparison.OrdinalIgnoreCase))
+                continue;
+            if (ancientResource == null ||
+                name.EndsWith(EmbeddedAncientOptionsZhResource, StringComparison.OrdinalIgnoreCase))
+            {
+                ancientResource = name;
+            }
+        }
+
+        if (ancientResource == null)
+            return null;
+
+        var actsResource = resourceNames.FirstOrDefault(n =>
+            n.Contains("SeedUi.Data.sts2.") && n.EndsWith(".acts.json", StringComparison.OrdinalIgnoreCase));
+
+        if (actsResource == null)
+            return null;
+
+        using var ancientStream = assembly.GetManifestResourceStream(ancientResource)
+            ?? throw new FileNotFoundException("Ancient resource not found.");
+        using var actsStream = assembly.GetManifestResourceStream(actsResource)
+            ?? throw new FileNotFoundException("Acts resource not found.");
+
+        LogInfo("从嵌入资源加载第二/第三幕古神数据（单文件模式）。");
+        return Sts2RunPreviewer.Create(ancientStream, actsStream);
+    }
+
+    private Sts2RunPreviewer? DisableAncientPreview(string message)
+    {
+        IsAncientPreviewAvailable = false;
+        IncludeAct2 = false;
+        IncludeAct3 = false;
+        LogWarn(message);
+        return null;
     }
 
     public IReadOnlyList<SeedEventMetadata> EventOptions { get; }
@@ -1771,6 +1830,33 @@ internal sealed partial class MainWindowViewModel : ObservableObject
             WasCancelled: false);
 
         await SaveResultsAsync(runResult, dialog.FileName);
+    }
+
+    public void ResetConfig()
+    {
+        SelectedCharacter = CharacterId.Ironclad;
+        SelectedAscensionLevel = 0;
+        SelectedSeedMode = SeedRollMode.Random;
+        SeedText = new string('0', SeedFormatter.DefaultLength);
+        RollCount = "100";
+        SeedStep = "1";
+        FilterRelicTerms = string.Empty;
+        SelectedRelicCatalogItem = null;
+        SelectedCardCatalogItem = null;
+        SelectedPotionCatalogItem = null;
+        RelicFilterChips.Clear();
+        CardFilterChips.Clear();
+        PotionFilterChips.Clear();
+        IncludeAct2 = false;
+        IncludeAct3 = false;
+        Act2AncientFilter = string.Empty;
+        Act3AncientFilter = string.Empty;
+        Act2OptionFilterChips.Clear();
+        Act3OptionFilterChips.Clear();
+        SelectedAct2RelicOption = null;
+        SelectedAct3RelicOption = null;
+        StatusMessage = "配置已重置为默认值。";
+        LogInfo(StatusMessage);
     }
 
     private async Task LoadConfigAsync()
