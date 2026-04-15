@@ -205,7 +205,7 @@ jobs:
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v1
         with:
-          body_path: .release-drafter/DRAFT-NOTES.md
+          body_path: .github/release-drafter/DRAFT-NOTES.md
           tag_name: ${{ github.ref_name }}
           files: |
             sts2seedroller-win-x64.zip
