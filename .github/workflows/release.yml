@@ -19,6 +19,14 @@ jobs:
         with:
           dotnet-version: "9.0.x"
 
+      - name: Extract version
+        id: version
+        run: |
+          $tag = "${{ github.ref_name }}"
+          $version = $tag.TrimStart('v')
+          "version=$version" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          "versionSuffix=-$version" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
       - name: Restore
         run: dotnet restore Sts2SeedRoller.sln
 
@@ -109,24 +117,26 @@ jobs:
         id: package-ui
         shell: pwsh
         run: |
+          $vs = "${{ steps.version.outputs.versionSuffix }}"
           $uiPublish = Join-Path $env:GITHUB_WORKSPACE 'src/SeedUi/bin/Release/net9.0-windows/win-x64/publish'
           if (-not (Test-Path $uiPublish)) { Write-Error "发布目录不存在: $uiPublish" }
 
           $packageRoot = Join-Path $env:GITHUB_WORKSPACE 'sts2seedroller-package'
           if (Test-Path $packageRoot) { Remove-Item $packageRoot -Recurse -Force }
-          $uiDest = Join-Path $packageRoot 'Sts2SeedRoller'
+          $uiDest = Join-Path $packageRoot "Sts2SeedRoller"
           New-Item -ItemType Directory -Path $uiDest -Force | Out-Null
           Copy-Item -Path (Join-Path $uiPublish '*') -Destination $uiDest -Recurse -Force
 
-          $shortcutPath = Join-Path $packageRoot 'Sts2SeedRoller.lnk'
+          $shortcutPath = Join-Path $packageRoot "Sts2SeedRoller.lnk"
           $shell = New-Object -ComObject WScript.Shell
           $shortcut = $shell.CreateShortcut($shortcutPath)
-          $shortcut.TargetPath = Join-Path $uiDest 'Sts2SeedRollerUi.exe'
+          $shortcut.TargetPath = Join-Path $uiDest "Sts2SeedRollerUi.exe"
           $shortcut.WorkingDirectory = $uiDest
           $shortcut.IconLocation = 'Sts2SeedRollerUi.exe'
           $shortcut.Save()
 
-          $zipPath = Join-Path $env:GITHUB_WORKSPACE 'sts2seedroller-win-x64.zip'
+          $zipName = "sts2seedroller-win-x64$vs.zip"
+          $zipPath = Join-Path $env:GITHUB_WORKSPACE $zipName
           Compress-Archive -Path (Join-Path $packageRoot '*') -DestinationPath $zipPath -Force
           "artifactPath=$zipPath" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
@@ -134,6 +144,7 @@ jobs:
         id: package-cli
         shell: pwsh
         run: |
+          $vs = "${{ steps.version.outputs.versionSuffix }}"
           $cliPublish = Join-Path $env:GITHUB_WORKSPACE 'src/SeedCli/bin/Release/net9.0/win-x64/publish'
           if (-not (Test-Path $cliPublish)) { Write-Error "CLI 发布目录不存在: $cliPublish" }
 
@@ -142,7 +153,8 @@ jobs:
           New-Item -ItemType Directory -Path $cliRoot -Force | Out-Null
           Copy-Item -Path (Join-Path $cliPublish '*') -Destination $cliRoot -Recurse -Force
 
-          $zipPath = Join-Path $env:GITHUB_WORKSPACE 'sts2seedroller-cli-win-x64.zip'
+          $zipName = "sts2seedroller-cli-win-x64$vs.zip"
+          $zipPath = Join-Path $env:GITHUB_WORKSPACE $zipName
           Compress-Archive -Path (Join-Path $cliRoot '*') -DestinationPath $zipPath -Force
           "artifactPath=$zipPath" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
@@ -150,48 +162,51 @@ jobs:
         id: package-single
         shell: pwsh
         run: |
+          $vs = "${{ steps.version.outputs.versionSuffix }}"
           $uiSingle = Join-Path $env:GITHUB_WORKSPACE 'src/SeedUi/bin/Release/net9.0-windows/win-x64/single-publish'
           $cliSingle = Join-Path $env:GITHUB_WORKSPACE 'src/SeedCli/bin/Release/net9.0/win-x64/single-publish'
           if (-not (Test-Path $uiSingle)) { Write-Error "单文件发布目录不存在: $uiSingle" }
           if (-not (Test-Path $cliSingle)) { Write-Error "CLI 单文件发布目录不存在: $cliSingle" }
 
-          # UI 单文件 exe：直接输出路径，不打包
-          $uiExe = Join-Path $uiSingle 'Sts2SeedRollerUi.exe'
-          if (-not (Test-Path $uiExe)) { Write-Error "UI 单文件 exe 不存在: $uiExe" }
+          # UI 单文件 exe：复制并重命名
+          $uiExe = Join-Path $uiSingle "Sts2SeedRollerUi$vs.exe"
+          if (-not (Test-Path (Join-Path $uiSingle 'Sts2SeedRollerUi.exe'))) { Write-Error "UI 单文件 exe 不存在" }
+          Copy-Item -Path (Join-Path $uiSingle 'Sts2SeedRollerUi.exe') -Destination $uiExe -Force
           "uiExePath=$uiExe" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
-          # CLI 单文件 exe：直接输出路径，不打包
-          $cliExe = Join-Path $cliSingle 'Sts2SeedRoller.exe'
-          if (-not (Test-Path $cliExe)) { Write-Error "CLI 单文件 exe 不存在: $cliExe" }
+          # CLI 单文件 exe：复制并重命名
+          $cliExe = Join-Path $cliSingle "Sts2SeedRoller$vs.exe"
+          if (-not (Test-Path (Join-Path $cliSingle 'Sts2SeedRoller.exe'))) { Write-Error "CLI 单文件 exe 不存在" }
+          Copy-Item -Path (Join-Path $cliSingle 'Sts2SeedRoller.exe') -Destination $cliExe -Force
           "cliExePath=$cliExe" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
       - name: Upload Regular UI artifact
         uses: actions/upload-artifact@v4
         with:
-          name: sts2seedroller-win-x64
+          name: sts2seedroller-win-x64${{ steps.version.outputs.versionSuffix }}
           path: ${{ steps.package-ui.outputs.artifactPath }}
 
       - name: Upload Regular CLI artifact
         uses: actions/upload-artifact@v4
         with:
-          name: sts2seedroller-cli-win-x64
+          name: sts2seedroller-cli-win-x64${{ steps.version.outputs.versionSuffix }}
           path: ${{ steps.package-cli.outputs.artifactPath }}
 
       - name: Upload Single-File UI artifact
         uses: actions/upload-artifact@v4
         with:
-          name: sts2seedroller-single-win-x64
+          name: sts2seedroller-single-win-x64${{ steps.version.outputs.versionSuffix }}
           path: ${{ steps.package-single.outputs.uiExePath }}
 
       - name: Upload Single-File CLI artifact
         uses: actions/upload-artifact@v4
         with:
-          name: sts2seedroller-cli-single-win-x64
+          name: sts2seedroller-cli-single-win-x64${{ steps.version.outputs.versionSuffix }}
           path: ${{ steps.package-single.outputs.cliExePath }}
 
       - name: Create release notes
         id: create-release-notes
-        run: pwsh -File .github/workflows/generate-release-notes.ps1 "${{ github.ref_name }}"
+        run: pwsh -File .github/workflows/generate-release-notes.ps1 "${{ github.ref_name }}" "${{ steps.version.outputs.versionSuffix }}"
 
       - name: Download artifacts
         uses: actions/download-artifact@v4
@@ -205,9 +220,9 @@ jobs:
           body_path: ${{ steps.create-release-notes.outputs.releaseNotesPath }}
           tag_name: ${{ github.ref_name }}
           files: |
-            sts2seedroller-win-x64.zip
-            sts2seedroller-cli-win-x64.zip
-            Sts2SeedRollerUi.exe
-            Sts2SeedRoller.exe
+            sts2seedroller-win-x64${{ steps.version.outputs.versionSuffix }}.zip
+            sts2seedroller-cli-win-x64${{ steps.version.outputs.versionSuffix }}.zip
+            Sts2SeedRollerUi${{ steps.version.outputs.versionSuffix }}.exe
+            Sts2SeedRoller${{ steps.version.outputs.versionSuffix }}.exe
           draft: false
           prerelease: false
