@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using SeedModel.Rng;
 
@@ -20,13 +21,65 @@ internal sealed class NeowRewardPreviewer
     private const uint DefaultPlayerNetId = 1;
     private const string TransformationsSalt = "transformations";
     private const string PlayerRewardsSalt = "rewards";
-    private const string CardRewardLabel = "卡牌奖励";
-    private const string PotionRewardLabel = "药水";
-    private const string ChoiceLabelPrefix = "可选卡牌";
-    private const string BundleLabelPrefix = "卡牌包";
-    private const string LargeCapsuleLabel = "新增卡牌";
+    private const string CardRewardLabel = "\u5361\u724c\u5956\u52b1";
+    private const string PotionRewardLabel = "\u836f\u6c34";
+    private const string ChoiceLabelPrefix = "\u53ef\u9009\u5361\u724c";
+    private const string BundleLabelPrefix = "\u5361\u724c\u5305";
+    private const string LargeCapsuleLabel = "\u65b0\u589e\u5361\u724c";
+    private const string RelicRewardLabel = "\u9057\u7269\u5956\u52b1";
+    private const string CurseRewardLabel = "\u8bc5\u5492";
+    private const string UpgradeLabel = "\u5347\u7ea7";
+    private const string PotionSlotLabel = "\u836f\u6c34\u680f";
+    private const string EffectLabel = "\u6548\u679c";
+    private const string AddedCardLabel = "\u6dfb\u52a0\u5361\u724c";
+    private const string TransformCardLabel = "\u53d8\u6362\u5361\u724c";
+    private const string AddedCurseLabel = "\u6dfb\u52a0\u8bc5\u5492";
+    private const string InjuryCardId = "INJURY";
     private const string ClawCardId = "CLAW";
     private const int ScarcityAscensionLevel = 7;
+
+    private static readonly string[] NeowsBonesRelicPool =
+    [
+        NeowOptionIds.CursedPearl,
+        NeowOptionIds.HeftyTablet,
+        NeowOptionIds.LargeCapsule,
+        NeowOptionIds.LeafyPoultice,
+        NeowOptionIds.PrecariousShears,
+        NeowOptionIds.SilverCrucible,
+        NeowOptionIds.NeowsBones,
+        NeowOptionIds.ArcaneScroll,
+        NeowOptionIds.BoomingConch,
+        NeowOptionIds.GoldenPearl,
+        NeowOptionIds.LeadPaperweight,
+        NeowOptionIds.LostCoffer,
+        NeowOptionIds.NeowsTorment,
+        NeowOptionIds.NewLeaf,
+        NeowOptionIds.PreciseScissors,
+        NeowOptionIds.PhialHolster,
+        NeowOptionIds.WingedBoots,
+        NeowOptionIds.MassiveScroll,
+        NeowOptionIds.LavaRock,
+        NeowOptionIds.NeowsTalisman,
+        NeowOptionIds.NutritiousOyster,
+        NeowOptionIds.Pomander,
+        NeowOptionIds.ScrollBoxes,
+        NeowOptionIds.SmallCapsule,
+        NeowOptionIds.StoneHumidifier
+    ];
+
+    private static readonly string[] ModifierGeneratedCurseIds =
+    [
+        "CLUMSY",
+        "DEBT",
+        "DECAY",
+        "DOUBT",
+        "GUILTY",
+        InjuryCardId,
+        "NORMALITY",
+        "REGRET",
+        "SHAME",
+        "WRITHE"
+    ];
 
     private readonly IReadOnlyDictionary<string, CardInfo> _cardLookup;
     private readonly IReadOnlyDictionary<string, NeowCardMetadata> _cardMetadata;
@@ -36,6 +89,24 @@ internal sealed class NeowRewardPreviewer
     private readonly IReadOnlyDictionary<CharacterId, IReadOnlyList<string>> _potionPools;
     private readonly IReadOnlyList<string> _sharedPotionPool;
     private readonly IReadOnlyDictionary<string, NeowPotionMetadata> _potionMetadata;
+    private readonly IReadOnlyDictionary<string, NeowRelicMetadata> _relicMetadata;
+    private readonly IReadOnlyDictionary<string, IReadOnlyList<string>> _relicPools;
+    private readonly IReadOnlyDictionary<string, string> _relicNames;
+
+    private sealed class NeowsBonesPreviewState
+    {
+        public required NeowGenerationContext Context { get; init; }
+
+        public required GameRng RewardsRng { get; init; }
+
+        public required GameRng TransformationsRng { get; init; }
+
+        public required GameRng CombatPotionGenerationRng { get; init; }
+
+        public required GameRng NicheRng { get; init; }
+
+        public required NeowRelicGrabBag RelicBag { get; init; }
+    }
 
     public NeowRewardPreviewer(NeowOptionDataset dataset)
     {
@@ -47,6 +118,12 @@ internal sealed class NeowRewardPreviewer
         _potionPools = dataset.CharacterPotionPoolMap;
         _sharedPotionPool = dataset.SharedPotionPoolList;
         _potionMetadata = dataset.PotionMetadataMap;
+        _relicMetadata = dataset.RelicMetadataMap;
+        _relicPools = dataset.RelicPoolMap;
+        _relicNames = dataset.OptionMap.Values
+            .Where(option => !string.IsNullOrWhiteSpace(option.RelicId) && !string.IsNullOrWhiteSpace(option.Title))
+            .GroupBy(option => option.RelicId, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(group => group.Key, group => group.First().Title!, StringComparer.OrdinalIgnoreCase);
     }
 
     public IReadOnlyList<RewardDetail> Build(string relicId, NeowGenerationContext context)
@@ -60,17 +137,26 @@ internal sealed class NeowRewardPreviewer
 
         if (string.Equals(relicId, NeowOptionIds.NeowsTorment, StringComparison.OrdinalIgnoreCase))
         {
-            return new[] { CreateCardDetail("添加卡牌", "NEOWS_FURY") };
+            return new[] { CreateCardDetail(AddedCardLabel, "NEOWS_FURY") };
         }
 
         if (string.Equals(relicId, NeowOptionIds.CursedPearl, StringComparison.OrdinalIgnoreCase))
         {
-            return new[] { CreateCardDetail("添加诅咒", "GREED") };
+            return new[] { CreateCardDetail(AddedCurseLabel, "GREED") };
+        }
+
+        if (string.Equals(relicId, NeowOptionIds.HeftyTablet, StringComparison.OrdinalIgnoreCase))
+        {
+            var heftyTablet = BuildHeftyTabletPreview(context);
+            if (heftyTablet.Count > 0)
+            {
+                return heftyTablet;
+            }
         }
 
         if (string.Equals(relicId, NeowOptionIds.LargeCapsule, StringComparison.OrdinalIgnoreCase))
         {
-            var largeCapsule = BuildLargeCapsulePreview(character);
+            var largeCapsule = BuildLargeCapsulePreview(context, character);
             if (largeCapsule.Count > 0)
             {
                 return largeCapsule;
@@ -122,6 +208,47 @@ internal sealed class NeowRewardPreviewer
             }
         }
 
+        if (string.Equals(relicId, NeowOptionIds.PhialHolster, StringComparison.OrdinalIgnoreCase))
+        {
+            var phialHolster = BuildPhialHolsterPreview(context);
+            if (phialHolster.Count > 0)
+            {
+                return phialHolster;
+            }
+        }
+
+        if (string.Equals(relicId, NeowOptionIds.NeowsTalisman, StringComparison.OrdinalIgnoreCase))
+        {
+            var talisman = BuildNeowsTalismanPreview(character);
+            if (talisman.Count > 0)
+            {
+                return talisman;
+            }
+        }
+
+        if (string.Equals(relicId, NeowOptionIds.Pomander, StringComparison.OrdinalIgnoreCase))
+        {
+            return BuildPomanderPreview();
+        }
+
+        if (string.Equals(relicId, NeowOptionIds.SmallCapsule, StringComparison.OrdinalIgnoreCase))
+        {
+            var smallCapsule = BuildSmallCapsulePreview(context);
+            if (smallCapsule.Count > 0)
+            {
+                return smallCapsule;
+            }
+        }
+
+        if (string.Equals(relicId, NeowOptionIds.NeowsBones, StringComparison.OrdinalIgnoreCase))
+        {
+            var bones = BuildNeowsBonesPreview(context);
+            if (bones.Count > 0)
+            {
+                return bones;
+            }
+        }
+
         if (string.Equals(relicId, NeowOptionIds.LeafyPoultice, StringComparison.OrdinalIgnoreCase))
         {
             var leafyDetails = BuildLeafyPreview(context, character);
@@ -142,7 +269,49 @@ internal sealed class NeowRewardPreviewer
         return new RewardDetail(RewardDetailType.Card, label, name, cardId);
     }
 
+    private RewardDetail CreateUpgradedCardDetail(string label, string cardId)
+    {
+        var name = _cardLookup.TryGetValue(cardId, out var info)
+            ? info.Name
+            : cardId;
+        return new RewardDetail(RewardDetailType.Card, label, $"{name}+", cardId);
+    }
+
+    private RewardDetail CreateRelicDetail(string label, string relicId)
+    {
+        return new RewardDetail(RewardDetailType.Relic, label, ResolveRelicName(relicId), relicId);
+    }
+
+    private RewardDetail CreateTextDetail(string label, string value)
+    {
+        return new RewardDetail(RewardDetailType.Text, label, value);
+    }
+
+    private string ResolveRelicName(string relicId)
+    {
+        if (_relicNames.TryGetValue(relicId, out var name) && !string.IsNullOrWhiteSpace(name))
+        {
+            return name;
+        }
+
+        var words = relicId
+            .Split('_', StringSplitOptions.RemoveEmptyEntries)
+            .Select(word => CultureInfo.InvariantCulture.TextInfo.ToTitleCase(word.ToLowerInvariant()));
+        var displayName = string.Join(" ", words);
+        return string.IsNullOrWhiteSpace(displayName) ? relicId : displayName;
+    }
+
     private IReadOnlyList<RewardDetail> BuildLeafyPreview(NeowGenerationContext context, CharacterId character)
+    {
+        var rngSeed = unchecked(context.RunSeed + DefaultPlayerNetId);
+        var rng = new GameRng(rngSeed, TransformationsSalt);
+        return BuildLeafyPreview(context, character, rng);
+    }
+
+    private IReadOnlyList<RewardDetail> BuildLeafyPreview(
+        NeowGenerationContext context,
+        CharacterId character,
+        GameRng rng)
     {
         if (!BasicCardMap.TryGetValue(character, out var basics))
         {
@@ -153,13 +322,10 @@ internal sealed class NeowRewardPreviewer
         {
             return CreateLeafyFallback(basics);
         }
-
-        var rngSeed = unchecked(context.RunSeed + DefaultPlayerNetId);
-        var rng = new GameRng(rngSeed, TransformationsSalt);
         var results = new List<RewardDetail>(2);
 
-        AddTransformedDetail(results, "变换卡牌", basics.StrikeId, pool, context.PlayerCount, rng);
-        AddTransformedDetail(results, "变换卡牌", basics.DefendId, pool, context.PlayerCount, rng);
+        AddTransformedDetail(results, TransformCardLabel, basics.StrikeId, pool, context.PlayerCount, rng);
+        AddTransformedDetail(results, TransformCardLabel, basics.DefendId, pool, context.PlayerCount, rng);
 
         return results.Count > 0 ? results : CreateLeafyFallback(basics);
     }
@@ -232,8 +398,7 @@ internal sealed class NeowRewardPreviewer
             return false;
         }
 
-        var index = rng.NextInt(candidates.Count);
-        transformedId = candidates[index];
+        transformedId = candidates[rng.NextInt(candidates.Count)];
         return true;
     }
 
@@ -250,33 +415,85 @@ internal sealed class NeowRewardPreviewer
     {
         return new[]
         {
-            CreateCardDetail("变换卡牌", basics.StrikeId),
-            CreateCardDetail("变换卡牌", basics.DefendId)
+            CreateCardDetail(TransformCardLabel, basics.StrikeId),
+            CreateCardDetail(TransformCardLabel, basics.DefendId)
         };
     }
 
-    private IReadOnlyList<RewardDetail> BuildLargeCapsulePreview(CharacterId character)
+    private IReadOnlyList<RewardDetail> BuildHeftyTabletPreview(NeowGenerationContext context)
+    {
+        var rng = CreatePlayerRewardsRng(context);
+        return BuildHeftyTabletPreview(context, rng);
+    }
+
+    private IReadOnlyList<RewardDetail> BuildHeftyTabletPreview(NeowGenerationContext context, GameRng rng)
+    {
+        if (!_cardPools.TryGetValue(context.Character, out var pool) || pool.Count == 0)
+        {
+            return new[] { CreateCardDetail(CurseRewardLabel, InjuryCardId) };
+        }
+        var cards = RollCards(
+            rng,
+            pool,
+            CardRarityOddsType.Uniform,
+            3,
+            context.PlayerCount,
+            scarcityActive: false,
+            metadata => metadata.ParsedRarity == CardRarity.Rare,
+            simulateUpgradeRoll: false);
+
+        var details = BuildCardDetails(cards, ChoiceLabelPrefix, includeIndex: true).ToList();
+        details.Add(CreateCardDetail(CurseRewardLabel, InjuryCardId));
+        return details;
+    }
+
+    private IReadOnlyList<RewardDetail> BuildLargeCapsulePreview(NeowGenerationContext context, CharacterId character)
+    {
+        var grabBag = CreateRelicGrabBag(context);
+        var rng = CreatePlayerRewardsRng(context);
+        return BuildLargeCapsulePreview(context, character, grabBag, rng);
+    }
+
+    private IReadOnlyList<RewardDetail> BuildLargeCapsulePreview(
+        NeowGenerationContext context,
+        CharacterId character,
+        NeowRelicGrabBag grabBag,
+        GameRng rng)
     {
         if (!BasicCardMap.TryGetValue(character, out var basics))
         {
             return Array.Empty<RewardDetail>();
         }
 
-        return new[]
+        var details = new List<RewardDetail>(4);
+
+        for (var i = 0; i < 2; i++)
         {
-            CreateCardDetail(LargeCapsuleLabel, basics.StrikeId),
-            CreateCardDetail(LargeCapsuleLabel, basics.DefendId)
-        };
+            var rarity = RollRelicRarity(rng);
+            var relicId = grabBag.PullFromFront(rarity);
+            if (!string.IsNullOrWhiteSpace(relicId))
+            {
+                details.Add(CreateRelicDetail(RelicRewardLabel, relicId));
+            }
+        }
+
+        details.Add(CreateCardDetail(LargeCapsuleLabel, basics.StrikeId));
+        details.Add(CreateCardDetail(LargeCapsuleLabel, basics.DefendId));
+        return details;
     }
 
     private IReadOnlyList<RewardDetail> BuildArcaneScrollPreview(NeowGenerationContext context)
+    {
+        var rng = CreatePlayerRewardsRng(context);
+        return BuildArcaneScrollPreview(context, rng);
+    }
+
+    private IReadOnlyList<RewardDetail> BuildArcaneScrollPreview(NeowGenerationContext context, GameRng rng)
     {
         if (!_cardPools.TryGetValue(context.Character, out var pool) || pool.Count == 0)
         {
             return Array.Empty<RewardDetail>();
         }
-
-        var rng = CreatePlayerRewardsRng(context);
         var scarcityActive = IsScarcityActive(context.AscensionLevel);
         var cards = RollCards(
             rng,
@@ -293,12 +510,16 @@ internal sealed class NeowRewardPreviewer
 
     private IReadOnlyList<RewardDetail> BuildLeadPaperweightPreview(NeowGenerationContext context)
     {
+        var rng = CreatePlayerRewardsRng(context);
+        return BuildLeadPaperweightPreview(context, rng);
+    }
+
+    private IReadOnlyList<RewardDetail> BuildLeadPaperweightPreview(NeowGenerationContext context, GameRng rng)
+    {
         if (_colorlessCardPool.Count == 0)
         {
             return Array.Empty<RewardDetail>();
         }
-
-        var rng = CreatePlayerRewardsRng(context);
         var scarcityActive = IsScarcityActive(context.AscensionLevel);
         var cards = RollCards(
             rng,
@@ -312,6 +533,12 @@ internal sealed class NeowRewardPreviewer
     }
 
     private IReadOnlyList<RewardDetail> BuildMassiveScrollPreview(NeowGenerationContext context)
+    {
+        var rng = CreatePlayerRewardsRng(context);
+        return BuildMassiveScrollPreview(context, rng);
+    }
+
+    private IReadOnlyList<RewardDetail> BuildMassiveScrollPreview(NeowGenerationContext context, GameRng rng)
     {
         var mergedPool = new HashSet<string>(_colorlessCardPool, StringComparer.OrdinalIgnoreCase);
         if (_cardPools.TryGetValue(context.Character, out var characterPool))
@@ -327,7 +554,6 @@ internal sealed class NeowRewardPreviewer
             return Array.Empty<RewardDetail>();
         }
 
-        var rng = CreatePlayerRewardsRng(context);
         var scarcityActive = IsScarcityActive(context.AscensionLevel);
         var cards = RollCards(
             rng,
@@ -343,12 +569,16 @@ internal sealed class NeowRewardPreviewer
 
     private IReadOnlyList<RewardDetail> BuildLostCofferPreview(NeowGenerationContext context)
     {
+        var rng = CreatePlayerRewardsRng(context);
+        return BuildLostCofferPreview(context, rng);
+    }
+
+    private IReadOnlyList<RewardDetail> BuildLostCofferPreview(NeowGenerationContext context, GameRng rng)
+    {
         if (!_cardPools.TryGetValue(context.Character, out var pool) || pool.Count == 0)
         {
             return Array.Empty<RewardDetail>();
         }
-
-        var rng = CreatePlayerRewardsRng(context);
         var details = new List<RewardDetail>();
 
         var scarcityActive = IsScarcityActive(context.AscensionLevel);
@@ -373,6 +603,11 @@ internal sealed class NeowRewardPreviewer
     private IReadOnlyList<RewardDetail> BuildScrollBoxesPreview(NeowGenerationContext context)
     {
         var rng = CreatePlayerRewardsRng(context);
+        return BuildScrollBoxesPreview(context, rng);
+    }
+
+    private IReadOnlyList<RewardDetail> BuildScrollBoxesPreview(NeowGenerationContext context, GameRng rng)
+    {
         var bundles = GenerateScrollBoxBundles(rng, context.Character, context.PlayerCount);
         if (bundles.Count == 0)
         {
@@ -392,10 +627,215 @@ internal sealed class NeowRewardPreviewer
         return details;
     }
 
+    private IReadOnlyList<RewardDetail> BuildPhialHolsterPreview(NeowGenerationContext context)
+    {
+        var rng = CreateRunRng(context, "combat_potion_generation");
+        return BuildPhialHolsterPreview(context, rng);
+    }
+
+    private IReadOnlyList<RewardDetail> BuildPhialHolsterPreview(NeowGenerationContext context, GameRng rng)
+    {
+        var details = new List<RewardDetail>
+        {
+            CreateTextDetail(PotionSlotLabel, "+1")
+        };
+
+        foreach (var potionId in RollPotions(rng, context.Character, 2))
+        {
+            details.Add(CreatePotionDetail(PotionRewardLabel, potionId));
+        }
+
+        return details;
+    }
+
+    private IReadOnlyList<RewardDetail> BuildNeowsTalismanPreview(CharacterId character)
+    {
+        if (!BasicCardMap.TryGetValue(character, out var basics))
+        {
+            return Array.Empty<RewardDetail>();
+        }
+
+        return new[]
+        {
+            CreateUpgradedCardDetail(UpgradeLabel, basics.StrikeId),
+            CreateUpgradedCardDetail(UpgradeLabel, basics.DefendId)
+        };
+    }
+
+    private IReadOnlyList<RewardDetail> BuildPomanderPreview()
+    {
+        return new[]
+        {
+            CreateTextDetail(EffectLabel, "\u4ece\u724c\u7ec4\u4e2d\u9009\u62e9 1 \u5f20\u53ef\u5347\u7ea7\u7684\u5361\u724c")
+        };
+    }
+
+    private IReadOnlyList<RewardDetail> BuildSmallCapsulePreview(NeowGenerationContext context)
+    {
+        var rng = CreatePlayerRewardsRng(context);
+        var grabBag = CreateRelicGrabBag(context);
+        return BuildSmallCapsulePreview(context, grabBag, rng);
+    }
+
+    private IReadOnlyList<RewardDetail> BuildSmallCapsulePreview(
+        NeowGenerationContext context,
+        NeowRelicGrabBag grabBag,
+        GameRng rng)
+    {
+        var relicId = grabBag.PullFromFront(RollRelicRarity(rng));
+        if (string.IsNullOrWhiteSpace(relicId))
+        {
+            return Array.Empty<RewardDetail>();
+        }
+
+        return new[] { CreateRelicDetail(RelicRewardLabel, relicId) };
+    }
+
+    private IReadOnlyList<RewardDetail> BuildNeowsBonesPreview(NeowGenerationContext context)
+    {
+        var state = CreateNeowsBonesPreviewState(context);
+        var candidates = NeowsBonesRelicPool
+            .Where(relicId => !string.Equals(relicId, NeowOptionIds.NeowsBones, StringComparison.OrdinalIgnoreCase))
+            .Where(relicId => IsNeowsBonesRelicAllowed(relicId, context))
+            .ToList();
+
+        if (candidates.Count == 0)
+        {
+            return Array.Empty<RewardDetail>();
+        }
+
+        state.RewardsRng.Shuffle(candidates);
+
+        var details = new List<RewardDetail>(8);
+        foreach (var relicId in candidates.Take(2))
+        {
+            details.Add(CreateRelicDetail(RelicRewardLabel, relicId));
+            AppendNeowsBonesChildDetails(details, relicId, state);
+        }
+
+        var curseId = RollModifierGeneratedCurse(state.NicheRng);
+        if (!string.IsNullOrWhiteSpace(curseId))
+        {
+            details.Add(CreateCardDetail(CurseRewardLabel, curseId));
+        }
+
+        return details;
+    }
+
+    private NeowsBonesPreviewState CreateNeowsBonesPreviewState(NeowGenerationContext context)
+    {
+        return new NeowsBonesPreviewState
+        {
+            Context = context,
+            RewardsRng = CreatePlayerRewardsRng(context),
+            TransformationsRng = new GameRng(unchecked(context.RunSeed + DefaultPlayerNetId), TransformationsSalt),
+            CombatPotionGenerationRng = CreateRunRng(context, "combat_potion_generation"),
+            NicheRng = CreateRunRng(context, "niche"),
+            RelicBag = CreateRelicGrabBag(context)
+        };
+    }
+
+    private void AppendNeowsBonesChildDetails(
+        List<RewardDetail> details,
+        string relicId,
+        NeowsBonesPreviewState state)
+    {
+        switch (relicId.ToUpperInvariant())
+        {
+            case NeowOptionIds.NeowsTorment:
+                details.Add(CreateCardDetail(AddedCardLabel, "NEOWS_FURY"));
+                return;
+
+            case NeowOptionIds.CursedPearl:
+                details.Add(CreateCardDetail(AddedCurseLabel, "GREED"));
+                return;
+
+            case NeowOptionIds.HeftyTablet:
+                details.AddRange(BuildHeftyTabletPreview(state.Context, state.RewardsRng));
+                return;
+
+            case NeowOptionIds.LargeCapsule:
+                details.AddRange(BuildLargeCapsulePreview(state.Context, state.Context.Character, state.RelicBag, state.RewardsRng));
+                return;
+
+            case NeowOptionIds.ArcaneScroll:
+                details.AddRange(BuildArcaneScrollPreview(state.Context, state.RewardsRng));
+                return;
+
+            case NeowOptionIds.LeadPaperweight:
+                details.AddRange(BuildLeadPaperweightPreview(state.Context, state.RewardsRng));
+                return;
+
+            case NeowOptionIds.MassiveScroll:
+                details.AddRange(BuildMassiveScrollPreview(state.Context, state.RewardsRng));
+                return;
+
+            case NeowOptionIds.LostCoffer:
+                details.AddRange(BuildLostCofferPreview(state.Context, state.RewardsRng));
+                return;
+
+            case NeowOptionIds.ScrollBoxes:
+                details.AddRange(BuildScrollBoxesPreview(state.Context, state.RewardsRng));
+                return;
+
+            case NeowOptionIds.PhialHolster:
+                details.AddRange(BuildPhialHolsterPreview(state.Context, state.CombatPotionGenerationRng));
+                return;
+
+            case NeowOptionIds.NeowsTalisman:
+                details.AddRange(BuildNeowsTalismanPreview(state.Context.Character));
+                return;
+
+            case NeowOptionIds.Pomander:
+                details.AddRange(BuildPomanderPreview());
+                return;
+
+            case NeowOptionIds.SmallCapsule:
+                details.AddRange(BuildSmallCapsulePreview(state.Context, state.RelicBag, state.RewardsRng));
+                return;
+
+            case NeowOptionIds.LeafyPoultice:
+                details.AddRange(BuildLeafyPreview(state.Context, state.Context.Character, state.TransformationsRng));
+                return;
+        }
+    }
+
     private GameRng CreatePlayerRewardsRng(NeowGenerationContext context)
     {
         var seed = unchecked(context.RunSeed + DefaultPlayerNetId);
         return new GameRng(seed, PlayerRewardsSalt);
+    }
+
+    private static GameRng CreateRunRng(NeowGenerationContext context, string name)
+    {
+        return new RunRngSet(context.RunSeed).Get(name);
+    }
+
+    private NeowRelicGrabBag CreateRelicGrabBag(NeowGenerationContext context)
+    {
+        var rng = CreateRunRng(context, "up_front");
+        if (_relicPools.TryGetValue("Shared", out var sharedSequence))
+        {
+            ShuffleRelicBuckets(BuildRelicBuckets(sharedSequence), rng);
+        }
+
+        rng.FastForward(rng.Counter + 1);
+
+        Dictionary<RelicRarity, List<string>>? playerBuckets = null;
+        var characterKey = context.Character.ToString();
+        var shared = _relicPools.TryGetValue("Shared", out sharedSequence) ? sharedSequence : Array.Empty<string>();
+        var character = _relicPools.TryGetValue(characterKey, out var characterSequence) ? characterSequence : Array.Empty<string>();
+
+        for (var i = 0; i < Math.Max(1, context.PlayerCount); i++)
+        {
+            var combined = new List<string>(shared.Count + character.Count);
+            combined.AddRange(shared);
+            combined.AddRange(character);
+            playerBuckets = BuildRelicBuckets(combined);
+            ShuffleRelicBuckets(playerBuckets, rng);
+        }
+
+        return new NeowRelicGrabBag(playerBuckets ?? new Dictionary<RelicRarity, List<string>>());
     }
 
     private IReadOnlyList<string> RollCards(
@@ -439,7 +879,7 @@ internal sealed class NeowRewardPreviewer
 
         for (var i = 0; i < count; i++)
         {
-            var available = candidates.Where(c => !used.Contains(c.Id)).ToList();
+            var available = candidates.Where(candidate => !used.Contains(candidate.Id)).ToList();
             if (available.Count == 0)
             {
                 break;
@@ -469,7 +909,7 @@ internal sealed class NeowRewardPreviewer
     private CardCandidate? PickUniformCard(GameRng rng, List<CardCandidate> candidates)
     {
         var filtered = candidates
-            .Where(c => c.Metadata.ParsedRarity != CardRarity.Basic && c.Metadata.ParsedRarity != CardRarity.Ancient)
+            .Where(candidate => candidate.Metadata.ParsedRarity != CardRarity.Basic && candidate.Metadata.ParsedRarity != CardRarity.Ancient)
             .ToList();
         if (filtered.Count == 0)
         {
@@ -481,15 +921,14 @@ internal sealed class NeowRewardPreviewer
             return null;
         }
 
-        var index = rng.NextInt(filtered.Count);
-        return filtered[index];
+        return filtered[rng.NextInt(filtered.Count)];
     }
 
     private CardCandidate? PickWeightedCard(GameRng rng, List<CardCandidate> candidates, CardRarityOddsType oddsType, bool scarcityActive)
     {
         var allowed = candidates
-            .Select(c => c.Metadata.ParsedRarity)
-            .Where(r => r == CardRarity.Common || r == CardRarity.Uncommon || r == CardRarity.Rare)
+            .Select(candidate => candidate.Metadata.ParsedRarity)
+            .Where(rarity => rarity == CardRarity.Common || rarity == CardRarity.Uncommon || rarity == CardRarity.Rare)
             .Distinct()
             .OrderBy(GetRarityRank)
             .ToList();
@@ -511,7 +950,7 @@ internal sealed class NeowRewardPreviewer
             rarity = allowed.First();
         }
 
-        var pool = candidates.Where(c => c.Metadata.ParsedRarity == rarity).ToList();
+        var pool = candidates.Where(candidate => candidate.Metadata.ParsedRarity == rarity).ToList();
         if (pool.Count == 0)
         {
             pool = candidates;
@@ -522,11 +961,10 @@ internal sealed class NeowRewardPreviewer
             return null;
         }
 
-        var index = rng.NextInt(pool.Count);
-        return pool[index];
+        return pool[rng.NextInt(pool.Count)];
     }
 
-    private static CardRarity RollCardRarity(GameRng rng, CardRarityOddsType oddsType, bool scarcityActive)
+    internal static CardRarity RollCardRarity(GameRng rng, CardRarityOddsType oddsType, bool scarcityActive)
     {
         var (commonOdds, uncommonOdds, rareOdds) = GetRarityOdds(oddsType, scarcityActive);
         var roll = rng.NextDouble();
@@ -543,7 +981,7 @@ internal sealed class NeowRewardPreviewer
         return CardRarity.Common;
     }
 
-    private static (double Common, double Uncommon, double Rare) GetRarityOdds(CardRarityOddsType oddsType, bool scarcityActive)
+    internal static (double Common, double Uncommon, double Rare) GetRarityOdds(CardRarityOddsType oddsType, bool scarcityActive)
     {
         switch (oddsType)
         {
@@ -568,6 +1006,22 @@ internal sealed class NeowRewardPreviewer
         }
     }
 
+    internal static RelicRarity RollRelicRarity(GameRng rng)
+    {
+        var roll = rng.NextFloat();
+        if (roll < 0.5f)
+        {
+            return RelicRarity.Common;
+        }
+
+        if (roll < 0.83f)
+        {
+            return RelicRarity.Uncommon;
+        }
+
+        return RelicRarity.Rare;
+    }
+
     private static CardRarity GetNextHighestRarity(CardRarity rarity) =>
         rarity switch
         {
@@ -586,6 +1040,42 @@ internal sealed class NeowRewardPreviewer
             _ => 3
         };
 
+    private Dictionary<RelicRarity, List<string>> BuildRelicBuckets(IEnumerable<string> relicIds)
+    {
+        var result = new Dictionary<RelicRarity, List<string>>();
+        foreach (var relicId in relicIds)
+        {
+            if (!_relicMetadata.TryGetValue(relicId, out var metadata))
+            {
+                continue;
+            }
+
+            var rarity = metadata.ParsedRarity;
+            if (rarity is not (RelicRarity.Common or RelicRarity.Uncommon or RelicRarity.Rare or RelicRarity.Shop))
+            {
+                continue;
+            }
+
+            if (!result.TryGetValue(rarity, out var list))
+            {
+                list = new List<string>();
+                result[rarity] = list;
+            }
+
+            list.Add(relicId);
+        }
+
+        return result;
+    }
+
+    private static void ShuffleRelicBuckets(Dictionary<RelicRarity, List<string>> buckets, GameRng rng)
+    {
+        foreach (var list in buckets.Values)
+        {
+            rng.Shuffle(list);
+        }
+    }
+
     private static bool IsCardAllowedForPlayer(NeowCardMetadata metadata, int playerCount)
     {
         if (playerCount <= 1 && metadata.ParsedConstraint == CardMultiplayerConstraint.MultiplayerOnly)
@@ -603,10 +1093,6 @@ internal sealed class NeowRewardPreviewer
 
     private static void SimulateUpgradeRoll(NeowCardMetadata metadata, GameRng rng)
     {
-        // The actual game always consumes one reward-RNG roll to determine whether the
-        // generated card should be upgraded (unless CardCreationFlags.NoUpgradeRoll is
-        // set). We do not currently track per-card upgrade eligibility, but consuming
-        // one value keeps the RNG stream aligned with the base game.
         rng.NextDouble();
     }
 
@@ -629,6 +1115,11 @@ internal sealed class NeowRewardPreviewer
 
     private string? RollPotion(GameRng rng, CharacterId character)
     {
+        return RollPotions(rng, character, 1).FirstOrDefault();
+    }
+
+    private IReadOnlyList<string> RollPotions(GameRng rng, CharacterId character, int count)
+    {
         var pool = new List<string>();
         if (_potionPools.TryGetValue(character, out var characterPotions))
         {
@@ -641,23 +1132,35 @@ internal sealed class NeowRewardPreviewer
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .Select(id => (_potionMetadata.TryGetValue(id, out var metadata), id, metadata))
             .Where(tuple => tuple.metadata != null)
-            .Select(tuple => new { tuple.id, tuple.metadata })
+            .Select(tuple => new PotionCandidate(tuple.id, tuple.metadata!))
             .ToList();
 
-        if (candidates.Count == 0)
+        if (candidates.Count == 0 || count <= 0)
         {
-            return null;
+            return Array.Empty<string>();
         }
 
-        var rarity = RollPotionRarity(rng);
-        var options = candidates.Where(c => c.metadata!.ParsedRarity == rarity).ToList();
-        if (options.Count == 0)
+        var results = new List<string>(count);
+        for (var i = 0; i < count; i++)
         {
-            options = candidates;
+            if (candidates.Count == 0)
+            {
+                break;
+            }
+
+            var rarity = RollPotionRarity(rng);
+            var options = candidates.Where(candidate => candidate.Metadata.ParsedRarity == rarity).ToList();
+            if (options.Count == 0)
+            {
+                options = candidates;
+            }
+
+            var pick = options[rng.NextInt(options.Count)];
+            results.Add(pick.Id);
+            candidates.RemoveAll(candidate => string.Equals(candidate.Id, pick.Id, StringComparison.OrdinalIgnoreCase));
         }
 
-        var pick = options[rng.NextInt(options.Count)];
-        return pick.id;
+        return results;
     }
 
     private static PotionRarity RollPotionRarity(GameRng rng)
@@ -680,6 +1183,35 @@ internal sealed class NeowRewardPreviewer
     {
         var name = _potionLookup.TryGetValue(potionId, out var info) ? info.Name : potionId;
         return new RewardDetail(RewardDetailType.Potion, label, name, potionId);
+    }
+
+    private static bool IsNeowsBonesRelicAllowed(string relicId, NeowGenerationContext context)
+    {
+        if (string.Equals(relicId, NeowOptionIds.MassiveScroll, StringComparison.OrdinalIgnoreCase))
+        {
+            return context.PlayerCount > 1;
+        }
+
+        if (string.Equals(relicId, NeowOptionIds.SilverCrucible, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(relicId, NeowOptionIds.WingedBoots, StringComparison.OrdinalIgnoreCase))
+        {
+            return context.PlayerCount <= 1;
+        }
+
+        return true;
+    }
+
+    private string? RollModifierGeneratedCurse(GameRng rng)
+    {
+        var options = ModifierGeneratedCurseIds
+            .Where(_cardLookup.ContainsKey)
+            .ToList();
+        if (options.Count == 0)
+        {
+            return null;
+        }
+
+        return options[rng.NextInt(options.Count)];
     }
 
     private IReadOnlyList<IReadOnlyList<string>> GenerateScrollBoxBundles(GameRng rng, CharacterId character, int playerCount)
@@ -730,7 +1262,7 @@ internal sealed class NeowRewardPreviewer
             }
 
             var picks = new List<string>();
-            for (var c = 0; c < 2; c++)
+            for (var commonIndex = 0; commonIndex < 2; commonIndex++)
             {
                 var availableCommons = commons.Where(id => !usedIds.Contains(id)).ToList();
                 if (availableCommons.Count == 0)
@@ -758,4 +1290,6 @@ internal sealed class NeowRewardPreviewer
     }
 
     private sealed record CardCandidate(string Id, NeowCardMetadata Metadata);
+
+    private sealed record PotionCandidate(string Id, NeowPotionMetadata Metadata);
 }

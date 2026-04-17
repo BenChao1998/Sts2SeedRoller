@@ -16,4 +16,8 @@ public sealed record SeedRunMatch
     public bool IsFinalMatch { get; init; }
 
     public Sts2RunPreview? Sts2Preview { get; init; }
+
+    public bool ShopFilterMatched { get; init; }
+
+    public ShopPreview? ShopPreview { get; init; }
 }

@@ -41,16 +41,40 @@ internal static class AncientDisplayCatalog
         public string? Description { get; init; }
     }
 
-    private static readonly IReadOnlyDictionary<string, AncientDisplayOption> AncientLookup;
-    private static readonly IReadOnlyDictionary<string, AncientRelicDisplayOption> RelicLookup;
+    private static readonly Dictionary<string, (IReadOnlyDictionary<string, AncientDisplayOption> Ancients, IReadOnlyDictionary<string, AncientRelicDisplayOption> Relics, IReadOnlyList<AncientDisplayOption> Act2, IReadOnlyList<AncientDisplayOption> Act3)> VersionCache = new();
 
-    public static IReadOnlyList<AncientDisplayOption> AllowedForAct2 { get; }
+    public static IReadOnlyList<AncientDisplayOption> AllowedForAct2 { get; private set; } = Array.Empty<AncientDisplayOption>();
 
-    public static IReadOnlyList<AncientDisplayOption> AllowedForAct3 { get; }
+    public static IReadOnlyList<AncientDisplayOption> AllowedForAct3 { get; private set; } = Array.Empty<AncientDisplayOption>();
 
     static AncientDisplayCatalog()
     {
-        var metadata = LoadOptionMetadata();
+        LoadForVersion(null);
+    }
+
+    /// <summary>
+    /// Reloads catalog data for the specified version (or default if null).
+    /// Thread-safe: uses double-checked locking on the cache.
+    /// </summary>
+    public static void ReloadForVersion(string? version)
+    {
+        LoadForVersion(version);
+    }
+
+    private static void LoadForVersion(string? version)
+    {
+        var cacheKey = version ?? "__default__";
+        lock (VersionCache)
+        {
+            if (VersionCache.TryGetValue(cacheKey, out var cached))
+            {
+                AllowedForAct2 = cached.Act2;
+                AllowedForAct3 = cached.Act3;
+                return;
+            }
+        }
+
+        var metadata = LoadOptionMetadata(version);
         var definitions = BuildDefinitions();
         var ancients = new Dictionary<string, AncientDisplayOption>(StringComparer.OrdinalIgnoreCase);
         var relics = new Dictionary<string, AncientRelicDisplayOption>(StringComparer.OrdinalIgnoreCase);
@@ -104,10 +128,30 @@ internal static class AncientDisplayCatalog
             }
         }
 
-        AncientLookup = ancients;
-        RelicLookup = relics;
-        AllowedForAct2 = act2.AsReadOnly();
-        AllowedForAct3 = act3.AsReadOnly();
+        var act2ReadOnly = act2.AsReadOnly();
+        var act3ReadOnly = act3.AsReadOnly();
+
+        lock (VersionCache)
+        {
+            VersionCache[cacheKey] = (ancients, relics, act2ReadOnly, act3ReadOnly);
+        }
+
+        AllowedForAct2 = act2ReadOnly;
+        AllowedForAct3 = act3ReadOnly;
+    }
+
+    private static IReadOnlyDictionary<string, AncientDisplayOption> GetAncientLookup()
+    {
+        if (VersionCache.TryGetValue("__default__", out var cached))
+            return cached.Ancients;
+        return new Dictionary<string, AncientDisplayOption>(StringComparer.OrdinalIgnoreCase);
+    }
+
+    private static IReadOnlyDictionary<string, AncientRelicDisplayOption> GetRelicLookup()
+    {
+        if (VersionCache.TryGetValue("__default__", out var cached))
+            return cached.Relics;
+        return new Dictionary<string, AncientRelicDisplayOption>(StringComparer.OrdinalIgnoreCase);
     }
 
     public static string GetLocalizedName(string? ancientId, string fallbackName)
@@ -118,7 +162,8 @@ internal static class AncientDisplayCatalog
         }
 
         var normalized = NormalizeAncientId(ancientId);
-        if (AncientLookup.TryGetValue(normalized, out var option) && !string.IsNullOrWhiteSpace(option.Name))
+        var lookup = GetAncientLookup();
+        if (lookup.TryGetValue(normalized, out var option) && !string.IsNullOrWhiteSpace(option.Name))
         {
             return option.Name;
         }
@@ -134,7 +179,8 @@ internal static class AncientDisplayCatalog
         }
 
         var normalized = NormalizeAncientId(ancientId);
-        if (AncientLookup.TryGetValue(normalized, out var option))
+        var lookup = GetAncientLookup();
+        if (lookup.TryGetValue(normalized, out var option))
         {
             return option.DisplayText;
         }
@@ -151,7 +197,8 @@ internal static class AncientDisplayCatalog
         }
 
         var normalized = NormalizeAncientId(ancientId);
-        if (AncientLookup.TryGetValue(normalized, out var option))
+        var lookup = GetAncientLookup();
+        if (lookup.TryGetValue(normalized, out var option))
         {
             return option.RelicOptions;
         }
@@ -167,7 +214,8 @@ internal static class AncientDisplayCatalog
         }
 
         var normalized = NormalizeOptionId(optionId);
-        if (RelicLookup.TryGetValue(normalized, out var option))
+        var lookup = GetRelicLookup();
+        if (lookup.TryGetValue(normalized, out var option))
         {
             return option;
         }
@@ -175,9 +223,18 @@ internal static class AncientDisplayCatalog
         return null;
     }
 
-    public static string ResolveOptionDataPath()
+    public static string ResolveOptionDataPath(string? version = null)
     {
-        var baseDirectory = Path.Combine(AppContext.BaseDirectory, "data", "ancients");
+        string baseDirectory;
+        if (!string.IsNullOrWhiteSpace(version))
+        {
+            baseDirectory = Path.Combine(AppContext.BaseDirectory, "data", version, "ancients");
+        }
+        else
+        {
+            baseDirectory = Path.Combine(AppContext.BaseDirectory, "data", "0.99.1", "ancients");
+        }
+
         var localized = Path.Combine(baseDirectory, "options.zhs.json");
         if (File.Exists(localized))
         {
@@ -220,10 +277,10 @@ internal static class AncientDisplayCatalog
         return new AncientRelicDisplayOption(normalized, normalized, string.Empty, normalized);
     }
 
-    private static IReadOnlyDictionary<string, AncientOptionMetadata> LoadOptionMetadata()
+    private static IReadOnlyDictionary<string, AncientOptionMetadata> LoadOptionMetadata(string? version)
     {
         var metadata = new Dictionary<string, AncientOptionMetadata>(StringComparer.OrdinalIgnoreCase);
-        var path = ResolveOptionDataPath();
+        var path = ResolveOptionDataPath(version);
 
         // First try loading from file
         if (File.Exists(path))

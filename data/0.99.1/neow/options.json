@@ -3300,2516 +3300,3019 @@
     {
       "id": "ABRASIVE",
       "rarity": "Rare",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "ACCELERANT",
       "rarity": "Rare",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "ACCURACY",
       "rarity": "Uncommon",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "ACROBATICS",
       "rarity": "Common",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "ADAPTIVE_STRIKE",
       "rarity": "Rare",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "ADRENALINE",
       "rarity": "Rare",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "AFTERIMAGE",
       "rarity": "Rare",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "AFTERLIFE",
       "rarity": "Common",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "AGGRESSION",
       "rarity": "Rare",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "ALCHEMIZE",
       "rarity": "Rare",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "ALIGNMENT",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "ALL_FOR_ONE",
       "rarity": "Rare",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "ANGER",
       "rarity": "Common",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "ANOINTED",
       "rarity": "Rare",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "ANTICIPATE",
       "rarity": "Common",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "ARMAMENTS",
       "rarity": "Common",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "ARSENAL",
       "rarity": "Rare",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "ASHEN_STRIKE",
       "rarity": "Uncommon",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "ASSASSINATE",
       "rarity": "Rare",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "ASTRAL_PULSE",
       "rarity": "Common",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "AUTOMATION",
       "rarity": "Uncommon",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "BACKFLIP",
       "rarity": "Common",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "BACKSTAB",
       "rarity": "Uncommon",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "BALL_LIGHTNING",
       "rarity": "Common",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "BANSHEES_CRY",
       "rarity": "Rare",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "BARRAGE",
       "rarity": "Common",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "BARRICADE",
       "rarity": "Rare",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "BASH",
       "rarity": "Basic",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "BATTLE_TRANCE",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "BEACON_OF_HOPE",
       "rarity": "Rare",
+      "type": "Power",
       "multiplayerConstraint": "MultiplayerOnly"
     },
     {
       "id": "BEAM_CELL",
       "rarity": "Common",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "BEAT_DOWN",
       "rarity": "Rare",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "BEAT_INTO_SHAPE",
       "rarity": "Rare",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "BEGONE",
       "rarity": "Common",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "BELIEVE_IN_YOU",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "MultiplayerOnly"
     },
     {
       "id": "BIASED_COGNITION",
       "rarity": "Ancient",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "BIG_BANG",
       "rarity": "Rare",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "BLACK_HOLE",
       "rarity": "Uncommon",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "BLADE_DANCE",
       "rarity": "Common",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "BLADE_OF_INK",
       "rarity": "Rare",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "BLIGHT_STRIKE",
       "rarity": "Common",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "BLOOD_WALL",
       "rarity": "Common",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "BLOODLETTING",
       "rarity": "Common",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "BLUDGEON",
       "rarity": "Uncommon",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "BLUR",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "BODY_SLAM",
       "rarity": "Common",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "BODYGUARD",
       "rarity": "Basic",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "BOLAS",
       "rarity": "Rare",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "BOMBARDMENT",
       "rarity": "Rare",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "BONE_SHARDS",
       "rarity": "Uncommon",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "BOOST_AWAY",
       "rarity": "Common",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "BOOT_SEQUENCE",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "BORROWED_TIME",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "BOUNCING_FLASK",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "BRAND",
       "rarity": "Rare",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "BREAK",
       "rarity": "Ancient",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "BREAKTHROUGH",
       "rarity": "Common",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "BUBBLE_BUBBLE",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "BUFFER",
       "rarity": "Rare",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "BULK_UP",
       "rarity": "Uncommon",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "BULLET_TIME",
       "rarity": "Rare",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "BULLY",
       "rarity": "Uncommon",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "BULWARK",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "BUNDLE_OF_JOY",
       "rarity": "Rare",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "BURNING_PACT",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "BURST",
       "rarity": "Rare",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "BURY",
       "rarity": "Uncommon",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "CALAMITY",
       "rarity": "Rare",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "CALCIFY",
       "rarity": "Uncommon",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "CALCULATED_GAMBLE",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "CALL_OF_THE_VOID",
       "rarity": "Rare",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "CAPACITOR",
       "rarity": "Uncommon",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "CAPTURE_SPIRIT",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "CASCADE",
       "rarity": "Rare",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "CATASTROPHE",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "CELESTIAL_MIGHT",
       "rarity": "Common",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "CHAOS",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "CHARGE",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "CHARGE_BATTERY",
       "rarity": "Common",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "CHILD_OF_THE_STARS",
       "rarity": "Uncommon",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "CHILL",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "CINDER",
       "rarity": "Common",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "CLAW",
       "rarity": "Common",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "CLEANSE",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "CLOAK_AND_DAGGER",
       "rarity": "Common",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "CLOAK_OF_STARS",
       "rarity": "Common",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "COLD_SNAP",
       "rarity": "Common",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "COLLISION_COURSE",
       "rarity": "Common",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "COLOSSUS",
       "rarity": "Rare",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "COMET",
       "rarity": "Rare",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "COMPACT",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "COMPILE_DRIVER",
       "rarity": "Common",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "CONFLAGRATION",
       "rarity": "Rare",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "CONQUEROR",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "CONSUMING_SHADOW",
       "rarity": "Rare",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "CONVERGENCE",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "COOLANT",
       "rarity": "Rare",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "COOLHEADED",
       "rarity": "Common",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "COORDINATE",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "MultiplayerOnly"
     },
     {
       "id": "CORROSIVE_WAVE",
       "rarity": "Rare",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "CORRUPTION",
       "rarity": "Ancient",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "COSMIC_INDIFFERENCE",
       "rarity": "Common",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "COUNTDOWN",
       "rarity": "Uncommon",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "CRASH_LANDING",
       "rarity": "Rare",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "CREATIVE_AI",
       "rarity": "Rare",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "CRESCENT_SPEAR",
       "rarity": "Common",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "CRIMSON_MANTLE",
       "rarity": "Rare",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "CRUELTY",
       "rarity": "Rare",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "CRUSH_UNDER",
       "rarity": "Common",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "DAGGER_SPRAY",
       "rarity": "Common",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "DAGGER_THROW",
       "rarity": "Common",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "DANSE_MACABRE",
       "rarity": "Uncommon",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "DARK_EMBRACE",
       "rarity": "Rare",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "DARK_SHACKLES",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "DARKNESS",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "DASH",
       "rarity": "Uncommon",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "DEADLY_POISON",
       "rarity": "Common",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "DEATH_MARCH",
       "rarity": "Uncommon",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "DEATHBRINGER",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "DEATHS_DOOR",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "DEBILITATE",
       "rarity": "Uncommon",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "DECISIONS_DECISIONS",
       "rarity": "Rare",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "DEFEND_DEFECT",
       "rarity": "Basic",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "DEFEND_IRONCLAD",
       "rarity": "Basic",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "DEFEND_NECROBINDER",
       "rarity": "Basic",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "DEFEND_REGENT",
       "rarity": "Basic",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "DEFEND_SILENT",
       "rarity": "Basic",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "DEFILE",
       "rarity": "Common",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "DEFLECT",
       "rarity": "Common",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "DEFRAGMENT",
       "rarity": "Rare",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "DEFY",
       "rarity": "Common",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "DELAY",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "DEMESNE",
       "rarity": "Rare",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "DEMON_FORM",
       "rarity": "Rare",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "DEMONIC_SHIELD",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "MultiplayerOnly"
     },
     {
       "id": "DEVASTATE",
       "rarity": "Uncommon",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "DEVOUR_LIFE",
       "rarity": "Rare",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "DIRGE",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "DISCOVERY",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "DISMANTLE",
       "rarity": "Uncommon",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "DODGE_AND_ROLL",
       "rarity": "Common",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "DOMINATE",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "DOUBLE_ENERGY",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "DRAIN_POWER",
       "rarity": "Common",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "DRAMATIC_ENTRANCE",
       "rarity": "Uncommon",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "DREDGE",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "DRUM_OF_BATTLE",
       "rarity": "Uncommon",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "DUALCAST",
       "rarity": "Basic",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "DYING_STAR",
       "rarity": "Rare",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "ECHO_FORM",
       "rarity": "Rare",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "ECHOING_SLASH",
       "rarity": "Rare",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "EIDOLON",
       "rarity": "Rare",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "END_OF_DAYS",
       "rarity": "Rare",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "ENERGY_SURGE",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "MultiplayerOnly"
     },
     {
       "id": "ENFEEBLING_TOUCH",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "ENTROPY",
       "rarity": "Rare",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "ENVENOM",
       "rarity": "Rare",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "EQUILIBRIUM",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "ERADICATE",
       "rarity": "Rare",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "ESCAPE_PLAN",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "ETERNAL_ARMOR",
       "rarity": "Rare",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "EVIL_EYE",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "EXPECT_A_FIGHT",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "EXPERTISE",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "EXPOSE",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "FALLING_STAR",
       "rarity": "Basic",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "FAN_OF_KNIVES",
       "rarity": "Rare",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "FASTEN",
       "rarity": "Uncommon",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "FEAR",
       "rarity": "Common",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "FEED",
       "rarity": "Rare",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "FEEL_NO_PAIN",
       "rarity": "Uncommon",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "FERAL",
       "rarity": "Uncommon",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "FETCH",
       "rarity": "Uncommon",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "FIEND_FIRE",
       "rarity": "Rare",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "FIGHT_ME",
       "rarity": "Uncommon",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "FIGHT_THROUGH",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "FINESSE",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "FINISHER",
       "rarity": "Uncommon",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "FISTICUFFS",
       "rarity": "Uncommon",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "FLAK_CANNON",
       "rarity": "Rare",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "FLAME_BARRIER",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "FLANKING",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "MultiplayerOnly"
     },
     {
       "id": "FLASH_OF_STEEL",
       "rarity": "Uncommon",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "FLATTEN",
       "rarity": "Common",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "FLECHETTES",
       "rarity": "Uncommon",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "FLICK_FLACK",
       "rarity": "Common",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "FOCUSED_STRIKE",
       "rarity": "Common",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "FOLLOW_THROUGH",
       "rarity": "Uncommon",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "FOOTWORK",
       "rarity": "Uncommon",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "FORBIDDEN_GRIMOIRE",
       "rarity": "Ancient",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "FOREGONE_CONCLUSION",
       "rarity": "Rare",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "FORGOTTEN_RITUAL",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "FRIENDSHIP",
       "rarity": "Uncommon",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "FTL",
       "rarity": "Uncommon",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "FURNACE",
       "rarity": "Uncommon",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "FUSION",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "GAMMA_BLAST",
       "rarity": "Uncommon",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "GANG_UP",
       "rarity": "Uncommon",
+      "type": "Attack",
       "multiplayerConstraint": "MultiplayerOnly"
     },
     {
       "id": "GATHER_LIGHT",
       "rarity": "Common",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "GENESIS",
       "rarity": "Rare",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "GENETIC_ALGORITHM",
       "rarity": "Rare",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "GLACIER",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "GLASSWORK",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "GLIMMER",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "GLIMPSE_BEYOND",
       "rarity": "Rare",
+      "type": "Skill",
       "multiplayerConstraint": "MultiplayerOnly"
     },
     {
       "id": "GLITTERSTREAM",
       "rarity": "Common",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "GLOW",
       "rarity": "Common",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "GO_FOR_THE_EYES",
       "rarity": "Common",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "GOLD_AXE",
       "rarity": "Rare",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "GRAND_FINALE",
       "rarity": "Rare",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "GRAPPLE",
       "rarity": "Uncommon",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "GRAVE_WARDEN",
       "rarity": "Common",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "GRAVEBLAST",
       "rarity": "Common",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "GUARDS",
       "rarity": "Rare",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "GUIDING_STAR",
       "rarity": "Common",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "GUNK_UP",
       "rarity": "Common",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "HAILSTORM",
       "rarity": "Uncommon",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "HAMMER_TIME",
       "rarity": "Rare",
+      "type": "Power",
       "multiplayerConstraint": "MultiplayerOnly"
     },
     {
       "id": "HAND_OF_GREED",
       "rarity": "Rare",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "HAND_TRICK",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "HANG",
       "rarity": "Rare",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "HAUNT",
       "rarity": "Uncommon",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "HAVOC",
       "rarity": "Common",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "HAZE",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "HEADBUTT",
       "rarity": "Common",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "HEAVENLY_DRILL",
       "rarity": "Rare",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "HEGEMONY",
       "rarity": "Uncommon",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "HEIRLOOM_HAMMER",
       "rarity": "Rare",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "HELIX_DRILL",
       "rarity": "Rare",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "HELLRAISER",
       "rarity": "Rare",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "HEMOKINESIS",
       "rarity": "Uncommon",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "HIDDEN_CACHE",
       "rarity": "Common",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "HIDDEN_DAGGERS",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "HIDDEN_GEM",
       "rarity": "Rare",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "HIGH_FIVE",
       "rarity": "Uncommon",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "HOLOGRAM",
       "rarity": "Common",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "HOTFIX",
       "rarity": "Common",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "HOWL_FROM_BEYOND",
       "rarity": "Uncommon",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "HUDDLE_UP",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "MultiplayerOnly"
     },
     {
       "id": "HYPERBEAM",
       "rarity": "Rare",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "I_AM_INVINCIBLE",
       "rarity": "Rare",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "ICE_LANCE",
       "rarity": "Rare",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "IGNITION",
       "rarity": "Rare",
+      "type": "Skill",
       "multiplayerConstraint": "MultiplayerOnly"
     },
     {
       "id": "IMPATIENCE",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "IMPERVIOUS",
       "rarity": "Rare",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "INFERNAL_BLADE",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "INFERNO",
       "rarity": "Uncommon",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "INFINITE_BLADES",
       "rarity": "Uncommon",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "INFLAME",
       "rarity": "Uncommon",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "INTERCEPT",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "MultiplayerOnly"
     },
     {
       "id": "INVOKE",
       "rarity": "Common",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "IRON_WAVE",
       "rarity": "Common",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "ITERATION",
       "rarity": "Uncommon",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "JACK_OF_ALL_TRADES",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "JACKPOT",
       "rarity": "Rare",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "JUGGERNAUT",
       "rarity": "Rare",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "JUGGLING",
       "rarity": "Uncommon",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "KINGLY_KICK",
       "rarity": "Uncommon",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "KINGLY_PUNCH",
       "rarity": "Uncommon",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "KNIFE_TRAP",
       "rarity": "Rare",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "KNOCKDOWN",
       "rarity": "Rare",
+      "type": "Attack",
       "multiplayerConstraint": "MultiplayerOnly"
     },
     {
       "id": "KNOCKOUT_BLOW",
       "rarity": "Uncommon",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "KNOW_THY_PLACE",
       "rarity": "Common",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "LARGESSE",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "MultiplayerOnly"
     },
     {
       "id": "LEADING_STRIKE",
       "rarity": "Common",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "LEAP",
       "rarity": "Common",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "LEG_SWEEP",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "LEGION_OF_BONE",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "MultiplayerOnly"
     },
     {
       "id": "LETHALITY",
       "rarity": "Uncommon",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "LIFT",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "MultiplayerOnly"
     },
     {
       "id": "LIGHTNING_ROD",
       "rarity": "Common",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "LOOP",
       "rarity": "Uncommon",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "LUNAR_BLAST",
       "rarity": "Uncommon",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "MACHINE_LEARNING",
       "rarity": "Rare",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "MAKE_IT_SO",
       "rarity": "Rare",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "MALAISE",
       "rarity": "Rare",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "MANGLE",
       "rarity": "Rare",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "MANIFEST_AUTHORITY",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "MASTER_OF_STRATEGY",
       "rarity": "Rare",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "MASTER_PLANNER",
       "rarity": "Rare",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "MAYHEM",
       "rarity": "Rare",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "MELANCHOLY",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "MEMENTO_MORI",
       "rarity": "Uncommon",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "METEOR_SHOWER",
       "rarity": "Ancient",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "METEOR_STRIKE",
       "rarity": "Rare",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "MIMIC",
       "rarity": "Rare",
+      "type": "Skill",
       "multiplayerConstraint": "MultiplayerOnly"
     },
     {
       "id": "MIND_BLAST",
       "rarity": "Uncommon",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "MIRAGE",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "MISERY",
       "rarity": "Rare",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "MODDED",
       "rarity": "Rare",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "MOLTEN_FIST",
       "rarity": "Common",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "MOMENTUM_STRIKE",
       "rarity": "Common",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "MONARCHS_GAZE",
       "rarity": "Rare",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "MONOLOGUE",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "MULTI_CAST",
       "rarity": "Rare",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "MURDER",
       "rarity": "Rare",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "NECRO_MASTERY",
       "rarity": "Rare",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "NEGATIVE_PULSE",
       "rarity": "Common",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "NEUROSURGE",
       "rarity": "Rare",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "NEUTRALIZE",
       "rarity": "Basic",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "NEUTRON_AEGIS",
       "rarity": "Rare",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "NIGHTMARE",
       "rarity": "Rare",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "NO_ESCAPE",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "NOSTALGIA",
       "rarity": "Rare",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "NOXIOUS_FUMES",
       "rarity": "Uncommon",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "NULL",
       "rarity": "Uncommon",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "OBLIVION",
       "rarity": "Rare",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "OFFERING",
       "rarity": "Rare",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "OMNISLICE",
       "rarity": "Uncommon",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "ONE_TWO_PUNCH",
       "rarity": "Rare",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "ORBIT",
       "rarity": "Uncommon",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "OUTBREAK",
       "rarity": "Uncommon",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "OVERCLOCK",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "PACTS_END",
       "rarity": "Rare",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "PAGESTORM",
       "rarity": "Uncommon",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "PALE_BLUE_DOT",
       "rarity": "Uncommon",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "PANACHE",
       "rarity": "Uncommon",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "PANIC_BUTTON",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "PARRY",
       "rarity": "Uncommon",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "PARSE",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "PARTICLE_WALL",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "PATTER",
       "rarity": "Common",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "PERFECTED_STRIKE",
       "rarity": "Common",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "PHANTOM_BLADES",
       "rarity": "Uncommon",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "PHOTON_CUT",
       "rarity": "Common",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "PIERCING_WAIL",
       "rarity": "Common",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "PILLAGE",
       "rarity": "Uncommon",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "PILLAR_OF_CREATION",
       "rarity": "Uncommon",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "PINPOINT",
       "rarity": "Uncommon",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "POISONED_STAB",
       "rarity": "Common",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "POKE",
       "rarity": "Common",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "POMMEL_STRIKE",
       "rarity": "Common",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "POUNCE",
       "rarity": "Uncommon",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "PRECISE_CUT",
       "rarity": "Uncommon",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "PREDATOR",
       "rarity": "Uncommon",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "PREP_TIME",
       "rarity": "Uncommon",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "PREPARED",
       "rarity": "Common",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "PRIMAL_FORCE",
       "rarity": "Rare",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "PRODUCTION",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "PROLONG",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "PROPHESIZE",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "PROTECTOR",
       "rarity": "Ancient",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "PROWESS",
       "rarity": "Uncommon",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "PULL_AGGRO",
       "rarity": "Common",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "PULL_FROM_BELOW",
       "rarity": "Uncommon",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "PURITY",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "PUTREFY",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "PYRE",
       "rarity": "Rare",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "QUADCAST",
       "rarity": "Ancient",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "QUASAR",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "RADIATE",
       "rarity": "Uncommon",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "RAGE",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "RAINBOW",
       "rarity": "Rare",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "RALLY",
       "rarity": "Rare",
+      "type": "Skill",
       "multiplayerConstraint": "MultiplayerOnly"
     },
     {
       "id": "RAMPAGE",
       "rarity": "Uncommon",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "RATTLE",
       "rarity": "Uncommon",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "REANIMATE",
       "rarity": "Rare",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "REAP",
       "rarity": "Common",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "REAPER_FORM",
       "rarity": "Rare",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "REAVE",
       "rarity": "Common",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "REBOOT",
       "rarity": "Rare",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "REFINE_BLADE",
       "rarity": "Common",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "REFLECT",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "REFLEX",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "REFRACT",
       "rarity": "Uncommon",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "REND",
       "rarity": "Rare",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "RESONANCE",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "RESTLESSNESS",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "RICOCHET",
       "rarity": "Common",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "RIGHT_HAND_HAND",
       "rarity": "Uncommon",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "ROCKET_PUNCH",
       "rarity": "Uncommon",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "ROLLING_BOULDER",
       "rarity": "Rare",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "ROYAL_GAMBLE",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "ROYALTIES",
       "rarity": "Rare",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "RUPTURE",
       "rarity": "Uncommon",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "SACRIFICE",
       "rarity": "Rare",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "SALVO",
       "rarity": "Rare",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "SCAVENGE",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "SCOURGE",
       "rarity": "Common",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "SCRAPE",
       "rarity": "Uncommon",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "SCRAWL",
       "rarity": "Rare",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "SCULPTING_STRIKE",
       "rarity": "Common",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "SEANCE",
       "rarity": "Rare",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "SECOND_WIND",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "SECRET_TECHNIQUE",
       "rarity": "Rare",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "SECRET_WEAPON",
       "rarity": "Rare",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "SEEKER_STRIKE",
       "rarity": "Uncommon",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "SEEKING_EDGE",
       "rarity": "Rare",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "SENTRY_MODE",
       "rarity": "Rare",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "SERPENT_FORM",
       "rarity": "Rare",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "SETUP_STRIKE",
       "rarity": "Common",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "SEVEN_STARS",
       "rarity": "Rare",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "SEVERANCE",
       "rarity": "Uncommon",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "SHADOW_SHIELD",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "SHADOW_STEP",
       "rarity": "Rare",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "SHADOWMELD",
       "rarity": "Rare",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "SHARED_FATE",
       "rarity": "Rare",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "SHATTER",
       "rarity": "Rare",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "SHINING_STRIKE",
       "rarity": "Uncommon",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "SHOCKWAVE",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "SHROUD",
       "rarity": "Uncommon",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "SHRUG_IT_OFF",
       "rarity": "Common",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "SIC_EM",
       "rarity": "Uncommon",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "SIGNAL_BOOST",
       "rarity": "Rare",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "SKEWER",
       "rarity": "Uncommon",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "SKIM",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "SLEIGHT_OF_FLESH",
       "rarity": "Uncommon",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "SLICE",
       "rarity": "Common",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "SMOKESTACK",
       "rarity": "Uncommon",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "SNAKEBITE",
       "rarity": "Common",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "SNAP",
       "rarity": "Common",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "SNEAKY",
       "rarity": "Rare",
+      "type": "Power",
       "multiplayerConstraint": "MultiplayerOnly"
     },
     {
       "id": "SOLAR_STRIKE",
       "rarity": "Common",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "SOUL_STORM",
       "rarity": "Rare",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "SOW",
       "rarity": "Common",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "SPECTRUM_SHIFT",
       "rarity": "Uncommon",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "SPEEDSTER",
       "rarity": "Uncommon",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "SPINNER",
       "rarity": "Rare",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "SPIRIT_OF_ASH",
       "rarity": "Rare",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "SPITE",
       "rarity": "Uncommon",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "SPLASH",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "SPOILS_OF_BATTLE",
       "rarity": "Common",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "SPUR",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "SQUEEZE",
       "rarity": "Rare",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "STAMPEDE",
       "rarity": "Uncommon",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "STARDUST",
       "rarity": "Uncommon",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "STOKE",
       "rarity": "Rare",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "STOMP",
       "rarity": "Uncommon",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "STONE_ARMOR",
       "rarity": "Uncommon",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "STORM",
       "rarity": "Uncommon",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "STORM_OF_STEEL",
       "rarity": "Rare",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "STRANGLE",
       "rarity": "Uncommon",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "STRATAGEM",
       "rarity": "Uncommon",
+      "type": "Power",
       "multiplayerConstraint": "SingleplayerOnly"
     },
     {
       "id": "STRIKE_DEFECT",
       "rarity": "Basic",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "STRIKE_IRONCLAD",
       "rarity": "Basic",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "STRIKE_NECROBINDER",
       "rarity": "Basic",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "STRIKE_REGENT",
       "rarity": "Basic",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "STRIKE_SILENT",
       "rarity": "Basic",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "SUBROUTINE",
       "rarity": "Uncommon",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "SUCKER_PUNCH",
       "rarity": "Common",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "SUMMON_FORTH",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "SUNDER",
       "rarity": "Uncommon",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "SUPERCRITICAL",
       "rarity": "Rare",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "SUPERMASSIVE",
       "rarity": "Uncommon",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "SUPPRESS",
       "rarity": "Ancient",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "SURVIVOR",
       "rarity": "Basic",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "SWEEPING_BEAM",
       "rarity": "Common",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "SWORD_BOOMERANG",
       "rarity": "Common",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "SWORD_SAGE",
       "rarity": "Rare",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "SYNCHRONIZE",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "SYNTHESIS",
       "rarity": "Uncommon",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "TACTICIAN",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "TAG_TEAM",
       "rarity": "Uncommon",
+      "type": "Attack",
       "multiplayerConstraint": "MultiplayerOnly"
     },
     {
       "id": "TANK",
       "rarity": "Rare",
+      "type": "Power",
       "multiplayerConstraint": "MultiplayerOnly"
     },
     {
       "id": "TAUNT",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "TEAR_ASUNDER",
       "rarity": "Rare",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "TEMPEST",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "TERRAFORMING",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "TESLA_COIL",
       "rarity": "Uncommon",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "THE_BOMB",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "THE_GAMBIT",
       "rarity": "Rare",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "THE_HUNT",
       "rarity": "Rare",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "THE_SCYTHE",
       "rarity": "Rare",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "THE_SEALED_THRONE",
       "rarity": "Ancient",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "THE_SMITH",
       "rarity": "Rare",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "THINKING_AHEAD",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "THRASH",
       "rarity": "Rare",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "THRUMMING_HATCHET",
       "rarity": "Uncommon",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "THUNDER",
       "rarity": "Uncommon",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "THUNDERCLAP",
       "rarity": "Common",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "TIMES_UP",
       "rarity": "Rare",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "TOOLS_OF_THE_TRADE",
       "rarity": "Rare",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "TRACKING",
       "rarity": "Rare",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "TRANSFIGURE",
       "rarity": "Rare",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "TRASH_TO_TREASURE",
       "rarity": "Rare",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "TREMBLE",
       "rarity": "Common",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "TRUE_GRIT",
       "rarity": "Common",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "TURBO",
       "rarity": "Common",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "TWIN_STRIKE",
       "rarity": "Common",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "TYRANNY",
       "rarity": "Rare",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "ULTIMATE_DEFEND",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "ULTIMATE_STRIKE",
       "rarity": "Uncommon",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "UNDEATH",
       "rarity": "Rare",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "UNLEASH",
       "rarity": "Basic",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "UNMOVABLE",
       "rarity": "Rare",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "UNRELENTING",
       "rarity": "Uncommon",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "UNTOUCHABLE",
       "rarity": "Common",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "UP_MY_SLEEVE",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "UPPERCUT",
       "rarity": "Uncommon",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "UPROAR",
       "rarity": "Common",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "VEILPIERCER",
       "rarity": "Uncommon",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "VENERATE",
       "rarity": "Basic",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "VICIOUS",
       "rarity": "Uncommon",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "VOID_FORM",
       "rarity": "Rare",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "VOLLEY",
       "rarity": "Uncommon",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "VOLTAIC",
       "rarity": "Rare",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "WELL_LAID_PLANS",
       "rarity": "Uncommon",
+      "type": "Power",
       "multiplayerConstraint": "SingleplayerOnly"
     },
     {
       "id": "WHIRLWIND",
       "rarity": "Uncommon",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "WHITE_NOISE",
       "rarity": "Uncommon",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "WISP",
       "rarity": "Common",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     },
     {
       "id": "WRAITH_FORM",
       "rarity": "Ancient",
+      "type": "Power",
       "multiplayerConstraint": "None"
     },
     {
       "id": "WROUGHT_IN_WAR",
       "rarity": "Common",
+      "type": "Attack",
       "multiplayerConstraint": "None"
     },
     {
       "id": "ZAP",
       "rarity": "Basic",
+      "type": "Skill",
       "multiplayerConstraint": "None"
     }
   ],
@@ -6209,6 +6712,812 @@
     {
       "id": "WEAK_POTION",
       "rarity": "Common"
+    }
+  ],
+  "relicPools": {
+    "Shared": [
+      "AKABEKO",
+      "AMETHYST_AUBERGINE",
+      "ANCHOR",
+      "ART_OF_WAR",
+      "BAG_OF_MARBLES",
+      "BAG_OF_PREPARATION",
+      "BEATING_REMNANT",
+      "BELLOWS",
+      "BELT_BUCKLE",
+      "BLOOD_VIAL",
+      "BOOK_OF_FIVE_RINGS",
+      "BOWLER_HAT",
+      "BREAD",
+      "BRONZE_SCALES",
+      "BURNING_STICKS",
+      "CANDELABRA",
+      "CAPTAINS_WHEEL",
+      "CAULDRON",
+      "CENTENNIAL_PUZZLE",
+      "CHANDELIER",
+      "CHEMICAL_X",
+      "CLOAK_CLASP",
+      "DINGY_RUG",
+      "DOLLYS_MIRROR",
+      "DRAGON_FRUIT",
+      "ETERNAL_FEATHER",
+      "FESTIVE_POPPER",
+      "FRESNEL_LENS",
+      "FROZEN_EGG",
+      "GAMBLING_CHIP",
+      "GAME_PIECE",
+      "GHOST_SEED",
+      "GIRYA",
+      "GNARLED_HAMMER",
+      "GORGET",
+      "GREMLIN_HORN",
+      "HAPPY_FLOWER",
+      "HORN_CLEAT",
+      "ICE_CREAM",
+      "INTIMIDATING_HELMET",
+      "JOSS_PAPER",
+      "JUZU_BRACELET",
+      "KIFUDA",
+      "KUNAI",
+      "KUSARIGAMA",
+      "LANTERN",
+      "LASTING_CANDY",
+      "LAVA_LAMP",
+      "LEES_WAFFLE",
+      "LETTER_OPENER",
+      "LIZARD_TAIL",
+      "LOOMING_FRUIT",
+      "LUCKY_FYSH",
+      "MANGO",
+      "MEAL_TICKET",
+      "MEAT_ON_THE_BONE",
+      "MEMBERSHIP_CARD",
+      "MERCURY_HOURGLASS",
+      "MINIATURE_CANNON",
+      "MINIATURE_TENT",
+      "MOLTEN_EGG",
+      "MUMMIFIED_HAND",
+      "MYSTIC_LIGHTER",
+      "NUNCHAKU",
+      "ODDLY_SMOOTH_STONE",
+      "OLD_COIN",
+      "ORICHALCUM",
+      "ORNAMENTAL_FAN",
+      "ORRERY",
+      "PANTOGRAPH",
+      "PARRYING_SHIELD",
+      "PEAR",
+      "PEN_NIB",
+      "PENDULUM",
+      "PERMAFROST",
+      "PETRIFIED_TOAD",
+      "PLANISPHERE",
+      "POCKETWATCH",
+      "POTION_BELT",
+      "PRAYER_WHEEL",
+      "PUNCH_DAGGER",
+      "RAINBOW_RING",
+      "RAZOR_TOOTH",
+      "RED_MASK",
+      "REGAL_PILLOW",
+      "REPTILE_TRINKET",
+      "RINGING_TRIANGLE",
+      "RIPPLE_BASIN",
+      "ROYAL_STAMP",
+      "SCREAMING_FLAGON",
+      "SHOVEL",
+      "SHURIKEN",
+      "SLING_OF_COURAGE",
+      "SPARKLING_ROUGE",
+      "STONE_CALENDAR",
+      "STONE_CRACKER",
+      "STRAWBERRY",
+      "STRIKE_DUMMY",
+      "STURDY_CLAMP",
+      "THE_ABACUS",
+      "THE_COURIER",
+      "TINY_MAILBOX",
+      "TOOLBOX",
+      "TOXIC_EGG",
+      "TUNGSTEN_ROD",
+      "TUNING_FORK",
+      "UNCEASING_TOP",
+      "UNSETTLING_LAMP",
+      "VAJRA",
+      "VAMBRACE",
+      "VENERABLE_TEA_SET",
+      "VERY_HOT_COCOA",
+      "VEXING_PUZZLEBOX",
+      "WAR_PAINT",
+      "WHETSTONE",
+      "WHITE_BEAST_STATUE",
+      "WHITE_STAR",
+      "WING_CHARM"
+    ],
+    "Ironclad": [
+      "BRIMSTONE",
+      "BURNING_BLOOD",
+      "CHARONS_ASHES",
+      "DEMON_TONGUE",
+      "PAPER_PHROG",
+      "RED_SKULL",
+      "RUINED_HELMET",
+      "SELF_FORMING_CLAY"
+    ],
+    "Silent": [
+      "HELICAL_DART",
+      "NINJA_SCROLL",
+      "PAPER_KRANE",
+      "RING_OF_THE_SNAKE",
+      "SNECKO_SKULL",
+      "TINGSHA",
+      "TOUGH_BANDAGES",
+      "TWISTED_FUNNEL"
+    ],
+    "Defect": [
+      "CRACKED_CORE",
+      "DATA_DISK",
+      "EMOTION_CHIP",
+      "GOLD_PLATED_CABLES",
+      "POWER_CELL",
+      "METRONOME",
+      "RUNIC_CAPACITOR",
+      "SYMBIOTIC_VIRUS"
+    ],
+    "Necrobinder": [
+      "BIG_HAT",
+      "BONE_FLUTE",
+      "BOOK_REPAIR_KNIFE",
+      "BOOKMARK",
+      "BOUND_PHYLACTERY",
+      "FUNERARY_MASK",
+      "IVORY_TILE",
+      "UNDYING_SIGIL"
+    ],
+    "Regent": [
+      "DIVINE_RIGHT",
+      "FENCING_MANUAL",
+      "GALACTIC_DUST",
+      "LUNAR_PASTRY",
+      "MINI_REGENT",
+      "ORANGE_DOUGH",
+      "REGALITE",
+      "VITRUVIAN_MINION"
+    ]
+  },
+  "relicMetadata": [
+    {
+      "id": "AKABEKO",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "AMETHYST_AUBERGINE",
+      "rarity": "Common"
+    },
+    {
+      "id": "ANCHOR",
+      "rarity": "Common"
+    },
+    {
+      "id": "ART_OF_WAR",
+      "rarity": "Rare"
+    },
+    {
+      "id": "BAG_OF_MARBLES",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "BAG_OF_PREPARATION",
+      "rarity": "Common"
+    },
+    {
+      "id": "BEATING_REMNANT",
+      "rarity": "Rare"
+    },
+    {
+      "id": "BELLOWS",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "BELT_BUCKLE",
+      "rarity": "Shop"
+    },
+    {
+      "id": "BIG_HAT",
+      "rarity": "Rare"
+    },
+    {
+      "id": "BLOOD_VIAL",
+      "rarity": "Common"
+    },
+    {
+      "id": "BONE_FLUTE",
+      "rarity": "Common"
+    },
+    {
+      "id": "BOOKMARK",
+      "rarity": "Rare"
+    },
+    {
+      "id": "BOOK_OF_FIVE_RINGS",
+      "rarity": "Common"
+    },
+    {
+      "id": "BOOK_REPAIR_KNIFE",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "BOUND_PHYLACTERY",
+      "rarity": "Starter"
+    },
+    {
+      "id": "BOWLER_HAT",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "BREAD",
+      "rarity": "Shop"
+    },
+    {
+      "id": "BRIMSTONE",
+      "rarity": "Shop"
+    },
+    {
+      "id": "BRONZE_SCALES",
+      "rarity": "Common"
+    },
+    {
+      "id": "BURNING_BLOOD",
+      "rarity": "Starter"
+    },
+    {
+      "id": "BURNING_STICKS",
+      "rarity": "Shop"
+    },
+    {
+      "id": "CANDELABRA",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "CAPTAINS_WHEEL",
+      "rarity": "Rare"
+    },
+    {
+      "id": "CAULDRON",
+      "rarity": "Shop"
+    },
+    {
+      "id": "CENTENNIAL_PUZZLE",
+      "rarity": "Common"
+    },
+    {
+      "id": "CHANDELIER",
+      "rarity": "Rare"
+    },
+    {
+      "id": "CHARONS_ASHES",
+      "rarity": "Rare"
+    },
+    {
+      "id": "CHEMICAL_X",
+      "rarity": "Shop"
+    },
+    {
+      "id": "CLOAK_CLASP",
+      "rarity": "Rare"
+    },
+    {
+      "id": "CRACKED_CORE",
+      "rarity": "Starter"
+    },
+    {
+      "id": "DATA_DISK",
+      "rarity": "Common"
+    },
+    {
+      "id": "DEMON_TONGUE",
+      "rarity": "Rare"
+    },
+    {
+      "id": "DINGY_RUG",
+      "rarity": "Shop"
+    },
+    {
+      "id": "DIVINE_RIGHT",
+      "rarity": "Starter"
+    },
+    {
+      "id": "DOLLYS_MIRROR",
+      "rarity": "Shop"
+    },
+    {
+      "id": "DRAGON_FRUIT",
+      "rarity": "Shop"
+    },
+    {
+      "id": "EMOTION_CHIP",
+      "rarity": "Rare"
+    },
+    {
+      "id": "ETERNAL_FEATHER",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "FENCING_MANUAL",
+      "rarity": "Common"
+    },
+    {
+      "id": "FESTIVE_POPPER",
+      "rarity": "Common"
+    },
+    {
+      "id": "FRESNEL_LENS",
+      "rarity": "Event"
+    },
+    {
+      "id": "FROZEN_EGG",
+      "rarity": "Rare"
+    },
+    {
+      "id": "FUNERARY_MASK",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "GALACTIC_DUST",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "GAMBLING_CHIP",
+      "rarity": "Rare"
+    },
+    {
+      "id": "GAME_PIECE",
+      "rarity": "Rare"
+    },
+    {
+      "id": "GHOST_SEED",
+      "rarity": "Shop"
+    },
+    {
+      "id": "GIRYA",
+      "rarity": "Rare"
+    },
+    {
+      "id": "GNARLED_HAMMER",
+      "rarity": "Shop"
+    },
+    {
+      "id": "GOLD_PLATED_CABLES",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "GORGET",
+      "rarity": "Common"
+    },
+    {
+      "id": "GREMLIN_HORN",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "HAPPY_FLOWER",
+      "rarity": "Common"
+    },
+    {
+      "id": "HELICAL_DART",
+      "rarity": "Rare"
+    },
+    {
+      "id": "HORN_CLEAT",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "ICE_CREAM",
+      "rarity": "Rare"
+    },
+    {
+      "id": "INTIMIDATING_HELMET",
+      "rarity": "Rare"
+    },
+    {
+      "id": "IVORY_TILE",
+      "rarity": "Rare"
+    },
+    {
+      "id": "JOSS_PAPER",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "JUZU_BRACELET",
+      "rarity": "Common"
+    },
+    {
+      "id": "KIFUDA",
+      "rarity": "Shop"
+    },
+    {
+      "id": "KUNAI",
+      "rarity": "Rare"
+    },
+    {
+      "id": "KUSARIGAMA",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "LANTERN",
+      "rarity": "Common"
+    },
+    {
+      "id": "LASTING_CANDY",
+      "rarity": "Rare"
+    },
+    {
+      "id": "LAVA_LAMP",
+      "rarity": "Shop"
+    },
+    {
+      "id": "LEES_WAFFLE",
+      "rarity": "Shop"
+    },
+    {
+      "id": "LETTER_OPENER",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "LIZARD_TAIL",
+      "rarity": "Rare"
+    },
+    {
+      "id": "LOOMING_FRUIT",
+      "rarity": "Ancient"
+    },
+    {
+      "id": "LUCKY_FYSH",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "LUNAR_PASTRY",
+      "rarity": "Rare"
+    },
+    {
+      "id": "MANGO",
+      "rarity": "Rare"
+    },
+    {
+      "id": "MEAL_TICKET",
+      "rarity": "Common"
+    },
+    {
+      "id": "MEAT_ON_THE_BONE",
+      "rarity": "Rare"
+    },
+    {
+      "id": "MEMBERSHIP_CARD",
+      "rarity": "Shop"
+    },
+    {
+      "id": "MERCURY_HOURGLASS",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "METRONOME",
+      "rarity": "Rare"
+    },
+    {
+      "id": "MINIATURE_CANNON",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "MINIATURE_TENT",
+      "rarity": "Shop"
+    },
+    {
+      "id": "MINI_REGENT",
+      "rarity": "Rare"
+    },
+    {
+      "id": "MOLTEN_EGG",
+      "rarity": "Rare"
+    },
+    {
+      "id": "MUMMIFIED_HAND",
+      "rarity": "Rare"
+    },
+    {
+      "id": "MYSTIC_LIGHTER",
+      "rarity": "Shop"
+    },
+    {
+      "id": "NINJA_SCROLL",
+      "rarity": "Shop"
+    },
+    {
+      "id": "NUNCHAKU",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "ODDLY_SMOOTH_STONE",
+      "rarity": "Common"
+    },
+    {
+      "id": "OLD_COIN",
+      "rarity": "Rare"
+    },
+    {
+      "id": "ORANGE_DOUGH",
+      "rarity": "Rare"
+    },
+    {
+      "id": "ORICHALCUM",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "ORNAMENTAL_FAN",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "ORRERY",
+      "rarity": "Shop"
+    },
+    {
+      "id": "PANTOGRAPH",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "PAPER_KRANE",
+      "rarity": "Rare"
+    },
+    {
+      "id": "PAPER_PHROG",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "PARRYING_SHIELD",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "PEAR",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "PENDULUM",
+      "rarity": "Common"
+    },
+    {
+      "id": "PEN_NIB",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "PERMAFROST",
+      "rarity": "Common"
+    },
+    {
+      "id": "PETRIFIED_TOAD",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "PLANISPHERE",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "POCKETWATCH",
+      "rarity": "Rare"
+    },
+    {
+      "id": "POTION_BELT",
+      "rarity": "Common"
+    },
+    {
+      "id": "POWER_CELL",
+      "rarity": "Rare"
+    },
+    {
+      "id": "PRAYER_WHEEL",
+      "rarity": "Rare"
+    },
+    {
+      "id": "PUNCH_DAGGER",
+      "rarity": "Shop"
+    },
+    {
+      "id": "RAINBOW_RING",
+      "rarity": "Rare"
+    },
+    {
+      "id": "RAZOR_TOOTH",
+      "rarity": "Rare"
+    },
+    {
+      "id": "RED_MASK",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "RED_SKULL",
+      "rarity": "Common"
+    },
+    {
+      "id": "REGALITE",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "REGAL_PILLOW",
+      "rarity": "Common"
+    },
+    {
+      "id": "REPTILE_TRINKET",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "RINGING_TRIANGLE",
+      "rarity": "Shop"
+    },
+    {
+      "id": "RING_OF_THE_SNAKE",
+      "rarity": "Starter"
+    },
+    {
+      "id": "RIPPLE_BASIN",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "ROYAL_STAMP",
+      "rarity": "Shop"
+    },
+    {
+      "id": "RUINED_HELMET",
+      "rarity": "Rare"
+    },
+    {
+      "id": "RUNIC_CAPACITOR",
+      "rarity": "Shop"
+    },
+    {
+      "id": "SCREAMING_FLAGON",
+      "rarity": "Shop"
+    },
+    {
+      "id": "SELF_FORMING_CLAY",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "SHOVEL",
+      "rarity": "Rare"
+    },
+    {
+      "id": "SHURIKEN",
+      "rarity": "Rare"
+    },
+    {
+      "id": "SLING_OF_COURAGE",
+      "rarity": "Shop"
+    },
+    {
+      "id": "SNECKO_SKULL",
+      "rarity": "Common"
+    },
+    {
+      "id": "SPARKLING_ROUGE",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "STONE_CALENDAR",
+      "rarity": "Rare"
+    },
+    {
+      "id": "STONE_CRACKER",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "STRAWBERRY",
+      "rarity": "Common"
+    },
+    {
+      "id": "STRIKE_DUMMY",
+      "rarity": "Common"
+    },
+    {
+      "id": "STURDY_CLAMP",
+      "rarity": "Rare"
+    },
+    {
+      "id": "SYMBIOTIC_VIRUS",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "THE_ABACUS",
+      "rarity": "Shop"
+    },
+    {
+      "id": "THE_COURIER",
+      "rarity": "Rare"
+    },
+    {
+      "id": "TINGSHA",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "TINY_MAILBOX",
+      "rarity": "Common"
+    },
+    {
+      "id": "TOOLBOX",
+      "rarity": "Shop"
+    },
+    {
+      "id": "TOUGH_BANDAGES",
+      "rarity": "Rare"
+    },
+    {
+      "id": "TOXIC_EGG",
+      "rarity": "Rare"
+    },
+    {
+      "id": "TUNGSTEN_ROD",
+      "rarity": "Rare"
+    },
+    {
+      "id": "TUNING_FORK",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "TWISTED_FUNNEL",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "UNCEASING_TOP",
+      "rarity": "Rare"
+    },
+    {
+      "id": "UNDYING_SIGIL",
+      "rarity": "Shop"
+    },
+    {
+      "id": "UNSETTLING_LAMP",
+      "rarity": "Rare"
+    },
+    {
+      "id": "VAJRA",
+      "rarity": "Common"
+    },
+    {
+      "id": "VAMBRACE",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "VENERABLE_TEA_SET",
+      "rarity": "Common"
+    },
+    {
+      "id": "VERY_HOT_COCOA",
+      "rarity": "Ancient"
+    },
+    {
+      "id": "VEXING_PUZZLEBOX",
+      "rarity": "Rare"
+    },
+    {
+      "id": "VITRUVIAN_MINION",
+      "rarity": "Shop"
+    },
+    {
+      "id": "WAR_PAINT",
+      "rarity": "Common"
+    },
+    {
+      "id": "WHETSTONE",
+      "rarity": "Common"
+    },
+    {
+      "id": "WHITE_BEAST_STATUE",
+      "rarity": "Rare"
+    },
+    {
+      "id": "WHITE_STAR",
+      "rarity": "Rare"
+    },
+    {
+      "id": "WING_CHARM",
+      "rarity": "Shop"
     }
   ]
 }

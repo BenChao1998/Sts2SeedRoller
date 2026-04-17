@@ -1,0 +1,972 @@
+{
+  "acts": [
+    {
+      "ancients": [
+        "NEOW"
+      ],
+      "baseRooms": 15,
+      "encounters": [
+        "BygoneEffigyElite",
+        "ByrdonisElite",
+        "CeremonialBeastBoss",
+        "CubexConstructNormal",
+        "FlyconidNormal",
+        "FogmogNormal",
+        "FuzzyWurmCrawlerWeak",
+        "InkletsNormal",
+        "MawlerNormal",
+        "NibbitsNormal",
+        "NibbitsWeak",
+        "OvergrowthCrawlers",
+        "PhrogParasiteElite",
+        "RubyRaidersNormal",
+        "ShrinkerBeetleWeak",
+        "SlimesNormal",
+        "SlimesWeak",
+        "SlitheringStranglerNormal",
+        "SnappingJaxfruitNormal",
+        "TheKinBoss",
+        "VantomBoss",
+        "VineShamblerNormal"
+      ],
+      "events": [
+        "AromaOfChaos",
+        "ByrdonisNest",
+        "DenseVegetation",
+        "JungleMazeAdventure",
+        "LuminousChoir",
+        "MorphicGrove",
+        "SapphireSeed",
+        "SunkenStatue",
+        "TabletOfTruth",
+        "UnrestSite",
+        "Wellspring",
+        "WhisperingHollow",
+        "WoodCarvings"
+      ],
+      "name": "Overgrowth",
+      "number": 1,
+      "weakRooms": 3
+    },
+    {
+      "ancients": [
+        "OROBAS",
+        "PAEL",
+        "TEZCATARA"
+      ],
+      "baseRooms": 14,
+      "encounters": [
+        "BowlbugsNormal",
+        "BowlbugsWeak",
+        "ChompersNormal",
+        "DecimillipedeElite",
+        "EntomancerElite",
+        "ExoskeletonsNormal",
+        "ExoskeletonsWeak",
+        "HunterKillerNormal",
+        "KaiserCrabBoss",
+        "InfestedPrismsElite",
+        "KnowledgeDemonBoss",
+        "LouseProgenitorNormal",
+        "MytesNormal",
+        "OvicopterNormal",
+        "SlumberingBeetleNormal",
+        "SpinyToadNormal",
+        "TheInsatiableBoss",
+        "TheObscuraNormal",
+        "ThievingHopperWeak",
+        "TunnelerWeak"
+      ],
+      "events": [
+        "Amalgamator",
+        "Bugslayer",
+        "ColorfulPhilosophers",
+        "ColossalFlower",
+        "FieldOfManSizedHoles",
+        "InfestedAutomaton",
+        "LostWisp",
+        "SpiritGrafter",
+        "TheLanternKey",
+        "ZenWeaver"
+      ],
+      "name": "Hive",
+      "number": 2,
+      "weakRooms": 2
+    },
+    {
+      "ancients": [
+        "NONUPEIPE",
+        "TANX",
+        "VAKUU"
+      ],
+      "baseRooms": 13,
+      "encounters": [
+        "AxebotsNormal",
+        "ConstructMenagerieNormal",
+        "DevotedSculptorWeak",
+        "DoormakerBoss",
+        "FabricatorNormal",
+        "FrogKnightNormal",
+        "GlobeHeadNormal",
+        "KnightsElite",
+        "MechaKnightElite",
+        "OwlMagistrateNormal",
+        "QueenBoss",
+        "ScrollsOfBitingNormal",
+        "ScrollsOfBitingWeak",
+        "SlimedBerserkerNormal",
+        "SoulNexusElite",
+        "TestSubjectBoss",
+        "TheLostAndForgottenNormal",
+        "TurretOperatorWeak"
+      ],
+      "events": [
+        "BattlewornDummy",
+        "GraveOfTheForgotten",
+        "HungryForMushrooms",
+        "Reflections",
+        "RoundTeaParty",
+        "Trial",
+        "TinkerTime"
+      ],
+      "name": "Glory",
+      "number": 3,
+      "weakRooms": 2
+    }
+  ],
+  "encounters": {
+    "AxebotsNormal": {
+      "isWeak": false,
+      "roomType": "Monster",
+      "tags": []
+    },
+    "BowlbugsNormal": {
+      "isWeak": false,
+      "roomType": "Monster",
+      "tags": [
+        "Workers"
+      ]
+    },
+    "BowlbugsWeak": {
+      "isWeak": true,
+      "roomType": "Monster",
+      "tags": [
+        "Workers"
+      ]
+    },
+    "BygoneEffigyElite": {
+      "isWeak": false,
+      "roomType": "Elite",
+      "tags": []
+    },
+    "ByrdonisElite": {
+      "isWeak": false,
+      "roomType": "Elite",
+      "tags": []
+    },
+    "CeremonialBeastBoss": {
+      "isWeak": false,
+      "roomType": "Boss",
+      "tags": []
+    },
+    "ChompersNormal": {
+      "isWeak": false,
+      "roomType": "Monster",
+      "tags": [
+        "Chomper"
+      ]
+    },
+    "ConstructMenagerieNormal": {
+      "isWeak": false,
+      "roomType": "Monster",
+      "tags": []
+    },
+    "CubexConstructNormal": {
+      "isWeak": false,
+      "roomType": "Monster",
+      "tags": []
+    },
+    "DecimillipedeElite": {
+      "isWeak": false,
+      "roomType": "Elite",
+      "tags": []
+    },
+    "DevotedSculptorWeak": {
+      "isWeak": true,
+      "roomType": "Monster",
+      "tags": []
+    },
+    "DoormakerBoss": {
+      "isWeak": false,
+      "roomType": "Boss",
+      "tags": []
+    },
+    "EntomancerElite": {
+      "isWeak": false,
+      "roomType": "Elite",
+      "tags": []
+    },
+    "ExoskeletonsNormal": {
+      "isWeak": false,
+      "roomType": "Monster",
+      "tags": [
+        "Exoskeletons"
+      ]
+    },
+    "ExoskeletonsWeak": {
+      "isWeak": true,
+      "roomType": "Monster",
+      "tags": [
+        "Exoskeletons"
+      ]
+    },
+    "FabricatorNormal": {
+      "isWeak": false,
+      "roomType": "Monster",
+      "tags": []
+    },
+    "FlyconidNormal": {
+      "isWeak": false,
+      "roomType": "Monster",
+      "tags": [
+        "Mushroom",
+        "Slimes"
+      ]
+    },
+    "FogmogNormal": {
+      "isWeak": false,
+      "roomType": "Monster",
+      "tags": []
+    },
+    "FrogKnightNormal": {
+      "isWeak": false,
+      "roomType": "Monster",
+      "tags": []
+    },
+    "FuzzyWurmCrawlerWeak": {
+      "isWeak": true,
+      "roomType": "Monster",
+      "tags": [
+        "Crawler"
+      ]
+    },
+    "GlobeHeadNormal": {
+      "isWeak": false,
+      "roomType": "Monster",
+      "tags": []
+    },
+    "HunterKillerNormal": {
+      "isWeak": false,
+      "roomType": "Monster",
+      "tags": []
+    },
+    "InfestedPrismsElite": {
+      "isWeak": false,
+      "roomType": "Elite",
+      "tags": []
+    },
+    "InkletsNormal": {
+      "isWeak": false,
+      "roomType": "Monster",
+      "tags": []
+    },
+    "KaiserCrabBoss": {
+      "isWeak": false,
+      "roomType": "Boss",
+      "tags": []
+    },
+    "KnightsElite": {
+      "isWeak": false,
+      "roomType": "Elite",
+      "tags": [
+        "Knights"
+      ]
+    },
+    "KnowledgeDemonBoss": {
+      "isWeak": false,
+      "roomType": "Boss",
+      "tags": []
+    },
+    "LouseProgenitorNormal": {
+      "isWeak": false,
+      "roomType": "Monster",
+      "tags": []
+    },
+    "MawlerNormal": {
+      "isWeak": false,
+      "roomType": "Monster",
+      "tags": []
+    },
+    "MechaKnightElite": {
+      "isWeak": false,
+      "roomType": "Elite",
+      "tags": []
+    },
+    "MytesNormal": {
+      "isWeak": false,
+      "roomType": "Monster",
+      "tags": []
+    },
+    "NibbitsNormal": {
+      "isWeak": false,
+      "roomType": "Monster",
+      "tags": []
+    },
+    "NibbitsWeak": {
+      "isWeak": true,
+      "roomType": "Monster",
+      "tags": [
+        "Nibbit"
+      ]
+    },
+    "OvergrowthCrawlers": {
+      "isWeak": false,
+      "roomType": "Monster",
+      "tags": [
+        "Crawler",
+        "Shrinker"
+      ]
+    },
+    "OvicopterNormal": {
+      "isWeak": false,
+      "roomType": "Monster",
+      "tags": []
+    },
+    "OwlMagistrateNormal": {
+      "isWeak": false,
+      "roomType": "Monster",
+      "tags": []
+    },
+    "PhrogParasiteElite": {
+      "isWeak": false,
+      "roomType": "Elite",
+      "tags": []
+    },
+    "QueenBoss": {
+      "isWeak": false,
+      "roomType": "Boss",
+      "tags": []
+    },
+    "RubyRaidersNormal": {
+      "isWeak": false,
+      "roomType": "Monster",
+      "tags": []
+    },
+    "ScrollsOfBitingNormal": {
+      "isWeak": false,
+      "roomType": "Monster",
+      "tags": [
+        "Scrolls"
+      ]
+    },
+    "ScrollsOfBitingWeak": {
+      "isWeak": true,
+      "roomType": "Monster",
+      "tags": [
+        "Scrolls"
+      ]
+    },
+    "ShrinkerBeetleWeak": {
+      "isWeak": true,
+      "roomType": "Monster",
+      "tags": [
+        "Shrinker"
+      ]
+    },
+    "SlimedBerserkerNormal": {
+      "isWeak": false,
+      "roomType": "Monster",
+      "tags": []
+    },
+    "SlimesNormal": {
+      "isWeak": false,
+      "roomType": "Monster",
+      "tags": [
+        "Slimes"
+      ]
+    },
+    "SlimesWeak": {
+      "isWeak": true,
+      "roomType": "Monster",
+      "tags": [
+        "Slimes"
+      ]
+    },
+    "SlitheringStranglerNormal": {
+      "isWeak": false,
+      "roomType": "Monster",
+      "tags": []
+    },
+    "SlumberingBeetleNormal": {
+      "isWeak": false,
+      "roomType": "Monster",
+      "tags": [
+        "Workers"
+      ]
+    },
+    "SnappingJaxfruitNormal": {
+      "isWeak": false,
+      "roomType": "Monster",
+      "tags": [
+        "Mushroom"
+      ]
+    },
+    "SoulNexusElite": {
+      "isWeak": false,
+      "roomType": "Elite",
+      "tags": []
+    },
+    "SpinyToadNormal": {
+      "isWeak": false,
+      "roomType": "Monster",
+      "tags": []
+    },
+    "TestSubjectBoss": {
+      "isWeak": false,
+      "roomType": "Boss",
+      "tags": []
+    },
+    "TheInsatiableBoss": {
+      "isWeak": false,
+      "roomType": "Boss",
+      "tags": []
+    },
+    "TheKinBoss": {
+      "isWeak": false,
+      "roomType": "Boss",
+      "tags": []
+    },
+    "TheLostAndForgottenNormal": {
+      "isWeak": false,
+      "roomType": "Monster",
+      "tags": []
+    },
+    "TheObscuraNormal": {
+      "isWeak": false,
+      "roomType": "Monster",
+      "tags": []
+    },
+    "ThievingHopperWeak": {
+      "isWeak": true,
+      "roomType": "Monster",
+      "tags": [
+        "Thieves"
+      ]
+    },
+    "TunnelerWeak": {
+      "isWeak": true,
+      "roomType": "Monster",
+      "tags": [
+        "Burrower"
+      ]
+    },
+    "TurretOperatorWeak": {
+      "isWeak": true,
+      "roomType": "Monster",
+      "tags": []
+    },
+    "VantomBoss": {
+      "isWeak": false,
+      "roomType": "Boss",
+      "tags": []
+    },
+    "VineShamblerNormal": {
+      "isWeak": false,
+      "roomType": "Monster",
+      "tags": []
+    }
+  },
+  "relicPools": {
+    "characters": {
+      "Defect": [
+        "CRACKED_CORE",
+        "DATA_DISK",
+        "EMOTION_CHIP",
+        "GOLD_PLATED_CABLES",
+        "POWER_CELL",
+        "METRONOME",
+        "RUNIC_CAPACITOR",
+        "SYMBIOTIC_VIRUS"
+      ],
+      "Ironclad": [
+        "BRIMSTONE",
+        "BURNING_BLOOD",
+        "CHARONS_ASHES",
+        "DEMON_TONGUE",
+        "PAPER_PHROG",
+        "RED_SKULL",
+        "RUINED_HELMET",
+        "SELF_FORMING_CLAY"
+      ],
+      "Necrobinder": [
+        "BIG_HAT",
+        "BONE_FLUTE",
+        "BOOK_REPAIR_KNIFE",
+        "BOOKMARK",
+        "BOUND_PHYLACTERY",
+        "FUNERARY_MASK",
+        "IVORY_TILE",
+        "UNDYING_SIGIL"
+      ],
+      "Regent": [
+        "DIVINE_RIGHT",
+        "FENCING_MANUAL",
+        "GALACTIC_DUST",
+        "LUNAR_PASTRY",
+        "MINI_REGENT",
+        "ORANGE_DOUGH",
+        "REGALITE",
+        "VITRUVIAN_MINION"
+      ],
+      "Silent": [
+        "HELICAL_DART",
+        "NINJA_SCROLL",
+        "PAPER_KRANE",
+        "RING_OF_THE_SNAKE",
+        "SNECKO_SKULL",
+        "TINGSHA",
+        "TOUGH_BANDAGES",
+        "TWISTED_FUNNEL"
+      ]
+    },
+    "rarities": {
+      "AKABEKO": "Uncommon",
+      "ALCHEMICAL_COFFER": "Ancient",
+      "AMETHYST_AUBERGINE": "Common",
+      "ANCHOR": "Common",
+      "ARCANE_SCROLL": "Ancient",
+      "ARCHAIC_TOOTH": "Ancient",
+      "ART_OF_WAR": "Rare",
+      "ASTROLABE": "Ancient",
+      "BAG_OF_MARBLES": "Common",
+      "BAG_OF_PREPARATION": "Common",
+      "BEATING_REMNANT": "Rare",
+      "BEAUTIFUL_BRACELET": "Ancient",
+      "BELLOWS": "Rare",
+      "BELT_BUCKLE": "Shop",
+      "BIG_HAT": "Rare",
+      "BIG_MUSHROOM": "Event",
+      "BIIIG_HUG": "Ancient",
+      "BING_BONG": "Event",
+      "BLACK_BLOOD": "Starter",
+      "BLACK_STAR": "Ancient",
+      "BLESSED_ANTLER": "Ancient",
+      "BLOOD_SOAKED_ROSE": "Ancient",
+      "BLOOD_VIAL": "Common",
+      "BONE_FLUTE": "Common",
+      "BONE_TEA": "Event",
+      "BOOKMARK": "Rare",
+      "BOOK_OF_FIVE_RINGS": "Common",
+      "BOOK_REPAIR_KNIFE": "Uncommon",
+      "BOOMING_CONCH": "Ancient",
+      "BOUND_PHYLACTERY": "Starter",
+      "BOWLER_HAT": "Uncommon",
+      "BREAD": "Shop",
+      "BRILLIANT_SCARF": "Ancient",
+      "BRIMSTONE": "Shop",
+      "BRONZE_SCALES": "Common",
+      "BURNING_BLOOD": "Starter",
+      "BURNING_STICKS": "Shop",
+      "BYRDPIP": "Event",
+      "CALLING_BELL": "Ancient",
+      "CANDELABRA": "Uncommon",
+      "CAPTAINS_WHEEL": "Rare",
+      "CAULDRON": "Shop",
+      "CENTENNIAL_PUZZLE": "Common",
+      "CHANDELIER": "Rare",
+      "CHARONS_ASHES": "Rare",
+      "CHEMICAL_X": "Shop",
+      "CHOICES_PARADOX": "Ancient",
+      "CHOSEN_CHEESE": "Event",
+      "CIRCLET": "None",
+      "CLAWS": "Ancient",
+      "CLOAK_CLASP": "Rare",
+      "CRACKED_CORE": "Starter",
+      "CROSSBOW": "Ancient",
+      "CURSED_PEARL": "Ancient",
+      "DARKSTONE_PERIAPT": "Event",
+      "DATA_DISK": "Common",
+      "DAUGHTER_OF_THE_WIND": "Event",
+      "DELICATE_FROND": "Ancient",
+      "DEMON_TONGUE": "Rare",
+      "DEPRECATED_RELIC": "None",
+      "DIAMOND_DIADEM": "Ancient",
+      "DINGY_RUG": "Shop",
+      "DISTINGUISHED_CAPE": "Ancient",
+      "DIVINE_DESTINY": "Starter",
+      "DIVINE_RIGHT": "Starter",
+      "DOLLYS_MIRROR": "Shop",
+      "DRAGON_FRUIT": "Shop",
+      "DREAM_CATCHER": "Event",
+      "DRIFTWOOD": "Ancient",
+      "DUSTY_TOME": "Ancient",
+      "ECTOPLASM": "Ancient",
+      "ELECTRIC_SHRYMP": "Ancient",
+      "EMBER_TEA": "Event",
+      "EMOTION_CHIP": "Rare",
+      "EMPTY_CAGE": "Ancient",
+      "ETERNAL_FEATHER": "Uncommon",
+      "FAKE_ANCHOR": "Event",
+      "FAKE_BLOOD_VIAL": "Event",
+      "FAKE_HAPPY_FLOWER": "Event",
+      "FAKE_LEES_WAFFLE": "Event",
+      "FAKE_MANGO": "Event",
+      "FAKE_MERCHANTS_RUG": "Event",
+      "FAKE_ORICHALCUM": "Event",
+      "FAKE_SNECKO_EYE": "Event",
+      "FAKE_STRIKE_DUMMY": "Event",
+      "FAKE_VENERABLE_TEA_SET": "Event",
+      "FENCING_MANUAL": "Common",
+      "FESTIVE_POPPER": "Common",
+      "FIDDLE": "Ancient",
+      "FORGOTTEN_SOUL": "Event",
+      "FRAGRANT_MUSHROOM": "Event",
+      "FRESNEL_LENS": "Event",
+      "FROZEN_EGG": "Rare",
+      "FUNERARY_MASK": "Uncommon",
+      "FUR_COAT": "Ancient",
+      "GALACTIC_DUST": "Uncommon",
+      "GAMBLING_CHIP": "Rare",
+      "GAME_PIECE": "Rare",
+      "GHOST_SEED": "Shop",
+      "GIRYA": "Rare",
+      "GLASS_EYE": "Ancient",
+      "GLITTER": "Ancient",
+      "GNARLED_HAMMER": "Shop",
+      "GOLDEN_COMPASS": "Ancient",
+      "GOLDEN_PEARL": "Ancient",
+      "GOLD_PLATED_CABLES": "Uncommon",
+      "GORGET": "Common",
+      "GREMLIN_HORN": "Uncommon",
+      "HAND_DRILL": "Event",
+      "HAPPY_FLOWER": "Common",
+      "HEFTY_TABLET": "Ancient",
+      "HELICAL_DART": "Rare",
+      "HISTORY_COURSE": "Event",
+      "HORN_CLEAT": "Uncommon",
+      "ICE_CREAM": "Rare",
+      "INFUSED_CORE": "Starter",
+      "INTIMIDATING_HELMET": "Rare",
+      "IRON_CLUB": "Ancient",
+      "IVORY_TILE": "Rare",
+      "JEWELED_MASK": "Ancient",
+      "JEWELRY_BOX": "Ancient",
+      "JOSS_PAPER": "Uncommon",
+      "JUZU_BRACELET": "Common",
+      "KIFUDA": "Shop",
+      "KUNAI": "Rare",
+      "KUSARIGAMA": "Uncommon",
+      "LANTERN": "Common",
+      "LARGE_CAPSULE": "Ancient",
+      "LASTING_CANDY": "Uncommon",
+      "LAVA_LAMP": "Shop",
+      "LAVA_ROCK": "Ancient",
+      "LEAD_PAPERWEIGHT": "Ancient",
+      "LEAFY_POULTICE": "Ancient",
+      "LEES_WAFFLE": "Shop",
+      "LETTER_OPENER": "Uncommon",
+      "LIZARD_TAIL": "Rare",
+      "LOOMING_FRUIT": "Ancient",
+      "LORDS_PARASOL": "Ancient",
+      "LOST_COFFER": "Ancient",
+      "LOST_WISP": "Event",
+      "LUCKY_FYSH": "Uncommon",
+      "LUNAR_PASTRY": "Rare",
+      "MANGO": "Rare",
+      "MASSIVE_SCROLL": "Ancient",
+      "MAW_BANK": "Event",
+      "MEAL_TICKET": "Common",
+      "MEAT_CLEAVER": "Ancient",
+      "MEAT_ON_THE_BONE": "Rare",
+      "MEMBERSHIP_CARD": "Shop",
+      "MERCURY_HOURGLASS": "Uncommon",
+      "METRONOME": "Rare",
+      "MINIATURE_CANNON": "Uncommon",
+      "MINIATURE_TENT": "Shop",
+      "MINI_REGENT": "Rare",
+      "MOLTEN_EGG": "Rare",
+      "MR_STRUGGLES": "Event",
+      "MUMMIFIED_HAND": "Rare",
+      "MUSIC_BOX": "Ancient",
+      "MYSTIC_LIGHTER": "Shop",
+      "NEOWS_BONES": "Ancient",
+      "NEOWS_TALISMAN": "Ancient",
+      "NEOWS_TORMENT": "Ancient",
+      "NEW_LEAF": "Ancient",
+      "NINJA_SCROLL": "Shop",
+      "NUNCHAKU": "Uncommon",
+      "NUTRITIOUS_OYSTER": "Ancient",
+      "NUTRITIOUS_SOUP": "Ancient",
+      "ODDLY_SMOOTH_STONE": "Common",
+      "OLD_COIN": "Rare",
+      "ORANGE_DOUGH": "Rare",
+      "ORICHALCUM": "Uncommon",
+      "ORNAMENTAL_FAN": "Uncommon",
+      "ORRERY": "Shop",
+      "PAELS_BLOOD": "Ancient",
+      "PAELS_CLAW": "Ancient",
+      "PAELS_EYE": "Ancient",
+      "PAELS_FLESH": "Ancient",
+      "PAELS_GROWTH": "Ancient",
+      "PAELS_HORN": "Ancient",
+      "PAELS_LEGION": "Ancient",
+      "PAELS_TEARS": "Ancient",
+      "PAELS_TOOTH": "Ancient",
+      "PAELS_WING": "Ancient",
+      "PANDORAS_BOX": "Ancient",
+      "PANTOGRAPH": "Uncommon",
+      "PAPER_KRANE": "Rare",
+      "PAPER_PHROG": "Uncommon",
+      "PARRYING_SHIELD": "Uncommon",
+      "PEAR": "Uncommon",
+      "PENDULUM": "Common",
+      "PEN_NIB": "Uncommon",
+      "PERMAFROST": "Uncommon",
+      "PETRIFIED_TOAD": "Uncommon",
+      "PHIAL_HOLSTER": "Ancient",
+      "PHILOSOPHERS_STONE": "Ancient",
+      "PHYLACTERY_UNBOUND": "Starter",
+      "PLANISPHERE": "Uncommon",
+      "POCKETWATCH": "Rare",
+      "POLLINOUS_CORE": "Event",
+      "POMANDER": "Ancient",
+      "POTION_BELT": "Common",
+      "POWER_CELL": "Rare",
+      "PRAYER_WHEEL": "Rare",
+      "PRECARIOUS_SHEARS": "Ancient",
+      "PRECISE_SCISSORS": "Ancient",
+      "PRESERVED_FOG": "Ancient",
+      "PRISMATIC_GEM": "Ancient",
+      "PUMPKIN_CANDLE": "Ancient",
+      "PUNCH_DAGGER": "Shop",
+      "RADIANT_PEARL": "Ancient",
+      "RAINBOW_RING": "Rare",
+      "RAZOR_TOOTH": "Rare",
+      "RED_MASK": "Common",
+      "RED_SKULL": "Common",
+      "REGALITE": "Uncommon",
+      "REGAL_PILLOW": "Common",
+      "REPTILE_TRINKET": "Uncommon",
+      "RINGING_TRIANGLE": "Shop",
+      "RING_OF_THE_DRAKE": "Starter",
+      "RING_OF_THE_SNAKE": "Starter",
+      "RIPPLE_BASIN": "Uncommon",
+      "ROYAL_POISON": "Event",
+      "ROYAL_STAMP": "Shop",
+      "RUINED_HELMET": "Rare",
+      "RUNIC_CAPACITOR": "Shop",
+      "RUNIC_PYRAMID": "Ancient",
+      "SAI": "Ancient",
+      "SAND_CASTLE": "Ancient",
+      "SCREAMING_FLAGON": "Shop",
+      "SCROLL_BOXES": "Ancient",
+      "SEAL_OF_GOLD": "Ancient",
+      "SEA_GLASS": "Ancient",
+      "SELF_FORMING_CLAY": "Uncommon",
+      "SERE_TALON": "Ancient",
+      "SHOVEL": "Rare",
+      "SHURIKEN": "Rare",
+      "SIGNET_RING": "Ancient",
+      "SILVER_CRUCIBLE": "Ancient",
+      "SLING_OF_COURAGE": "Shop",
+      "SMALL_CAPSULE": "Ancient",
+      "SNECKO_EYE": "Ancient",
+      "SNECKO_SKULL": "Common",
+      "SOZU": "Ancient",
+      "SPARKLING_ROUGE": "Uncommon",
+      "SPIKED_GAUNTLETS": "Ancient",
+      "STONE_CALENDAR": "Rare",
+      "STONE_CRACKER": "Uncommon",
+      "STONE_HUMIDIFIER": "Ancient",
+      "STORYBOOK": "Ancient",
+      "STRAWBERRY": "Common",
+      "STRIKE_DUMMY": "Common",
+      "STURDY_CLAMP": "Rare",
+      "SWORD_OF_JADE": "Event",
+      "SWORD_OF_STONE": "Event",
+      "SYMBIOTIC_VIRUS": "Uncommon",
+      "TANXS_WHISTLE": "Ancient",
+      "TEA_OF_DISCOURTESY": "Event",
+      "THE_ABACUS": "Shop",
+      "THE_BOOT": "Event",
+      "THE_COURIER": "Rare",
+      "THROWING_AXE": "Ancient",
+      "TINGSHA": "Uncommon",
+      "TINY_MAILBOX": "Uncommon",
+      "TOASTY_MITTENS": "Ancient",
+      "TOOLBOX": "Shop",
+      "TOUCH_OF_OROBAS": "Ancient",
+      "TOUGH_BANDAGES": "Rare",
+      "TOXIC_EGG": "Rare",
+      "TOY_BOX": "Ancient",
+      "TRI_BOOMERANG": "Ancient",
+      "TUNGSTEN_ROD": "Rare",
+      "TUNING_FORK": "Uncommon",
+      "TWISTED_FUNNEL": "Uncommon",
+      "UNCEASING_TOP": "Rare",
+      "UNDYING_SIGIL": "Shop",
+      "UNSETTLING_LAMP": "Rare",
+      "VAJRA": "Common",
+      "VAMBRACE": "Uncommon",
+      "VELVET_CHOKER": "Ancient",
+      "VENERABLE_TEA_SET": "Common",
+      "VERY_HOT_COCOA": "Ancient",
+      "VEXING_PUZZLEBOX": "Rare",
+      "VITRUVIAN_MINION": "Shop",
+      "WAR_HAMMER": "Ancient",
+      "WAR_PAINT": "Common",
+      "WHETSTONE": "Common",
+      "WHISPERING_EARRING": "Ancient",
+      "WHITE_BEAST_STATUE": "Rare",
+      "WHITE_STAR": "Rare",
+      "WINGED_BOOTS": "Ancient",
+      "WING_CHARM": "Shop",
+      "WONGOS_MYSTERY_TICKET": "Event",
+      "WONGO_CUSTOMER_APPRECIATION_BADGE": "Event",
+      "YUMMY_COOKIE": "Ancient"
+    },
+    "sharedSequence": [
+      "AKABEKO",
+      "AMETHYST_AUBERGINE",
+      "ANCHOR",
+      "ART_OF_WAR",
+      "BAG_OF_MARBLES",
+      "BAG_OF_PREPARATION",
+      "BEATING_REMNANT",
+      "BELLOWS",
+      "BELT_BUCKLE",
+      "BLOOD_VIAL",
+      "BOOK_OF_FIVE_RINGS",
+      "BOWLER_HAT",
+      "BREAD",
+      "BRONZE_SCALES",
+      "BURNING_STICKS",
+      "CANDELABRA",
+      "CAPTAINS_WHEEL",
+      "CAULDRON",
+      "CENTENNIAL_PUZZLE",
+      "CHANDELIER",
+      "CHEMICAL_X",
+      "CLOAK_CLASP",
+      "DINGY_RUG",
+      "DOLLYS_MIRROR",
+      "DRAGON_FRUIT",
+      "ETERNAL_FEATHER",
+      "FESTIVE_POPPER",
+      "FRESNEL_LENS",
+      "FROZEN_EGG",
+      "GAMBLING_CHIP",
+      "GAME_PIECE",
+      "GHOST_SEED",
+      "GIRYA",
+      "GNARLED_HAMMER",
+      "GORGET",
+      "GREMLIN_HORN",
+      "HAPPY_FLOWER",
+      "HORN_CLEAT",
+      "ICE_CREAM",
+      "INTIMIDATING_HELMET",
+      "JOSS_PAPER",
+      "JUZU_BRACELET",
+      "KIFUDA",
+      "KUNAI",
+      "KUSARIGAMA",
+      "LANTERN",
+      "LASTING_CANDY",
+      "LAVA_LAMP",
+      "LEES_WAFFLE",
+      "LETTER_OPENER",
+      "LIZARD_TAIL",
+      "LOOMING_FRUIT",
+      "LUCKY_FYSH",
+      "MANGO",
+      "MEAL_TICKET",
+      "MEAT_ON_THE_BONE",
+      "MEMBERSHIP_CARD",
+      "MERCURY_HOURGLASS",
+      "MINIATURE_CANNON",
+      "MINIATURE_TENT",
+      "MOLTEN_EGG",
+      "MUMMIFIED_HAND",
+      "MYSTIC_LIGHTER",
+      "NUNCHAKU",
+      "ODDLY_SMOOTH_STONE",
+      "OLD_COIN",
+      "ORICHALCUM",
+      "ORNAMENTAL_FAN",
+      "ORRERY",
+      "PANTOGRAPH",
+      "PARRYING_SHIELD",
+      "PEAR",
+      "PEN_NIB",
+      "PENDULUM",
+      "PERMAFROST",
+      "PETRIFIED_TOAD",
+      "PLANISPHERE",
+      "POCKETWATCH",
+      "POTION_BELT",
+      "PRAYER_WHEEL",
+      "PUNCH_DAGGER",
+      "RAINBOW_RING",
+      "RAZOR_TOOTH",
+      "RED_MASK",
+      "REGAL_PILLOW",
+      "REPTILE_TRINKET",
+      "RINGING_TRIANGLE",
+      "RIPPLE_BASIN",
+      "ROYAL_STAMP",
+      "SCREAMING_FLAGON",
+      "SHOVEL",
+      "SHURIKEN",
+      "SLING_OF_COURAGE",
+      "SPARKLING_ROUGE",
+      "STONE_CALENDAR",
+      "STONE_CRACKER",
+      "STRAWBERRY",
+      "STRIKE_DUMMY",
+      "STURDY_CLAMP",
+      "THE_ABACUS",
+      "THE_COURIER",
+      "TINY_MAILBOX",
+      "TOOLBOX",
+      "TOXIC_EGG",
+      "TUNGSTEN_ROD",
+      "TUNING_FORK",
+      "UNCEASING_TOP",
+      "UNSETTLING_LAMP",
+      "VAJRA",
+      "VAMBRACE",
+      "VENERABLE_TEA_SET",
+      "VERY_HOT_COCOA",
+      "VEXING_PUZZLEBOX",
+      "WAR_PAINT",
+      "WHETSTONE",
+      "WHITE_BEAST_STATUE",
+      "WHITE_STAR",
+      "WING_CHARM"
+    ]
+  },
+  "sharedAncients": [
+    "DARV"
+  ],
+  "sharedEvents": [
+    "BrainLeech",
+    "CrystalSphere",
+    "DollRoom",
+    "FakeMerchant",
+    "PotionCourier",
+    "RanwidTheElder",
+    "RelicTrader",
+    "RoomFullOfCheese",
+    "SelfHelpBook",
+    "SlipperyBridge",
+    "StoneOfAllTime",
+    "Symbiote",
+    "TeaMaster",
+    "TheFutureOfPotions",
+    "TheLegendsWereTrue",
+    "ThisOrThat",
+    "WarHistorianRepy",
+    "WelcomeToWongos"
+  ]
+}

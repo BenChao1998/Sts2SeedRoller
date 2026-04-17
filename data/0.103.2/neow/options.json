@@ -1,0 +1,7564 @@
+{
+  "version": "0.103.2",
+  "options": [
+    {
+      "id": "ARCANE_SCROLL",
+      "relic_id": "ARCANE_SCROLL",
+      "kind": "Positive",
+      "title": "奥术卷轴",
+      "description": "获得一张随机[gold]稀有牌[/gold]。",
+      "note": null
+    },
+    {
+      "id": "BOOMING_CONCH",
+      "relic_id": "BOOMING_CONCH",
+      "kind": "Positive",
+      "title": "轰鸣海螺",
+      "description": "在[gold]精英[/gold]战的战斗开始时，额外抽[blue]{Cards}[/blue]张牌。",
+      "note": null
+    },
+    {
+      "id": "GOLDEN_PEARL",
+      "relic_id": "GOLDEN_PEARL",
+      "kind": "Positive",
+      "title": "金色珍珠",
+      "description": "拾起时，获得[blue]{Gold}[/blue][gold]金币[/gold]。",
+      "note": null
+    },
+    {
+      "id": "LEAD_PAPERWEIGHT",
+      "relic_id": "LEAD_PAPERWEIGHT",
+      "kind": "Positive",
+      "title": "铅制镇纸",
+      "description": "从[blue]2[/blue]张无色牌中选择[blue]1张[/blue]加入你的[gold]牌组[/gold]。",
+      "note": null
+    },
+    {
+      "id": "LOST_COFFER",
+      "relic_id": "LOST_COFFER",
+      "kind": "Positive",
+      "title": "失物盒",
+      "description": "获得[blue]1[/blue]次卡牌奖励和[blue]1[/blue]瓶随机[gold]药水[/gold]。",
+      "note": null
+    },
+    {
+      "id": "NEOWS_TORMENT",
+      "relic_id": "NEOWS_TORMENT",
+      "kind": "Positive",
+      "title": "涅奥的苦痛",
+      "description": "将[blue]1[/blue]张[gold]涅奥之怒[/gold]加入你的[gold]牌组[/gold]。",
+      "note": null
+    },
+    {
+      "id": "NEW_LEAF",
+      "relic_id": "NEW_LEAF",
+      "kind": "Positive",
+      "title": "新叶",
+      "description": "[gold]变化[/gold][blue]{Cards}[/blue]张牌。",
+      "note": null
+    },
+    {
+      "id": "PRECISE_SCISSORS",
+      "relic_id": "PRECISE_SCISSORS",
+      "kind": "Positive",
+      "title": "精准剪刀",
+      "description": "从你的[gold]牌组[/gold]中移除[blue]{Cards}[/blue]张牌。",
+      "note": null
+    },
+    {
+      "id": "PHIAL_HOLSTER",
+      "relic_id": "PHIAL_HOLSTER",
+      "kind": "Positive",
+      "title": "药瓶皮套",
+      "description": "获得[blue]{PotionSlots}[/blue]个药水{PotionSlots:plural:栏位|栏位}并获得[blue]{Potions}[/blue]瓶随机{Potions:plural:药水|药水}。",
+      "note": null
+    },
+    {
+      "id": "WINGED_BOOTS",
+      "relic_id": "WINGED_BOOTS",
+      "kind": "Positive",
+      "title": "羽翼之靴",
+      "description": "你在选择下一层的房间时有[blue]{Rooms}[/blue]次机会可以无视当前的路线。",
+      "note": null
+    },
+    {
+      "id": "MASSIVE_SCROLL",
+      "relic_id": "MASSIVE_SCROLL",
+      "kind": "Positive",
+      "title": "巨大卷轴",
+      "description": "从[blue]3[/blue]张[gold]多人游戏牌[/gold]中选择[blue]1[/blue]张加入你的[gold]牌组[/gold]",
+      "note": "牧师"
+    },
+    {
+      "id": "LAVA_ROCK",
+      "relic_id": "LAVA_ROCK",
+      "kind": "Positive",
+      "title": "熔岩石",
+      "description": "第一阶段的Boss敌人额外掉落[blue]{Relics}[/blue]件[gold]遗物[/gold]。",
+      "note": "耐心"
+    },
+    {
+      "id": "NEOWS_TALISMAN",
+      "relic_id": "NEOWS_TALISMAN",
+      "kind": "Positive",
+      "title": "涅奥的护符",
+      "description": "[gold]升级[/gold]你的[blue]1[/blue]张[gold]打击[/gold]和[blue]1[/blue]张[gold]防御[/gold]。",
+      "note": null
+    },
+    {
+      "id": "NUTRITIOUS_OYSTER",
+      "relic_id": "NUTRITIOUS_OYSTER",
+      "kind": "Positive",
+      "title": "营养牡蛎",
+      "description": "获得[blue]{MaxHp}[/blue]点最大生命值。",
+      "note": "韧性"
+    },
+    {
+      "id": "POMANDER",
+      "relic_id": "POMANDER",
+      "kind": "Positive",
+      "title": "橙型香盒",
+      "description": "[gold]升级[/gold]一张牌。",
+      "note": null
+    },
+    {
+      "id": "SMALL_CAPSULE",
+      "relic_id": "SMALL_CAPSULE",
+      "kind": "Positive",
+      "title": "小型扭蛋",
+      "description": "获得一件随机[gold]遗物[/gold]。",
+      "note": "拾荒"
+    },
+    {
+      "id": "STONE_HUMIDIFIER",
+      "relic_id": "STONE_HUMIDIFIER",
+      "kind": "Positive",
+      "title": "石炉加湿器",
+      "description": "每当你在[gold]休息处[/gold][gold]休息[/gold]时，将你的最大生命值提升[blue]{MaxHp}[/blue]点。",
+      "note": "安全"
+    },
+    {
+      "id": "CURSED_PEARL",
+      "relic_id": "CURSED_PEARL",
+      "kind": "Negative",
+      "title": "诅咒珍珠",
+      "description": "获得一张[red]贪婪[/red]，获得[blue]{Gold}[/blue][gold]金币[/gold]。",
+      "note": null
+    },
+    {
+      "id": "HEFTY_TABLET",
+      "relic_id": "HEFTY_TABLET",
+      "kind": "Negative",
+      "title": "沉重石板",
+      "description": "从[blue]{Cards}[/blue]张稀有牌中选择[blue]1[/blue]张加入你的[gold]牌组[/gold]。将[blue]1[/blue]张[red]受伤[/red]加入你的[gold]牌组[/gold]。",
+      "note": null
+    },
+    {
+      "id": "LARGE_CAPSULE",
+      "relic_id": "LARGE_CAPSULE",
+      "kind": "Negative",
+      "title": "巨大扭蛋",
+      "description": "获得[blue]{Relics}[/blue]件随机[gold]遗物[/gold]。额外将一对[gold]打击[/gold]和[gold]防御[/gold]，加入你的[gold]牌组[/gold]。",
+      "note": null
+    },
+    {
+      "id": "LEAFY_POULTICE",
+      "relic_id": "LEAFY_POULTICE",
+      "kind": "Negative",
+      "title": "树叶药膏",
+      "description": "[gold]变化[/gold]你的[blue]1[/blue]张[gold]打击[/gold]和[blue]1[/blue]张[gold]防御[/gold]，然后失去[red]{MaxHp}[/red]点最大生命。",
+      "note": null
+    },
+    {
+      "id": "PRECARIOUS_SHEARS",
+      "relic_id": "PRECARIOUS_SHEARS",
+      "kind": "Negative",
+      "title": "松动羊毛剪",
+      "description": "从你的[gold]牌组[/gold]中移除[blue]{Cards}[/blue]张牌，然后失去[red]{Damage}[/red]点生命。",
+      "note": null
+    },
+    {
+      "id": "SILVER_CRUCIBLE",
+      "relic_id": "SILVER_CRUCIBLE",
+      "kind": "Negative",
+      "title": "白银熔炉",
+      "description": "你遇到的前[blue]{Cards}[/blue]次卡牌奖励将是被[gold]升级[/gold]过的。你打开的第一个宝箱将是[red]空的[/red]",
+      "note": "灌能"
+    },
+    {
+      "id": "NEOWS_BONES",
+      "relic_id": "NEOWS_BONES",
+      "kind": "Negative",
+      "title": "涅奥的骨头",
+      "description": "获得[blue]{Relics}[/blue]件随机[gold]涅奥{Relics:plural:遗物|遗物}[/gold]。将[blue]{Curses}[/blue]张随机[red]{Curses:plural:诅咒|诅咒}[/red]加入你的[gold]牌组[/gold]。",
+      "note": null
+    },
+    {
+      "id": "SCROLL_BOXES",
+      "relic_id": "SCROLL_BOXES",
+      "kind": "Negative",
+      "title": "卷轴箱",
+      "description": "[red]失去[/red]所有金币，并从[blue]2[/blue]个卡牌包中选择[blue]1包[/blue]加入你的[gold]牌组[/gold]。",
+      "note": "礼盒"
+    }
+  ],
+  "cards": [
+    {
+      "id": "ABRASIVE",
+      "name": "磨蚀"
+    },
+    {
+      "id": "ACCELERANT",
+      "name": "触媒"
+    },
+    {
+      "id": "ACCURACY",
+      "name": "精准"
+    },
+    {
+      "id": "ACROBATICS",
+      "name": "杂技"
+    },
+    {
+      "id": "ADAPTIVE_STRIKE",
+      "name": "适应打击"
+    },
+    {
+      "id": "ADRENALINE",
+      "name": "肾上腺素"
+    },
+    {
+      "id": "AFTERIMAGE",
+      "name": "余像"
+    },
+    {
+      "id": "AFTERLIFE",
+      "name": "来生"
+    },
+    {
+      "id": "AGGRESSION",
+      "name": "好勇斗狠"
+    },
+    {
+      "id": "ALCHEMIZE",
+      "name": "炼制药水"
+    },
+    {
+      "id": "ALIGNMENT",
+      "name": "星位序列"
+    },
+    {
+      "id": "ALL_FOR_ONE",
+      "name": "万物一心"
+    },
+    {
+      "id": "ANGER",
+      "name": "愤怒"
+    },
+    {
+      "id": "ANOINTED",
+      "name": "天选"
+    },
+    {
+      "id": "ANTICIPATE",
+      "name": "预判"
+    },
+    {
+      "id": "APOTHEOSIS",
+      "name": "神化"
+    },
+    {
+      "id": "APPARITION",
+      "name": "灵体"
+    },
+    {
+      "id": "ARMAMENTS",
+      "name": "武装"
+    },
+    {
+      "id": "ARSENAL",
+      "name": "武器库"
+    },
+    {
+      "id": "ASCENDERS_BANE",
+      "name": "进阶之灾"
+    },
+    {
+      "id": "ASHEN_STRIKE",
+      "name": "灰烬打击"
+    },
+    {
+      "id": "ASSASSINATE",
+      "name": "刺杀"
+    },
+    {
+      "id": "ASTRAL_PULSE",
+      "name": "星界脉冲"
+    },
+    {
+      "id": "AUTOMATION",
+      "name": "自动化"
+    },
+    {
+      "id": "BACKFLIP",
+      "name": "后空翻"
+    },
+    {
+      "id": "BACKSTAB",
+      "name": "背刺"
+    },
+    {
+      "id": "BAD_LUCK",
+      "name": "霉运"
+    },
+    {
+      "id": "BALL_LIGHTNING",
+      "name": "球状闪电"
+    },
+    {
+      "id": "BANSHEES_CRY",
+      "name": "女妖之嚎"
+    },
+    {
+      "id": "BARRAGE",
+      "name": "弹幕齐射"
+    },
+    {
+      "id": "BARRICADE",
+      "name": "壁垒"
+    },
+    {
+      "id": "BASH",
+      "name": "痛击"
+    },
+    {
+      "id": "BATTLE_TRANCE",
+      "name": "战斗专注"
+    },
+    {
+      "id": "BEACON_OF_HOPE",
+      "name": "希望灯塔"
+    },
+    {
+      "id": "BEAM_CELL",
+      "name": "光束射线"
+    },
+    {
+      "id": "BEAT_DOWN",
+      "name": "狠揍"
+    },
+    {
+      "id": "BEAT_INTO_SHAPE",
+      "name": "锻打成型"
+    },
+    {
+      "id": "BECKON",
+      "name": "呼唤"
+    },
+    {
+      "id": "BEGONE",
+      "name": "下去！"
+    },
+    {
+      "id": "BELIEVE_IN_YOU",
+      "name": "相信着你"
+    },
+    {
+      "id": "BIASED_COGNITION",
+      "name": "偏差认知"
+    },
+    {
+      "id": "BIG_BANG",
+      "name": "大爆炸"
+    },
+    {
+      "id": "BLACK_HOLE",
+      "name": "黑洞"
+    },
+    {
+      "id": "BLADE_DANCE",
+      "name": "刀刃之舞"
+    },
+    {
+      "id": "BLADE_OF_INK",
+      "name": "墨之刃"
+    },
+    {
+      "id": "BLIGHT_STRIKE",
+      "name": "荒疫打击"
+    },
+    {
+      "id": "BLOODLETTING",
+      "name": "放血"
+    },
+    {
+      "id": "BLOOD_WALL",
+      "name": "血墙"
+    },
+    {
+      "id": "BLUDGEON",
+      "name": "重锤"
+    },
+    {
+      "id": "BLUR",
+      "name": "残影"
+    },
+    {
+      "id": "BODYGUARD",
+      "name": "护卫"
+    },
+    {
+      "id": "BODY_SLAM",
+      "name": "全身撞击"
+    },
+    {
+      "id": "BOLAS",
+      "name": "流星锤"
+    },
+    {
+      "id": "BOMBARDMENT",
+      "name": "轰击"
+    },
+    {
+      "id": "BONE_SHARDS",
+      "name": "碎骨"
+    },
+    {
+      "id": "BOOST_AWAY",
+      "name": "高速脱离"
+    },
+    {
+      "id": "BOOT_SEQUENCE",
+      "name": "启动流程"
+    },
+    {
+      "id": "BORROWED_TIME",
+      "name": "预借时间"
+    },
+    {
+      "id": "BOUNCING_FLASK",
+      "name": "弹跳药瓶"
+    },
+    {
+      "id": "BRAND",
+      "name": "烙印"
+    },
+    {
+      "id": "BREAK",
+      "name": "破击"
+    },
+    {
+      "id": "BREAKTHROUGH",
+      "name": "突破"
+    },
+    {
+      "id": "BRIGHTEST_FLAME",
+      "name": "至亮之焰"
+    },
+    {
+      "id": "BUBBLE_BUBBLE",
+      "name": "咕嘟冒泡"
+    },
+    {
+      "id": "BUFFER",
+      "name": "缓冲"
+    },
+    {
+      "id": "BULK_UP",
+      "name": "暴涨"
+    },
+    {
+      "id": "BULLET_TIME",
+      "name": "子弹时间"
+    },
+    {
+      "id": "BULLY",
+      "name": "欺凌"
+    },
+    {
+      "id": "BULWARK",
+      "name": "铸墙"
+    },
+    {
+      "id": "BUNDLE_OF_JOY",
+      "name": "新生之喜"
+    },
+    {
+      "id": "BURN",
+      "name": "灼伤"
+    },
+    {
+      "id": "BURNING_PACT",
+      "name": "燃烧契约"
+    },
+    {
+      "id": "BURST",
+      "name": "爆发"
+    },
+    {
+      "id": "BURY",
+      "name": "埋葬"
+    },
+    {
+      "id": "BYRDONIS_EGG",
+      "name": "多尼斯异鸟蛋"
+    },
+    {
+      "id": "BYRD_SWOOP",
+      "name": "异鸟扑击"
+    },
+    {
+      "id": "CALAMITY",
+      "name": "灾祸"
+    },
+    {
+      "id": "CALCIFY",
+      "name": "钙化"
+    },
+    {
+      "id": "CALCULATED_GAMBLE",
+      "name": "计算下注"
+    },
+    {
+      "id": "CALL_OF_THE_VOID",
+      "name": "虚空之唤"
+    },
+    {
+      "id": "CALTROPS",
+      "name": "铁蒺藜"
+    },
+    {
+      "id": "CAPACITOR",
+      "name": "扩容"
+    },
+    {
+      "id": "CAPTURE_SPIRIT",
+      "name": "捕捉灵魂"
+    },
+    {
+      "id": "CASCADE",
+      "name": "倾泻"
+    },
+    {
+      "id": "CATASTROPHE",
+      "name": "横祸"
+    },
+    {
+      "id": "CELESTIAL_MIGHT",
+      "name": "天穹之力"
+    },
+    {
+      "id": "CHAOS",
+      "name": "混沌"
+    },
+    {
+      "id": "CHARGE",
+      "name": "冲锋！！"
+    },
+    {
+      "id": "CHARGE_BATTERY",
+      "name": "充电"
+    },
+    {
+      "id": "CHILD_OF_THE_STARS",
+      "name": "群星之子"
+    },
+    {
+      "id": "CHILL",
+      "name": "冰寒"
+    },
+    {
+      "id": "CHRYSALIS",
+      "name": "结茧"
+    },
+    {
+      "id": "CINDER",
+      "name": "余烬"
+    },
+    {
+      "id": "CLASH",
+      "name": "交锋"
+    },
+    {
+      "id": "CLAW",
+      "name": "爪击"
+    },
+    {
+      "id": "CLEANSE",
+      "name": "洁净"
+    },
+    {
+      "id": "CLOAK_AND_DAGGER",
+      "name": "斗篷与匕首"
+    },
+    {
+      "id": "CLOAK_OF_STARS",
+      "name": "群星斗篷"
+    },
+    {
+      "id": "CLUMSY",
+      "name": "笨拙"
+    },
+    {
+      "id": "COLD_SNAP",
+      "name": "寒流"
+    },
+    {
+      "id": "COLLISION_COURSE",
+      "name": "碰撞轨迹"
+    },
+    {
+      "id": "COLOSSUS",
+      "name": "巨像"
+    },
+    {
+      "id": "COMET",
+      "name": "彗星"
+    },
+    {
+      "id": "COMPACT",
+      "name": "压缩"
+    },
+    {
+      "id": "COMPILE_DRIVER",
+      "name": "编译冲击"
+    },
+    {
+      "id": "CONFLAGRATION",
+      "name": "焚烧"
+    },
+    {
+      "id": "CONQUEROR",
+      "name": "征服者"
+    },
+    {
+      "id": "CONSUMING_SHADOW",
+      "name": "吞噬暗影"
+    },
+    {
+      "id": "CONVERGENCE",
+      "name": "汇流"
+    },
+    {
+      "id": "COOLANT",
+      "name": "冷却剂"
+    },
+    {
+      "id": "COOLHEADED",
+      "name": "冷静头脑"
+    },
+    {
+      "id": "COORDINATE",
+      "name": "协同配合"
+    },
+    {
+      "id": "CORROSIVE_WAVE",
+      "name": "腐蚀波"
+    },
+    {
+      "id": "CORRUPTION",
+      "name": "腐化"
+    },
+    {
+      "id": "COSMIC_INDIFFERENCE",
+      "name": "宇宙冷漠"
+    },
+    {
+      "id": "COUNTDOWN",
+      "name": "倒数计时"
+    },
+    {
+      "id": "CRASH_LANDING",
+      "name": "迫降"
+    },
+    {
+      "id": "CREATIVE_AI",
+      "name": "创造性AI"
+    },
+    {
+      "id": "CRESCENT_SPEAR",
+      "name": "新月长矛"
+    },
+    {
+      "id": "CRIMSON_MANTLE",
+      "name": "绯红披风"
+    },
+    {
+      "id": "CRUELTY",
+      "name": "残酷"
+    },
+    {
+      "id": "CRUSH_UNDER",
+      "name": "下砸"
+    },
+    {
+      "id": "CURSE_OF_THE_BELL",
+      "name": "铃铛的诅咒"
+    },
+    {
+      "id": "DAGGER_SPRAY",
+      "name": "匕首雨"
+    },
+    {
+      "id": "DAGGER_THROW",
+      "name": "投掷匕首"
+    },
+    {
+      "id": "DANSE_MACABRE",
+      "name": "死亡之舞"
+    },
+    {
+      "id": "DARKNESS",
+      "name": "漆黑"
+    },
+    {
+      "id": "DARK_EMBRACE",
+      "name": "黑暗之拥"
+    },
+    {
+      "id": "DARK_SHACKLES",
+      "name": "黑暗镣铐"
+    },
+    {
+      "id": "DASH",
+      "name": "冲刺"
+    },
+    {
+      "id": "DAZED",
+      "name": "晕眩"
+    },
+    {
+      "id": "DEADLY_POISON",
+      "name": "致命毒药"
+    },
+    {
+      "id": "DEATHBRINGER",
+      "name": "死亡使者"
+    },
+    {
+      "id": "DEATHS_DOOR",
+      "name": "死亡之门"
+    },
+    {
+      "id": "DEATH_MARCH",
+      "name": "死亡行军"
+    },
+    {
+      "id": "DEBILITATE",
+      "name": "摧残"
+    },
+    {
+      "id": "DEBRIS",
+      "name": "碎屑"
+    },
+    {
+      "id": "DEBT",
+      "name": "债务"
+    },
+    {
+      "id": "DECAY",
+      "name": "腐朽"
+    },
+    {
+      "id": "DECISIONS_DECISIONS",
+      "name": "抉择，抉择"
+    },
+    {
+      "id": "DEFEND_DEFECT",
+      "name": "防御"
+    },
+    {
+      "id": "DEFEND_IRONCLAD",
+      "name": "防御"
+    },
+    {
+      "id": "DEFEND_NECROBINDER",
+      "name": "防御"
+    },
+    {
+      "id": "DEFEND_REGENT",
+      "name": "防御"
+    },
+    {
+      "id": "DEFEND_SILENT",
+      "name": "防御"
+    },
+    {
+      "id": "DEFILE",
+      "name": "玷污"
+    },
+    {
+      "id": "DEFLECT",
+      "name": "偏折"
+    },
+    {
+      "id": "DEFRAGMENT",
+      "name": "碎片整理"
+    },
+    {
+      "id": "DEFY",
+      "name": "违逆"
+    },
+    {
+      "id": "DELAY",
+      "name": "拖延"
+    },
+    {
+      "id": "DEMESNE",
+      "name": "领域"
+    },
+    {
+      "id": "DEMONIC_SHIELD",
+      "name": "恶魔护盾"
+    },
+    {
+      "id": "DEMON_FORM",
+      "name": "恶魔形态"
+    },
+    {
+      "id": "DEPRECATED_CARD",
+      "name": "弃用卡牌"
+    },
+    {
+      "id": "DESPAIR",
+      "name": "绝望"
+    },
+    {
+      "id": "DEVASTATE",
+      "name": "葬送"
+    },
+    {
+      "id": "DEVOUR_LIFE",
+      "name": "吞噬生命"
+    },
+    {
+      "id": "DIRGE",
+      "name": "挽歌"
+    },
+    {
+      "id": "DISCOVERY",
+      "name": "发现"
+    },
+    {
+      "id": "DISINTEGRATION",
+      "name": "瓦解"
+    },
+    {
+      "id": "DISMANTLE",
+      "name": "拆卸"
+    },
+    {
+      "id": "DISTRACTION",
+      "name": "声东击西"
+    },
+    {
+      "id": "DODGE_AND_ROLL",
+      "name": "闪躲翻滚"
+    },
+    {
+      "id": "DOMINATE",
+      "name": "主宰"
+    },
+    {
+      "id": "DOUBLE_ENERGY",
+      "name": "双倍能量"
+    },
+    {
+      "id": "DOUBT",
+      "name": "疑虑"
+    },
+    {
+      "id": "DRAIN_POWER",
+      "name": "能量汲取"
+    },
+    {
+      "id": "DRAMATIC_ENTRANCE",
+      "name": "闪亮登场"
+    },
+    {
+      "id": "DREDGE",
+      "name": "清淤"
+    },
+    {
+      "id": "DRUM_OF_BATTLE",
+      "name": "战鼓"
+    },
+    {
+      "id": "DUALCAST",
+      "name": "双重释放"
+    },
+    {
+      "id": "DUAL_WIELD",
+      "name": "双持"
+    },
+    {
+      "id": "DYING_STAR",
+      "name": "星灭"
+    },
+    {
+      "id": "ECHOING_SLASH",
+      "name": "回响斩击"
+    },
+    {
+      "id": "ECHO_FORM",
+      "name": "回响形态"
+    },
+    {
+      "id": "EIDOLON",
+      "name": "幻景"
+    },
+    {
+      "id": "END_OF_DAYS",
+      "name": "末日降临"
+    },
+    {
+      "id": "ENERGY_SURGE",
+      "name": "能量涌动"
+    },
+    {
+      "id": "ENFEEBLING_TOUCH",
+      "name": "弱化之触"
+    },
+    {
+      "id": "ENLIGHTENMENT",
+      "name": "开悟"
+    },
+    {
+      "id": "ENTHRALLED",
+      "name": "执迷"
+    },
+    {
+      "id": "ENTRENCH",
+      "name": "巩固"
+    },
+    {
+      "id": "ENTROPY",
+      "name": "熵"
+    },
+    {
+      "id": "ENVENOM",
+      "name": "涂毒"
+    },
+    {
+      "id": "EQUILIBRIUM",
+      "name": "均衡"
+    },
+    {
+      "id": "ERADICATE",
+      "name": "根除"
+    },
+    {
+      "id": "ESCAPE_PLAN",
+      "name": "逃脱计划"
+    },
+    {
+      "id": "ETERNAL_ARMOR",
+      "name": "永恒铠甲"
+    },
+    {
+      "id": "EVIL_EYE",
+      "name": "邪眼"
+    },
+    {
+      "id": "EXPECT_A_FIGHT",
+      "name": "跃跃欲试"
+    },
+    {
+      "id": "EXPERTISE",
+      "name": "独门技术"
+    },
+    {
+      "id": "EXPOSE",
+      "name": "暴露"
+    },
+    {
+      "id": "EXTERMINATE",
+      "name": "杀灭"
+    },
+    {
+      "id": "FALLING_STAR",
+      "name": "陨星"
+    },
+    {
+      "id": "FAN_OF_KNIVES",
+      "name": "刀扇"
+    },
+    {
+      "id": "FASTEN",
+      "name": "勒紧"
+    },
+    {
+      "id": "FEAR",
+      "name": "恐惧"
+    },
+    {
+      "id": "FEED",
+      "name": "狂宴"
+    },
+    {
+      "id": "FEEDING_FRENZY",
+      "name": "疯狂进食"
+    },
+    {
+      "id": "FEEL_NO_PAIN",
+      "name": "无惧疼痛"
+    },
+    {
+      "id": "FERAL",
+      "name": "野性"
+    },
+    {
+      "id": "FETCH",
+      "name": "取回"
+    },
+    {
+      "id": "FIEND_FIRE",
+      "name": "恶魔之焰"
+    },
+    {
+      "id": "FIGHT_ME",
+      "name": "与我一战！"
+    },
+    {
+      "id": "FIGHT_THROUGH",
+      "name": "强撑"
+    },
+    {
+      "id": "FINESSE",
+      "name": "妙计"
+    },
+    {
+      "id": "FINISHER",
+      "name": "终结技"
+    },
+    {
+      "id": "FISTICUFFS",
+      "name": "拳斗"
+    },
+    {
+      "id": "FLAK_CANNON",
+      "name": "散射炮"
+    },
+    {
+      "id": "FLAME_BARRIER",
+      "name": "火焰屏障"
+    },
+    {
+      "id": "FLAME_IN_THE_DARK",
+      "name": "暗中之火"
+    },
+    {
+      "id": "FLANKING",
+      "name": "夹击"
+    },
+    {
+      "id": "FLASH_OF_STEEL",
+      "name": "亮剑"
+    },
+    {
+      "id": "FLATTEN",
+      "name": "重压"
+    },
+    {
+      "id": "FLECHETTES",
+      "name": "飞镖"
+    },
+    {
+      "id": "FLICK_FLACK",
+      "name": "翻越撑击"
+    },
+    {
+      "id": "FOCUSED_STRIKE",
+      "name": "集中打击"
+    },
+    {
+      "id": "FOLLOW_THROUGH",
+      "name": "跟进"
+    },
+    {
+      "id": "FOLLY",
+      "name": "愚行"
+    },
+    {
+      "id": "FOOTWORK",
+      "name": "灵动步法"
+    },
+    {
+      "id": "FORBIDDEN_GRIMOIRE",
+      "name": "禁忌魔典"
+    },
+    {
+      "id": "FOREGONE_CONCLUSION",
+      "name": "既定事项"
+    },
+    {
+      "id": "FORGOTTEN_RITUAL",
+      "name": "被遗忘的仪式"
+    },
+    {
+      "id": "FRANTIC_ESCAPE",
+      "name": "狂乱逃离"
+    },
+    {
+      "id": "FRIENDSHIP",
+      "name": "友谊"
+    },
+    {
+      "id": "FTL",
+      "name": "超越光速"
+    },
+    {
+      "id": "FUEL",
+      "name": "燃料"
+    },
+    {
+      "id": "FURNACE",
+      "name": "熔炉"
+    },
+    {
+      "id": "FUSION",
+      "name": "聚变"
+    },
+    {
+      "id": "GAMMA_BLAST",
+      "name": "伽马爆破"
+    },
+    {
+      "id": "GANG_UP",
+      "name": "群起攻之"
+    },
+    {
+      "id": "GATHER_LIGHT",
+      "name": "收集光辉"
+    },
+    {
+      "id": "GENESIS",
+      "name": "创世纪"
+    },
+    {
+      "id": "GENETIC_ALGORITHM",
+      "name": "遗传算法"
+    },
+    {
+      "id": "GHOST_EATER",
+      "name": "噬魂者"
+    },
+    {
+      "id": "GIANT_ROCK",
+      "name": "巨石"
+    },
+    {
+      "id": "GLACIER",
+      "name": "冰川"
+    },
+    {
+      "id": "GLASSWORK",
+      "name": "玻璃工艺"
+    },
+    {
+      "id": "GLIMMER",
+      "name": "微光"
+    },
+    {
+      "id": "GLIMPSE_BEYOND",
+      "name": "彼岸一瞥"
+    },
+    {
+      "id": "GLITTERSTREAM",
+      "name": "流光溢彩"
+    },
+    {
+      "id": "GLOW",
+      "name": "辉光"
+    },
+    {
+      "id": "GOLD_AXE",
+      "name": "金斧"
+    },
+    {
+      "id": "GOOD_INSTINCTS",
+      "name": "优秀直觉"
+    },
+    {
+      "id": "GO_FOR_THE_EYES",
+      "name": "眼部攻击"
+    },
+    {
+      "id": "GRAND_FINALE",
+      "name": "华丽收场"
+    },
+    {
+      "id": "GRAPPLE",
+      "name": "擒拿"
+    },
+    {
+      "id": "GRAVEBLAST",
+      "name": "坟冢爆射"
+    },
+    {
+      "id": "GRAVE_WARDEN",
+      "name": "守墓人"
+    },
+    {
+      "id": "GREED",
+      "name": "贪婪"
+    },
+    {
+      "id": "GUARDS",
+      "name": "护驾！！！"
+    },
+    {
+      "id": "GUIDING_STAR",
+      "name": "引导之星"
+    },
+    {
+      "id": "GUILTY",
+      "name": "愧疚"
+    },
+    {
+      "id": "GUNK_UP",
+      "name": "污秽攻击"
+    },
+    {
+      "id": "HAILSTORM",
+      "name": "冰雹风暴"
+    },
+    {
+      "id": "HAMMER_TIME",
+      "name": "锤子时间"
+    },
+    {
+      "id": "HAND_OF_GREED",
+      "name": "贪婪之手"
+    },
+    {
+      "id": "HAND_TRICK",
+      "name": "手上技法"
+    },
+    {
+      "id": "HANG",
+      "name": "吊杀"
+    },
+    {
+      "id": "HAUNT",
+      "name": "纠缠"
+    },
+    {
+      "id": "HAVOC",
+      "name": "破灭"
+    },
+    {
+      "id": "HAZE",
+      "name": "迷雾"
+    },
+    {
+      "id": "HEADBUTT",
+      "name": "头槌"
+    },
+    {
+      "id": "HEAVENLY_DRILL",
+      "name": "天际钻头"
+    },
+    {
+      "id": "HEGEMONY",
+      "name": "霸权"
+    },
+    {
+      "id": "HEIRLOOM_HAMMER",
+      "name": "传承之锤"
+    },
+    {
+      "id": "HELIX_DRILL",
+      "name": "螺旋钻击"
+    },
+    {
+      "id": "HELLO_WORLD",
+      "name": "你好世界"
+    },
+    {
+      "id": "HELLRAISER",
+      "name": "地狱狂徒"
+    },
+    {
+      "id": "HEMOKINESIS",
+      "name": "御血术"
+    },
+    {
+      "id": "HIDDEN_CACHE",
+      "name": "隐秘藏品"
+    },
+    {
+      "id": "HIDDEN_DAGGERS",
+      "name": "隐秘匕首"
+    },
+    {
+      "id": "HIDDEN_GEM",
+      "name": "未掘宝石"
+    },
+    {
+      "id": "HIGH_FIVE",
+      "name": "击掌"
+    },
+    {
+      "id": "HOLOGRAM",
+      "name": "全息影像"
+    },
+    {
+      "id": "HOTFIX",
+      "name": "热修复"
+    },
+    {
+      "id": "HOWL_FROM_BEYOND",
+      "name": "彼岸咆哮"
+    },
+    {
+      "id": "HUDDLE_UP",
+      "name": "抱团"
+    },
+    {
+      "id": "HYPERBEAM",
+      "name": "超能光束"
+    },
+    {
+      "id": "ICE_LANCE",
+      "name": "冰之长枪"
+    },
+    {
+      "id": "IGNITION",
+      "name": "引火"
+    },
+    {
+      "id": "IMMORTALITY",
+      "name": "不朽"
+    },
+    {
+      "id": "IMPALE",
+      "name": "扎穿"
+    },
+    {
+      "id": "IMPATIENCE",
+      "name": "急躁"
+    },
+    {
+      "id": "IMPERVIOUS",
+      "name": "岿然不动"
+    },
+    {
+      "id": "INFECTION",
+      "name": "感染"
+    },
+    {
+      "id": "INFERNAL_BLADE",
+      "name": "地狱之刃"
+    },
+    {
+      "id": "INFERNO",
+      "name": "狱火"
+    },
+    {
+      "id": "INFINITE_BLADES",
+      "name": "无尽刀刃"
+    },
+    {
+      "id": "INFLAME",
+      "name": "燃烧"
+    },
+    {
+      "id": "INJURY",
+      "name": "受伤"
+    },
+    {
+      "id": "INTERCEPT",
+      "name": "拦截"
+    },
+    {
+      "id": "INVOKE",
+      "name": "唤起"
+    },
+    {
+      "id": "IRON_WAVE",
+      "name": "铁斩波"
+    },
+    {
+      "id": "ITERATION",
+      "name": "迭代"
+    },
+    {
+      "id": "I_AM_INVINCIBLE",
+      "name": "所向无敌"
+    },
+    {
+      "id": "JACKPOT",
+      "name": "大奖"
+    },
+    {
+      "id": "JACK_OF_ALL_TRADES",
+      "name": "花样百出"
+    },
+    {
+      "id": "JUGGERNAUT",
+      "name": "势不可当"
+    },
+    {
+      "id": "JUGGLING",
+      "name": "杂耍"
+    },
+    {
+      "id": "KINGLY_KICK",
+      "name": "王者之踢"
+    },
+    {
+      "id": "KINGLY_PUNCH",
+      "name": "王者之拳"
+    },
+    {
+      "id": "KNIFE_TRAP",
+      "name": "刀刃陷阱"
+    },
+    {
+      "id": "KNOCKDOWN",
+      "name": "击倒"
+    },
+    {
+      "id": "KNOCKOUT_BLOW",
+      "name": "决胜一击"
+    },
+    {
+      "id": "KNOW_THY_PLACE",
+      "name": "何人僭越"
+    },
+    {
+      "id": "LANTERN_KEY",
+      "name": "灯火钥匙"
+    },
+    {
+      "id": "LARGESSE",
+      "name": "慷慨捐助"
+    },
+    {
+      "id": "LEADING_STRIKE",
+      "name": "先制打击"
+    },
+    {
+      "id": "LEAP",
+      "name": "飞跃"
+    },
+    {
+      "id": "LEGION_OF_BONE",
+      "name": "骸骨军团"
+    },
+    {
+      "id": "LEG_SWEEP",
+      "name": "扫腿"
+    },
+    {
+      "id": "LETHALITY",
+      "name": "致死性"
+    },
+    {
+      "id": "LIFT",
+      "name": "托举"
+    },
+    {
+      "id": "LIGHTNING_ROD",
+      "name": "引雷针"
+    },
+    {
+      "id": "LOOP",
+      "name": "循环"
+    },
+    {
+      "id": "LUMINESCE",
+      "name": "冷光"
+    },
+    {
+      "id": "LUNAR_BLAST",
+      "name": "月面射击"
+    },
+    {
+      "id": "MACHINE_LEARNING",
+      "name": "机器学习"
+    },
+    {
+      "id": "MAD_SCIENCE",
+      "name": "疯狂科学"
+    },
+    {
+      "id": "MAKE_IT_SO",
+      "name": "如此甚好"
+    },
+    {
+      "id": "MALAISE",
+      "name": "萎靡"
+    },
+    {
+      "id": "MANGLE",
+      "name": "凌虐"
+    },
+    {
+      "id": "MANIFEST_AUTHORITY",
+      "name": "君权自授"
+    },
+    {
+      "id": "MASTER_OF_STRATEGY",
+      "name": "战略大师"
+    },
+    {
+      "id": "MASTER_PLANNER",
+      "name": "谋划专家"
+    },
+    {
+      "id": "MAUL",
+      "name": "撕咬"
+    },
+    {
+      "id": "MAYHEM",
+      "name": "乱战"
+    },
+    {
+      "id": "MELANCHOLY",
+      "name": "忧郁"
+    },
+    {
+      "id": "MEMENTO_MORI",
+      "name": "铭记死亡"
+    },
+    {
+      "id": "METAMORPHOSIS",
+      "name": "羽化"
+    },
+    {
+      "id": "METEOR_SHOWER",
+      "name": "流星雨"
+    },
+    {
+      "id": "METEOR_STRIKE",
+      "name": "陨石打击"
+    },
+    {
+      "id": "MIMIC",
+      "name": "拟态"
+    },
+    {
+      "id": "MIND_BLAST",
+      "name": "心灵震慑"
+    },
+    {
+      "id": "MIND_ROT",
+      "name": "心灵腐化"
+    },
+    {
+      "id": "MINION_DIVE_BOMB",
+      "name": "仆从俯冲"
+    },
+    {
+      "id": "MINION_SACRIFICE",
+      "name": "仆从捐躯"
+    },
+    {
+      "id": "MINION_STRIKE",
+      "name": "仆从打击"
+    },
+    {
+      "id": "MIRAGE",
+      "name": "蜃景"
+    },
+    {
+      "id": "MISERY",
+      "name": "苦难"
+    },
+    {
+      "id": "MOCK_ATTACK_CARD",
+      "name": "模拟攻击牌"
+    },
+    {
+      "id": "MOCK_CURSE_CARD",
+      "name": "模拟诅咒牌"
+    },
+    {
+      "id": "MOCK_POWER_CARD",
+      "name": "模拟能力牌"
+    },
+    {
+      "id": "MOCK_QUEST_CARD",
+      "name": "临时任务牌"
+    },
+    {
+      "id": "MOCK_SKILL_CARD",
+      "name": "模拟技能牌"
+    },
+    {
+      "id": "MOCK_STATUS_CARD",
+      "name": "模拟状态牌"
+    },
+    {
+      "id": "MODDED",
+      "name": "模组改造"
+    },
+    {
+      "id": "MOLTEN_FIST",
+      "name": "熔融之拳"
+    },
+    {
+      "id": "MOMENTUM_STRIKE",
+      "name": "趁势打击"
+    },
+    {
+      "id": "MONARCHS_GAZE",
+      "name": "王之凝视"
+    },
+    {
+      "id": "MONOLOGUE",
+      "name": "独白"
+    },
+    {
+      "id": "MULTI_CAST",
+      "name": "多重释放"
+    },
+    {
+      "id": "MURDER",
+      "name": "谋杀"
+    },
+    {
+      "id": "NECRO_MASTERY",
+      "name": "亡灵精通"
+    },
+    {
+      "id": "NEGATIVE_PULSE",
+      "name": "负能量脉冲"
+    },
+    {
+      "id": "NEOWS_FURY",
+      "name": "涅奥之怒"
+    },
+    {
+      "id": "NEUROSURGE",
+      "name": "精神过载"
+    },
+    {
+      "id": "NEUTRALIZE",
+      "name": "中和"
+    },
+    {
+      "id": "NEUTRON_AEGIS",
+      "name": "中子护盾"
+    },
+    {
+      "id": "NIGHTMARE",
+      "name": "夜魇"
+    },
+    {
+      "id": "NORMALITY",
+      "name": "凡庸"
+    },
+    {
+      "id": "NOSTALGIA",
+      "name": "怀旧"
+    },
+    {
+      "id": "NOXIOUS_FUMES",
+      "name": "毒雾"
+    },
+    {
+      "id": "NO_ESCAPE",
+      "name": "无处可逃"
+    },
+    {
+      "id": "NULL",
+      "name": "空无"
+    },
+    {
+      "id": "OBLIVION",
+      "name": "湮灭"
+    },
+    {
+      "id": "OFFERING",
+      "name": "祭品"
+    },
+    {
+      "id": "OFF_BY_ONE",
+      "name": "一线之差"
+    },
+    {
+      "id": "OMNISLICE",
+      "name": "万向斩"
+    },
+    {
+      "id": "ONE_TWO_PUNCH",
+      "name": "连环拳"
+    },
+    {
+      "id": "ORBIT",
+      "name": "环绕轨道"
+    },
+    {
+      "id": "OUTBREAK",
+      "name": "毒性爆发"
+    },
+    {
+      "id": "OUTMANEUVER",
+      "name": "抢占先机"
+    },
+    {
+      "id": "OVERCLOCK",
+      "name": "超频"
+    },
+    {
+      "id": "PACTS_END",
+      "name": "契约终结"
+    },
+    {
+      "id": "PAELS_STRIKE",
+      "name": "佩尔的打击"
+    },
+    {
+      "id": "PAGESTORM",
+      "name": "书页风暴"
+    },
+    {
+      "id": "PALE_BLUE_DOT",
+      "name": "暗淡蓝点"
+    },
+    {
+      "id": "PANACHE",
+      "name": "神气制胜"
+    },
+    {
+      "id": "PANIC_BUTTON",
+      "name": "应急按钮"
+    },
+    {
+      "id": "PARRY",
+      "name": "招架"
+    },
+    {
+      "id": "PARSE",
+      "name": "领会"
+    },
+    {
+      "id": "PARTICLE_WALL",
+      "name": "粒子墙"
+    },
+    {
+      "id": "PATTER",
+      "name": "星星点点"
+    },
+    {
+      "id": "PECK",
+      "name": "啄击"
+    },
+    {
+      "id": "PERFECTED_STRIKE",
+      "name": "完美打击"
+    },
+    {
+      "id": "PHANTOM_BLADES",
+      "name": "幻影之刃"
+    },
+    {
+      "id": "PHOTON_CUT",
+      "name": "光子切割"
+    },
+    {
+      "id": "PIERCING_WAIL",
+      "name": "尖啸"
+    },
+    {
+      "id": "PILLAGE",
+      "name": "劫掠"
+    },
+    {
+      "id": "PILLAR_OF_CREATION",
+      "name": "创世之柱"
+    },
+    {
+      "id": "PINPOINT",
+      "name": "精密瞄准"
+    },
+    {
+      "id": "PITY",
+      "name": "怜悯"
+    },
+    {
+      "id": "POISONED_STAB",
+      "name": "带毒刺击"
+    },
+    {
+      "id": "POKE",
+      "name": "戳击"
+    },
+    {
+      "id": "POMMEL_STRIKE",
+      "name": "剑柄打击"
+    },
+    {
+      "id": "POOR_SLEEP",
+      "name": "睡眠不佳"
+    },
+    {
+      "id": "POUNCE",
+      "name": "猛扑"
+    },
+    {
+      "id": "PRECISE_CUT",
+      "name": "精确切击"
+    },
+    {
+      "id": "PREDATOR",
+      "name": "猎杀者"
+    },
+    {
+      "id": "PREPARED",
+      "name": "早有准备"
+    },
+    {
+      "id": "PREP_TIME",
+      "name": "准备时间"
+    },
+    {
+      "id": "PRIMAL_FORCE",
+      "name": "原始力量"
+    },
+    {
+      "id": "PRODUCTION",
+      "name": "生产制造"
+    },
+    {
+      "id": "PROLONG",
+      "name": "延伸"
+    },
+    {
+      "id": "PROPHESIZE",
+      "name": "预言"
+    },
+    {
+      "id": "PROTECTOR",
+      "name": "守护者"
+    },
+    {
+      "id": "PROWESS",
+      "name": "非凡技艺"
+    },
+    {
+      "id": "PULL_AGGRO",
+      "name": "吸引仇恨"
+    },
+    {
+      "id": "PULL_FROM_BELOW",
+      "name": "亡魂牵引"
+    },
+    {
+      "id": "PURITY",
+      "name": "净化"
+    },
+    {
+      "id": "PUTREFY",
+      "name": "腐败"
+    },
+    {
+      "id": "PYRE",
+      "name": "薪火之源"
+    },
+    {
+      "id": "QUADCAST",
+      "name": "四重释放"
+    },
+    {
+      "id": "QUASAR",
+      "name": "类星体"
+    },
+    {
+      "id": "QUICK_SLASH",
+      "name": "快斩"
+    },
+    {
+      "id": "RADIATE",
+      "name": "辐射"
+    },
+    {
+      "id": "RAGE",
+      "name": "狂怒"
+    },
+    {
+      "id": "RAINBOW",
+      "name": "彩虹"
+    },
+    {
+      "id": "RALLY",
+      "name": "集结"
+    },
+    {
+      "id": "RAMPAGE",
+      "name": "暴走"
+    },
+    {
+      "id": "RATTLE",
+      "name": "猛晃"
+    },
+    {
+      "id": "REANIMATE",
+      "name": "死者苏生"
+    },
+    {
+      "id": "REAP",
+      "name": "收割"
+    },
+    {
+      "id": "REAPER_FORM",
+      "name": "死神形态"
+    },
+    {
+      "id": "REAVE",
+      "name": "剥夺"
+    },
+    {
+      "id": "REBOOT",
+      "name": "重启"
+    },
+    {
+      "id": "REBOUND",
+      "name": "弹回"
+    },
+    {
+      "id": "REFINE_BLADE",
+      "name": "淬炼刀刃"
+    },
+    {
+      "id": "REFLECT",
+      "name": "倒映"
+    },
+    {
+      "id": "REFLEX",
+      "name": "本能反应"
+    },
+    {
+      "id": "REFRACT",
+      "name": "折射"
+    },
+    {
+      "id": "REGRET",
+      "name": "悔恨"
+    },
+    {
+      "id": "RELAX",
+      "name": "放松"
+    },
+    {
+      "id": "REND",
+      "name": "撕碎"
+    },
+    {
+      "id": "RESERVES",
+      "name": "储备"
+    },
+    {
+      "id": "RESONANCE",
+      "name": "共鸣"
+    },
+    {
+      "id": "RESTLESSNESS",
+      "name": "心神不宁"
+    },
+    {
+      "id": "RICOCHET",
+      "name": "连续反弹"
+    },
+    {
+      "id": "RIGHT_HAND_HAND",
+      "name": "得力助手"
+    },
+    {
+      "id": "RIP_AND_TEAR",
+      "name": "狂乱撕扯"
+    },
+    {
+      "id": "ROCKET_PUNCH",
+      "name": "火箭飞拳"
+    },
+    {
+      "id": "ROLLING_BOULDER",
+      "name": "滚石"
+    },
+    {
+      "id": "ROYALTIES",
+      "name": "王国资产"
+    },
+    {
+      "id": "ROYAL_GAMBLE",
+      "name": "胜券在王"
+    },
+    {
+      "id": "RUPTURE",
+      "name": "撕裂"
+    },
+    {
+      "id": "SACRIFICE",
+      "name": "牺牲"
+    },
+    {
+      "id": "SALVO",
+      "name": "箭雨"
+    },
+    {
+      "id": "SCAVENGE",
+      "name": "再利用"
+    },
+    {
+      "id": "SCOURGE",
+      "name": "鞭打"
+    },
+    {
+      "id": "SCRAPE",
+      "name": "刮削"
+    },
+    {
+      "id": "SCRAWL",
+      "name": "潦草急就"
+    },
+    {
+      "id": "SCULPTING_STRIKE",
+      "name": "雕琢打击"
+    },
+    {
+      "id": "SEANCE",
+      "name": "降灵"
+    },
+    {
+      "id": "SECOND_WIND",
+      "name": "重振精神"
+    },
+    {
+      "id": "SECRET_TECHNIQUE",
+      "name": "秘密技法"
+    },
+    {
+      "id": "SECRET_WEAPON",
+      "name": "秘密武器"
+    },
+    {
+      "id": "SEEKER_STRIKE",
+      "name": "探寻打击"
+    },
+    {
+      "id": "SEEKING_EDGE",
+      "name": "追踪之刃"
+    },
+    {
+      "id": "SENTRY_MODE",
+      "name": "哨卫模式"
+    },
+    {
+      "id": "SERPENT_FORM",
+      "name": "群蛇形态"
+    },
+    {
+      "id": "SETUP_STRIKE",
+      "name": "预备打击"
+    },
+    {
+      "id": "SEVEN_STARS",
+      "name": "七星"
+    },
+    {
+      "id": "SEVERANCE",
+      "name": "切断"
+    },
+    {
+      "id": "SHADOWMELD",
+      "name": "融入暗影"
+    },
+    {
+      "id": "SHADOW_SHIELD",
+      "name": "暗影之盾"
+    },
+    {
+      "id": "SHADOW_STEP",
+      "name": "暗影步"
+    },
+    {
+      "id": "SHAME",
+      "name": "羞耻"
+    },
+    {
+      "id": "SHARED_FATE",
+      "name": "命运同担"
+    },
+    {
+      "id": "SHARP_EDGE",
+      "name": "锋利边缘"
+    },
+    {
+      "id": "SHATTER",
+      "name": "打碎"
+    },
+    {
+      "id": "SHINING_STRIKE",
+      "name": "明耀打击"
+    },
+    {
+      "id": "SHINY_STRIKE",
+      "name": "闪亮打击"
+    },
+    {
+      "id": "SHIV",
+      "name": "小刀"
+    },
+    {
+      "id": "SHOCKWAVE",
+      "name": "震荡波"
+    },
+    {
+      "id": "SHROUD",
+      "name": "厄运之衣"
+    },
+    {
+      "id": "SHRUG_IT_OFF",
+      "name": "耸肩无视"
+    },
+    {
+      "id": "SIC_EM",
+      "name": "紧追不放"
+    },
+    {
+      "id": "SIGNAL_BOOST",
+      "name": "信号增强"
+    },
+    {
+      "id": "SKEWER",
+      "name": "串刺"
+    },
+    {
+      "id": "SKIM",
+      "name": "快速检索"
+    },
+    {
+      "id": "SLEIGHT_OF_FLESH",
+      "name": "血肉戏法"
+    },
+    {
+      "id": "SLICE",
+      "name": "切割"
+    },
+    {
+      "id": "SLIMED",
+      "name": "黏液"
+    },
+    {
+      "id": "SLOTH",
+      "name": "懒惰"
+    },
+    {
+      "id": "SMOKESTACK",
+      "name": "烟囱"
+    },
+    {
+      "id": "SNAKEBITE",
+      "name": "蛇咬"
+    },
+    {
+      "id": "SNAP",
+      "name": "响指"
+    },
+    {
+      "id": "SNEAKY",
+      "name": "鬼祟"
+    },
+    {
+      "id": "SOLAR_STRIKE",
+      "name": "太阳打击"
+    },
+    {
+      "id": "SOOT",
+      "name": "煤灰"
+    },
+    {
+      "id": "SOUL",
+      "name": "灵魂"
+    },
+    {
+      "id": "SOUL_STORM",
+      "name": "灵魂风暴"
+    },
+    {
+      "id": "SOVEREIGN_BLADE",
+      "name": "君王之剑"
+    },
+    {
+      "id": "SOW",
+      "name": "播种"
+    },
+    {
+      "id": "SPECTRUM_SHIFT",
+      "name": "光谱偏移"
+    },
+    {
+      "id": "SPEEDSTER",
+      "name": "速行者"
+    },
+    {
+      "id": "SPIKED",
+      "name": "扎刺"
+    },
+    {
+      "id": "SPINNER",
+      "name": "旋转工艺"
+    },
+    {
+      "id": "SPIRIT_OF_ASH",
+      "name": "灰烬之灵"
+    },
+    {
+      "id": "SPITE",
+      "name": "怨恨"
+    },
+    {
+      "id": "SPLASH",
+      "name": "飞溅"
+    },
+    {
+      "id": "SPOILS_MAP",
+      "name": "藏宝图"
+    },
+    {
+      "id": "SPOILS_OF_BATTLE",
+      "name": "战利品"
+    },
+    {
+      "id": "SPORE_MIND",
+      "name": "孢子心灵"
+    },
+    {
+      "id": "SPUR",
+      "name": "增生"
+    },
+    {
+      "id": "SQUASH",
+      "name": "压扁"
+    },
+    {
+      "id": "SQUEEZE",
+      "name": "榨取"
+    },
+    {
+      "id": "STACK",
+      "name": "堆栈"
+    },
+    {
+      "id": "STAMPEDE",
+      "name": "惊逃"
+    },
+    {
+      "id": "STARDUST",
+      "name": "星尘"
+    },
+    {
+      "id": "STAR_BLAST",
+      "name": "星光爆射"
+    },
+    {
+      "id": "STAR_SHIELD",
+      "name": "星之盾"
+    },
+    {
+      "id": "STOKE",
+      "name": "添柴"
+    },
+    {
+      "id": "STOMP",
+      "name": "踩踏"
+    },
+    {
+      "id": "STONE_ARMOR",
+      "name": "岩石铠甲"
+    },
+    {
+      "id": "STORM",
+      "name": "雷暴"
+    },
+    {
+      "id": "STORM_OF_STEEL",
+      "name": "钢铁风暴"
+    },
+    {
+      "id": "STRANGLE",
+      "name": "紧勒"
+    },
+    {
+      "id": "STRATAGEM",
+      "name": "计策"
+    },
+    {
+      "id": "STRIKE_DEFECT",
+      "name": "打击"
+    },
+    {
+      "id": "STRIKE_IRONCLAD",
+      "name": "打击"
+    },
+    {
+      "id": "STRIKE_NECROBINDER",
+      "name": "打击"
+    },
+    {
+      "id": "STRIKE_REGENT",
+      "name": "打击"
+    },
+    {
+      "id": "STRIKE_SILENT",
+      "name": "打击"
+    },
+    {
+      "id": "SUBROUTINE",
+      "name": "子程序"
+    },
+    {
+      "id": "SUCKER_PUNCH",
+      "name": "突然一拳"
+    },
+    {
+      "id": "SUMMON_FORTH",
+      "name": "征召上前"
+    },
+    {
+      "id": "SUNDER",
+      "name": "分离"
+    },
+    {
+      "id": "SUPERCRITICAL",
+      "name": "超临界态"
+    },
+    {
+      "id": "SUPERMASSIVE",
+      "name": "超质量体"
+    },
+    {
+      "id": "SUPPRESS",
+      "name": "压制"
+    },
+    {
+      "id": "SURVIVOR",
+      "name": "生存者"
+    },
+    {
+      "id": "SWEEPING_BEAM",
+      "name": "扫荡射线"
+    },
+    {
+      "id": "SWEEPING_GAZE",
+      "name": "扫荡凝视"
+    },
+    {
+      "id": "SWIFT_STRIKE",
+      "name": "迅捷打击"
+    },
+    {
+      "id": "SWORD_BOOMERANG",
+      "name": "飞剑回旋镖"
+    },
+    {
+      "id": "SWORD_SAGE",
+      "name": "剑圣"
+    },
+    {
+      "id": "SYNCHRONIZE",
+      "name": "同步"
+    },
+    {
+      "id": "SYNTHESIS",
+      "name": "人工合成"
+    },
+    {
+      "id": "TACTICIAN",
+      "name": "战术大师"
+    },
+    {
+      "id": "TAG_TEAM",
+      "name": "双打组合"
+    },
+    {
+      "id": "TANK",
+      "name": "肉盾"
+    },
+    {
+      "id": "TAUNT",
+      "name": "挑衅"
+    },
+    {
+      "id": "TEAR_ASUNDER",
+      "name": "扯碎"
+    },
+    {
+      "id": "TEMPEST",
+      "name": "暴风雨"
+    },
+    {
+      "id": "TERRAFORMING",
+      "name": "地形改造"
+    },
+    {
+      "id": "TESLA_COIL",
+      "name": "特斯拉线圈"
+    },
+    {
+      "id": "TEZCATARAS_MIGHT",
+      "name": "特兹卡塔拉之力"
+    },
+    {
+      "id": "THE_BOMB",
+      "name": "炸弹"
+    },
+    {
+      "id": "THE_GAMBIT",
+      "name": "孤注一掷"
+    },
+    {
+      "id": "THE_HUNT",
+      "name": "狩猎"
+    },
+    {
+      "id": "THE_SCYTHE",
+      "name": "巨镰"
+    },
+    {
+      "id": "THE_SEALED_THRONE",
+      "name": "封印王座"
+    },
+    {
+      "id": "THE_SMITH",
+      "name": "铸剑者"
+    },
+    {
+      "id": "THINKING_AHEAD",
+      "name": "深谋远虑"
+    },
+    {
+      "id": "THRASH",
+      "name": "痛殴"
+    },
+    {
+      "id": "THRUMMING_HATCHET",
+      "name": "无休手斧"
+    },
+    {
+      "id": "THUNDER",
+      "name": "雷霆"
+    },
+    {
+      "id": "THUNDERCLAP",
+      "name": "闪电霹雳"
+    },
+    {
+      "id": "TIMES_UP",
+      "name": "大限已至"
+    },
+    {
+      "id": "TOOLS_OF_THE_TRADE",
+      "name": "必备工具"
+    },
+    {
+      "id": "TORIC_TOUGHNESS",
+      "name": "坚韧之环"
+    },
+    {
+      "id": "TOXIC",
+      "name": "毒素"
+    },
+    {
+      "id": "TRACKING",
+      "name": "跟踪"
+    },
+    {
+      "id": "TRAINING_STRIKE",
+      "name": "训练打击"
+    },
+    {
+      "id": "TRANSFIGURE",
+      "name": "重构"
+    },
+    {
+      "id": "TRASH_TO_TREASURE",
+      "name": "化废为宝"
+    },
+    {
+      "id": "TREMBLE",
+      "name": "战栗"
+    },
+    {
+      "id": "TRUE_GRIT",
+      "name": "坚毅"
+    },
+    {
+      "id": "TURBO",
+      "name": "内核加速"
+    },
+    {
+      "id": "TWIN_STRIKE",
+      "name": "双重打击"
+    },
+    {
+      "id": "TYRANNY",
+      "name": "暴政"
+    },
+    {
+      "id": "ULTIMATE_DEFEND",
+      "name": "究极防御"
+    },
+    {
+      "id": "ULTIMATE_STRIKE",
+      "name": "究极打击"
+    },
+    {
+      "id": "UNDEATH",
+      "name": "不死"
+    },
+    {
+      "id": "UNLEASH",
+      "name": "出击"
+    },
+    {
+      "id": "UNMOVABLE",
+      "name": "坚定不移"
+    },
+    {
+      "id": "UNRELENTING",
+      "name": "无情猛攻"
+    },
+    {
+      "id": "UNTOUCHABLE",
+      "name": "触不可及"
+    },
+    {
+      "id": "UPPERCUT",
+      "name": "上勾拳"
+    },
+    {
+      "id": "UPROAR",
+      "name": "骚动"
+    },
+    {
+      "id": "UP_MY_SLEEVE",
+      "name": "袖里乾坤"
+    },
+    {
+      "id": "VEILPIERCER",
+      "name": "刺破帷幕"
+    },
+    {
+      "id": "VENERATE",
+      "name": "崇拜"
+    },
+    {
+      "id": "VETERAN",
+      "name": "老兵"
+    },
+    {
+      "id": "VICIOUS",
+      "name": "凶恶"
+    },
+    {
+      "id": "VISIONS_OF_GRANDEUR",
+      "name": "伟大愿景"
+    },
+    {
+      "id": "VOID",
+      "name": "虚空"
+    },
+    {
+      "id": "VOID_FORM",
+      "name": "虚空形态"
+    },
+    {
+      "id": "VOLLEY",
+      "name": "连射"
+    },
+    {
+      "id": "VOLTAIC",
+      "name": "电流相生"
+    },
+    {
+      "id": "WARP_SPACE",
+      "name": "折跃空间"
+    },
+    {
+      "id": "WASTE_AWAY",
+      "name": "衰朽"
+    },
+    {
+      "id": "WELL_LAID_PLANS",
+      "name": "计划妥当"
+    },
+    {
+      "id": "WHIRLWIND",
+      "name": "旋风斩"
+    },
+    {
+      "id": "WHISTLE",
+      "name": "吹哨"
+    },
+    {
+      "id": "WHITE_NOISE",
+      "name": "白噪声"
+    },
+    {
+      "id": "WISH",
+      "name": "许愿"
+    },
+    {
+      "id": "WISP",
+      "name": "鬼火"
+    },
+    {
+      "id": "WOUND",
+      "name": "伤口"
+    },
+    {
+      "id": "WRAITH_FORM",
+      "name": "幽魂形态"
+    },
+    {
+      "id": "WRITHE",
+      "name": "苦恼"
+    },
+    {
+      "id": "WROUGHT_IN_WAR",
+      "name": "战火铸就"
+    },
+    {
+      "id": "ZAP",
+      "name": "电击"
+    }
+  ],
+  "potions": [
+    {
+      "id": "ASHWATER",
+      "name": "灰水"
+    },
+    {
+      "id": "ATTACK_POTION",
+      "name": "攻击药水"
+    },
+    {
+      "id": "BEETLE_JUICE",
+      "name": "甲虫汁"
+    },
+    {
+      "id": "BLESSING_OF_THE_FORGE",
+      "name": "熔炉的祝福"
+    },
+    {
+      "id": "BLOCK_POTION",
+      "name": "格挡药水"
+    },
+    {
+      "id": "BLOOD_POTION",
+      "name": "鲜血药水"
+    },
+    {
+      "id": "BONE_BREW",
+      "name": "骨头酿"
+    },
+    {
+      "id": "BOTTLED_POTENTIAL",
+      "name": "瓶装潜能"
+    },
+    {
+      "id": "CLARITY",
+      "name": "明晰提取物"
+    },
+    {
+      "id": "COLORLESS_POTION",
+      "name": "无色药水"
+    },
+    {
+      "id": "COSMIC_CONCOCTION",
+      "name": "宇宙药剂"
+    },
+    {
+      "id": "CUNNING_POTION",
+      "name": "狡诈药水"
+    },
+    {
+      "id": "CURE_ALL",
+      "name": "痊愈药水"
+    },
+    {
+      "id": "DEPRECATED_POTION",
+      "name": "废弃药水"
+    },
+    {
+      "id": "DEXTERITY_POTION",
+      "name": "敏捷药水"
+    },
+    {
+      "id": "DISTILLED_CHAOS",
+      "name": "精炼混沌"
+    },
+    {
+      "id": "DROPLET_OF_PRECOGNITION",
+      "name": "预知之滴"
+    },
+    {
+      "id": "DUPLICATOR",
+      "name": "复制药水"
+    },
+    {
+      "id": "ENERGY_POTION",
+      "name": "能量药水"
+    },
+    {
+      "id": "ENTROPIC_BREW",
+      "name": "混沌药水"
+    },
+    {
+      "id": "ESSENCE_OF_DARKNESS",
+      "name": "黑暗精华"
+    },
+    {
+      "id": "EXPLOSIVE_AMPOULE",
+      "name": "爆炸安瓿"
+    },
+    {
+      "id": "FAIRY_IN_A_BOTTLE",
+      "name": "瓶中精灵"
+    },
+    {
+      "id": "FIRE_POTION",
+      "name": "火焰药水"
+    },
+    {
+      "id": "FLEX_POTION",
+      "name": "肌肉药水"
+    },
+    {
+      "id": "FOCUS_POTION",
+      "name": "集中药水"
+    },
+    {
+      "id": "FORTIFIER",
+      "name": "固化药水"
+    },
+    {
+      "id": "FOUL_POTION",
+      "name": "污浊药水"
+    },
+    {
+      "id": "FRUIT_JUICE",
+      "name": "果汁"
+    },
+    {
+      "id": "FYSH_OIL",
+      "name": "异鱼之油"
+    },
+    {
+      "id": "GAMBLERS_BREW",
+      "name": "赌徒特酿"
+    },
+    {
+      "id": "GHOST_IN_A_JAR",
+      "name": "罐装幽灵"
+    },
+    {
+      "id": "GIGANTIFICATION_POTION",
+      "name": "超巨化药水"
+    },
+    {
+      "id": "GLOWWATER_POTION",
+      "name": "发光水"
+    },
+    {
+      "id": "HEART_OF_IRON",
+      "name": "铁心药水"
+    },
+    {
+      "id": "KINGS_COURAGE",
+      "name": "王之勇气"
+    },
+    {
+      "id": "LIQUID_BRONZE",
+      "name": "流动铜液"
+    },
+    {
+      "id": "LIQUID_MEMORIES",
+      "name": "液态记忆"
+    },
+    {
+      "id": "LUCKY_TONIC",
+      "name": "幸运补剂"
+    },
+    {
+      "id": "MAZALETHS_GIFT",
+      "name": "马萨雷斯的赠礼"
+    },
+    {
+      "id": "OROBIC_ACID",
+      "name": "欧洛巴斯之酸"
+    },
+    {
+      "id": "POISON_POTION",
+      "name": "毒药水"
+    },
+    {
+      "id": "POTION_OF_BINDING",
+      "name": "缚魂药水"
+    },
+    {
+      "id": "POTION_OF_CAPACITY",
+      "name": "扩容药水"
+    },
+    {
+      "id": "POTION_OF_DOOM",
+      "name": "灾厄药水"
+    },
+    {
+      "id": "POTION_SHAPED_ROCK",
+      "name": "药水形状的石头"
+    },
+    {
+      "id": "POT_OF_GHOULS",
+      "name": "尸鬼瓮"
+    },
+    {
+      "id": "POWDERED_DEMISE",
+      "name": "消亡粉末"
+    },
+    {
+      "id": "POWER_POTION",
+      "name": "能力药水"
+    },
+    {
+      "id": "RADIANT_TINCTURE",
+      "name": "明耀酊剂"
+    },
+    {
+      "id": "REGEN_POTION",
+      "name": "再生药水"
+    },
+    {
+      "id": "SHACKLING_POTION",
+      "name": "镣铐药水"
+    },
+    {
+      "id": "SHIP_IN_A_BOTTLE",
+      "name": "瓶中船"
+    },
+    {
+      "id": "SKILL_POTION",
+      "name": "技能药水"
+    },
+    {
+      "id": "SNECKO_OIL",
+      "name": "异蛇之油"
+    },
+    {
+      "id": "SOLDIERS_STEW",
+      "name": "士兵炖汤"
+    },
+    {
+      "id": "SPEED_POTION",
+      "name": "速度药水"
+    },
+    {
+      "id": "STABLE_SERUM",
+      "name": "稳定血清"
+    },
+    {
+      "id": "STAR_POTION",
+      "name": "星星药水"
+    },
+    {
+      "id": "STRENGTH_POTION",
+      "name": "力量药水"
+    },
+    {
+      "id": "SWIFT_POTION",
+      "name": "迅捷药水"
+    },
+    {
+      "id": "TOUCH_OF_INSANITY",
+      "name": "癫狂之触"
+    },
+    {
+      "id": "VULNERABLE_POTION",
+      "name": "易伤药水"
+    },
+    {
+      "id": "WEAK_POTION",
+      "name": "虚弱药水"
+    }
+  ],
+  "cardPools": {
+    "Ironclad": [
+      "AGGRESSION",
+      "ANGER",
+      "ARMAMENTS",
+      "ASHEN_STRIKE",
+      "BARRICADE",
+      "BASH",
+      "BATTLE_TRANCE",
+      "BLOOD_WALL",
+      "BLOODLETTING",
+      "BLUDGEON",
+      "BODY_SLAM",
+      "BRAND",
+      "BREAK",
+      "BREAKTHROUGH",
+      "BULLY",
+      "BURNING_PACT",
+      "CASCADE",
+      "CINDER",
+      "COLOSSUS",
+      "CONFLAGRATION",
+      "CORRUPTION",
+      "CRIMSON_MANTLE",
+      "CRUELTY",
+      "DARK_EMBRACE",
+      "DEFEND_IRONCLAD",
+      "DEMON_FORM",
+      "DEMONIC_SHIELD",
+      "DISMANTLE",
+      "DOMINATE",
+      "DRUM_OF_BATTLE",
+      "EVIL_EYE",
+      "EXPECT_A_FIGHT",
+      "FEED",
+      "FEEL_NO_PAIN",
+      "FIEND_FIRE",
+      "FIGHT_ME",
+      "FLAME_BARRIER",
+      "FORGOTTEN_RITUAL",
+      "HAVOC",
+      "HEADBUTT",
+      "HELLRAISER",
+      "HEMOKINESIS",
+      "HOWL_FROM_BEYOND",
+      "IMPERVIOUS",
+      "INFERNAL_BLADE",
+      "INFERNO",
+      "INFLAME",
+      "IRON_WAVE",
+      "JUGGERNAUT",
+      "JUGGLING",
+      "MANGLE",
+      "MOLTEN_FIST",
+      "NOT_YET",
+      "OFFERING",
+      "ONE_TWO_PUNCH",
+      "PACTS_END",
+      "PERFECTED_STRIKE",
+      "PILLAGE",
+      "POMMEL_STRIKE",
+      "PRIMAL_FORCE",
+      "PYRE",
+      "RAGE",
+      "RAMPAGE",
+      "RUPTURE",
+      "SECOND_WIND",
+      "SETUP_STRIKE",
+      "SHRUG_IT_OFF",
+      "SPITE",
+      "STAMPEDE",
+      "STOKE",
+      "STOMP",
+      "STONE_ARMOR",
+      "STRIKE_IRONCLAD",
+      "SWORD_BOOMERANG",
+      "TANK",
+      "TAUNT",
+      "TEAR_ASUNDER",
+      "THRASH",
+      "THUNDERCLAP",
+      "TREMBLE",
+      "TRUE_GRIT",
+      "TWIN_STRIKE",
+      "UNMOVABLE",
+      "UNRELENTING",
+      "UPPERCUT",
+      "VICIOUS",
+      "WHIRLWIND"
+    ],
+    "Silent": [
+      "ABRASIVE",
+      "ACCELERANT",
+      "ACCURACY",
+      "ACROBATICS",
+      "ADRENALINE",
+      "AFTERIMAGE",
+      "ANTICIPATE",
+      "ASSASSINATE",
+      "BACKFLIP",
+      "BACKSTAB",
+      "BLADE_OF_INK",
+      "BLADE_DANCE",
+      "BLUR",
+      "BOUNCING_FLASK",
+      "BUBBLE_BUBBLE",
+      "BULLET_TIME",
+      "BURST",
+      "CALCULATED_GAMBLE",
+      "CLOAK_AND_DAGGER",
+      "CORROSIVE_WAVE",
+      "DAGGER_SPRAY",
+      "DAGGER_THROW",
+      "DASH",
+      "DEADLY_POISON",
+      "DEFEND_SILENT",
+      "DEFLECT",
+      "DODGE_AND_ROLL",
+      "ECHOING_SLASH",
+      "ENVENOM",
+      "ESCAPE_PLAN",
+      "EXPERTISE",
+      "EXPOSE",
+      "FAN_OF_KNIVES",
+      "FINISHER",
+      "FLANKING",
+      "FLECHETTES",
+      "FLICK_FLACK",
+      "FOLLOW_THROUGH",
+      "FOOTWORK",
+      "GRAND_FINALE",
+      "HAND_TRICK",
+      "HAZE",
+      "HIDDEN_DAGGERS",
+      "INFINITE_BLADES",
+      "KNIFE_TRAP",
+      "LEADING_STRIKE",
+      "LEG_SWEEP",
+      "MALAISE",
+      "MASTER_PLANNER",
+      "MEMENTO_MORI",
+      "MIRAGE",
+      "MURDER",
+      "NEUTRALIZE",
+      "NIGHTMARE",
+      "NOXIOUS_FUMES",
+      "OUTBREAK",
+      "PHANTOM_BLADES",
+      "PIERCING_WAIL",
+      "PINPOINT",
+      "POISONED_STAB",
+      "POUNCE",
+      "PRECISE_CUT",
+      "PREDATOR",
+      "PREPARED",
+      "REFLEX",
+      "RICOCHET",
+      "SERPENT_FORM",
+      "SHADOW_STEP",
+      "SHADOWMELD",
+      "SKEWER",
+      "SLICE",
+      "SNAKEBITE",
+      "SNEAKY",
+      "SPEEDSTER",
+      "STORM_OF_STEEL",
+      "STRANGLE",
+      "STRIKE_SILENT",
+      "SUCKER_PUNCH",
+      "SUPPRESS",
+      "SURVIVOR",
+      "TACTICIAN",
+      "THE_HUNT",
+      "TOOLS_OF_THE_TRADE",
+      "TRACKING",
+      "UNTOUCHABLE",
+      "UP_MY_SLEEVE",
+      "WELL_LAID_PLANS",
+      "WRAITH_FORM"
+    ],
+    "Defect": [
+      "ADAPTIVE_STRIKE",
+      "ALL_FOR_ONE",
+      "BALL_LIGHTNING",
+      "BARRAGE",
+      "BEAM_CELL",
+      "BIASED_COGNITION",
+      "BOOST_AWAY",
+      "BOOT_SEQUENCE",
+      "BUFFER",
+      "BULK_UP",
+      "CAPACITOR",
+      "CHAOS",
+      "CHARGE_BATTERY",
+      "CHILL",
+      "CLAW",
+      "COLD_SNAP",
+      "COMPACT",
+      "COMPILE_DRIVER",
+      "CONSUMING_SHADOW",
+      "COOLANT",
+      "COOLHEADED",
+      "CREATIVE_AI",
+      "DARKNESS",
+      "DEFEND_DEFECT",
+      "DEFRAGMENT",
+      "DOUBLE_ENERGY",
+      "DUALCAST",
+      "ECHO_FORM",
+      "ENERGY_SURGE",
+      "FERAL",
+      "FIGHT_THROUGH",
+      "FLAK_CANNON",
+      "FOCUSED_STRIKE",
+      "FTL",
+      "FUSION",
+      "GENETIC_ALGORITHM",
+      "GLACIER",
+      "GLASSWORK",
+      "GO_FOR_THE_EYES",
+      "GUNK_UP",
+      "HAILSTORM",
+      "HELIX_DRILL",
+      "HOLOGRAM",
+      "HOTFIX",
+      "HYPERBEAM",
+      "ICE_LANCE",
+      "IGNITION",
+      "ITERATION",
+      "LEAP",
+      "LIGHTNING_ROD",
+      "LOOP",
+      "MACHINE_LEARNING",
+      "METEOR_STRIKE",
+      "MODDED",
+      "MOMENTUM_STRIKE",
+      "MULTI_CAST",
+      "NULL",
+      "OVERCLOCK",
+      "QUADCAST",
+      "RAINBOW",
+      "REBOOT",
+      "REFRACT",
+      "ROCKET_PUNCH",
+      "SCAVENGE",
+      "SCRAPE",
+      "SHADOW_SHIELD",
+      "SHATTER",
+      "SIGNAL_BOOST",
+      "SKIM",
+      "SMOKESTACK",
+      "SPINNER",
+      "STORM",
+      "STRIKE_DEFECT",
+      "SUBROUTINE",
+      "SUNDER",
+      "SUPERCRITICAL",
+      "SWEEPING_BEAM",
+      "SYNCHRONIZE",
+      "SYNTHESIS",
+      "TEMPEST",
+      "TESLA_COIL",
+      "THUNDER",
+      "TRASH_TO_TREASURE",
+      "TURBO",
+      "UPROAR",
+      "VOLTAIC",
+      "WHITE_NOISE",
+      "ZAP"
+    ],
+    "Necrobinder": [
+      "AFTERLIFE",
+      "BANSHEES_CRY",
+      "BLIGHT_STRIKE",
+      "BODYGUARD",
+      "BONE_SHARDS",
+      "BORROWED_TIME",
+      "BURY",
+      "CALCIFY",
+      "CALL_OF_THE_VOID",
+      "CAPTURE_SPIRIT",
+      "CLEANSE",
+      "COUNTDOWN",
+      "DANSE_MACABRE",
+      "DEATH_MARCH",
+      "DEATHBRINGER",
+      "DEATHS_DOOR",
+      "DEBILITATE",
+      "DEFEND_NECROBINDER",
+      "DEFILE",
+      "DEFY",
+      "DELAY",
+      "DEMESNE",
+      "DEVOUR_LIFE",
+      "DIRGE",
+      "DRAIN_POWER",
+      "DREDGE",
+      "EIDOLON",
+      "END_OF_DAYS",
+      "ENFEEBLING_TOUCH",
+      "ERADICATE",
+      "FEAR",
+      "FETCH",
+      "FLATTEN",
+      "FORBIDDEN_GRIMOIRE",
+      "FRIENDSHIP",
+      "GLIMPSE_BEYOND",
+      "GRAVE_WARDEN",
+      "GRAVEBLAST",
+      "HANG",
+      "HAUNT",
+      "HIGH_FIVE",
+      "INVOKE",
+      "LEGION_OF_BONE",
+      "LETHALITY",
+      "MELANCHOLY",
+      "MISERY",
+      "NECRO_MASTERY",
+      "NEGATIVE_PULSE",
+      "NEUROSURGE",
+      "NO_ESCAPE",
+      "OBLIVION",
+      "PAGESTORM",
+      "PARSE",
+      "POKE",
+      "PROTECTOR",
+      "PULL_AGGRO",
+      "PULL_FROM_BELOW",
+      "PUTREFY",
+      "RATTLE",
+      "REANIMATE",
+      "REAP",
+      "REAPER_FORM",
+      "REAVE",
+      "RIGHT_HAND_HAND",
+      "SACRIFICE",
+      "SCOURGE",
+      "SCULPTING_STRIKE",
+      "SEANCE",
+      "SENTRY_MODE",
+      "SEVERANCE",
+      "SHARED_FATE",
+      "SHROUD",
+      "SIC_EM",
+      "SLEIGHT_OF_FLESH",
+      "SNAP",
+      "SOUL_STORM",
+      "SOW",
+      "SPIRIT_OF_ASH",
+      "SPUR",
+      "SQUEEZE",
+      "STRIKE_NECROBINDER",
+      "THE_SCYTHE",
+      "TIMES_UP",
+      "TRANSFIGURE",
+      "UNDEATH",
+      "UNLEASH",
+      "VEILPIERCER",
+      "WISP"
+    ],
+    "Regent": [
+      "ALIGNMENT",
+      "ARSENAL",
+      "ASTRAL_PULSE",
+      "BEAT_INTO_SHAPE",
+      "BEGONE",
+      "BIG_BANG",
+      "BLACK_HOLE",
+      "BOMBARDMENT",
+      "BULWARK",
+      "BUNDLE_OF_JOY",
+      "CELESTIAL_MIGHT",
+      "CHARGE",
+      "CHILD_OF_THE_STARS",
+      "CLOAK_OF_STARS",
+      "COLLISION_COURSE",
+      "COMET",
+      "CONQUEROR",
+      "CONVERGENCE",
+      "COSMIC_INDIFFERENCE",
+      "CRASH_LANDING",
+      "CRESCENT_SPEAR",
+      "CRUSH_UNDER",
+      "DECISIONS_DECISIONS",
+      "DEFEND_REGENT",
+      "DEVASTATE",
+      "DYING_STAR",
+      "FALLING_STAR",
+      "FOREGONE_CONCLUSION",
+      "FURNACE",
+      "GAMMA_BLAST",
+      "GATHER_LIGHT",
+      "GENESIS",
+      "GLIMMER",
+      "GLITTERSTREAM",
+      "GLOW",
+      "GUARDS",
+      "GUIDING_STAR",
+      "HAMMER_TIME",
+      "HEAVENLY_DRILL",
+      "HEGEMONY",
+      "HEIRLOOM_HAMMER",
+      "HIDDEN_CACHE",
+      "I_AM_INVINCIBLE",
+      "KINGLY_KICK",
+      "KINGLY_PUNCH",
+      "KNOCKOUT_BLOW",
+      "KNOW_THY_PLACE",
+      "LARGESSE",
+      "LUNAR_BLAST",
+      "MAKE_IT_SO",
+      "MANIFEST_AUTHORITY",
+      "METEOR_SHOWER",
+      "MONARCHS_GAZE",
+      "MONOLOGUE",
+      "NEUTRON_AEGIS",
+      "ORBIT",
+      "PALE_BLUE_DOT",
+      "PARRY",
+      "PARTICLE_WALL",
+      "PATTER",
+      "PHOTON_CUT",
+      "PILLAR_OF_CREATION",
+      "PROPHESIZE",
+      "QUASAR",
+      "RADIATE",
+      "REFINE_BLADE",
+      "REFLECT",
+      "RESONANCE",
+      "ROYAL_GAMBLE",
+      "ROYALTIES",
+      "SEEKING_EDGE",
+      "SEVEN_STARS",
+      "SHINING_STRIKE",
+      "SOLAR_STRIKE",
+      "SPECTRUM_SHIFT",
+      "SPOILS_OF_BATTLE",
+      "STARDUST",
+      "STRIKE_REGENT",
+      "SUMMON_FORTH",
+      "SUPERMASSIVE",
+      "SWORD_SAGE",
+      "TERRAFORMING",
+      "THE_SEALED_THRONE",
+      "THE_SMITH",
+      "TYRANNY",
+      "VENERATE",
+      "VOID_FORM",
+      "WROUGHT_IN_WAR"
+    ]
+  },
+  "cardMetadata": [
+    {
+      "id": "ABRASIVE",
+      "rarity": "Rare",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "ACCELERANT",
+      "rarity": "Rare",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "ACCURACY",
+      "rarity": "Uncommon",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "ACROBATICS",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "ADAPTIVE_STRIKE",
+      "rarity": "Rare",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "ADRENALINE",
+      "rarity": "Rare",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "AFTERIMAGE",
+      "rarity": "Rare",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "AFTERLIFE",
+      "rarity": "Common",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "AGGRESSION",
+      "rarity": "Rare",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "ALCHEMIZE",
+      "rarity": "Rare",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "ALIGNMENT",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "ALL_FOR_ONE",
+      "rarity": "Rare",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "ANGER",
+      "rarity": "Common",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "ANOINTED",
+      "rarity": "Rare",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "ANTICIPATE",
+      "rarity": "Common",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "ARMAMENTS",
+      "rarity": "Common",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "ARSENAL",
+      "rarity": "Rare",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "ASHEN_STRIKE",
+      "rarity": "Uncommon",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "ASSASSINATE",
+      "rarity": "Rare",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "ASTRAL_PULSE",
+      "rarity": "Common",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "AUTOMATION",
+      "rarity": "Uncommon",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "BACKFLIP",
+      "rarity": "Common",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "BACKSTAB",
+      "rarity": "Uncommon",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "BALL_LIGHTNING",
+      "rarity": "Common",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "BANSHEES_CRY",
+      "rarity": "Rare",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "BARRAGE",
+      "rarity": "Common",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "BARRICADE",
+      "rarity": "Rare",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "BASH",
+      "rarity": "Basic",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "BATTLE_TRANCE",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "BEACON_OF_HOPE",
+      "rarity": "Rare",
+      "type": "Power",
+      "multiplayerConstraint": "MultiplayerOnly"
+    },
+    {
+      "id": "BEAM_CELL",
+      "rarity": "Common",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "BEAT_DOWN",
+      "rarity": "Rare",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "BEAT_INTO_SHAPE",
+      "rarity": "Rare",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "BEGONE",
+      "rarity": "Common",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "BELIEVE_IN_YOU",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "MultiplayerOnly"
+    },
+    {
+      "id": "BIASED_COGNITION",
+      "rarity": "Ancient",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "BIG_BANG",
+      "rarity": "Rare",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "BLACK_HOLE",
+      "rarity": "Uncommon",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "BLADE_DANCE",
+      "rarity": "Common",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "BLADE_OF_INK",
+      "rarity": "Rare",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "BLIGHT_STRIKE",
+      "rarity": "Common",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "BLOOD_WALL",
+      "rarity": "Common",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "BLOODLETTING",
+      "rarity": "Common",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "BLUDGEON",
+      "rarity": "Uncommon",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "BLUR",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "BODY_SLAM",
+      "rarity": "Common",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "BODYGUARD",
+      "rarity": "Basic",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "BOLAS",
+      "rarity": "Rare",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "BOMBARDMENT",
+      "rarity": "Rare",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "BONE_SHARDS",
+      "rarity": "Uncommon",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "BOOST_AWAY",
+      "rarity": "Common",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "BOOT_SEQUENCE",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "BORROWED_TIME",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "BOUNCING_FLASK",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "BRAND",
+      "rarity": "Rare",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "BREAK",
+      "rarity": "Ancient",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "BREAKTHROUGH",
+      "rarity": "Common",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "BUBBLE_BUBBLE",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "BUFFER",
+      "rarity": "Rare",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "BULK_UP",
+      "rarity": "Uncommon",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "BULLET_TIME",
+      "rarity": "Rare",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "BULLY",
+      "rarity": "Uncommon",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "BULWARK",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "BUNDLE_OF_JOY",
+      "rarity": "Rare",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "BURNING_PACT",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "BURST",
+      "rarity": "Rare",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "BURY",
+      "rarity": "Uncommon",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "CALAMITY",
+      "rarity": "Rare",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "CALCIFY",
+      "rarity": "Uncommon",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "CALCULATED_GAMBLE",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "CALL_OF_THE_VOID",
+      "rarity": "Rare",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "CAPACITOR",
+      "rarity": "Uncommon",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "CAPTURE_SPIRIT",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "CASCADE",
+      "rarity": "Rare",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "CATASTROPHE",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "CELESTIAL_MIGHT",
+      "rarity": "Common",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "CHAOS",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "CHARGE",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "CHARGE_BATTERY",
+      "rarity": "Common",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "CHILD_OF_THE_STARS",
+      "rarity": "Uncommon",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "CHILL",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "CINDER",
+      "rarity": "Common",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "CLAW",
+      "rarity": "Common",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "CLEANSE",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "CLOAK_AND_DAGGER",
+      "rarity": "Common",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "CLOAK_OF_STARS",
+      "rarity": "Common",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "COLD_SNAP",
+      "rarity": "Common",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "COLLISION_COURSE",
+      "rarity": "Common",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "COLOSSUS",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "COMET",
+      "rarity": "Rare",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "COMPACT",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "COMPILE_DRIVER",
+      "rarity": "Common",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "CONFLAGRATION",
+      "rarity": "Rare",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "CONQUEROR",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "CONSUMING_SHADOW",
+      "rarity": "Rare",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "CONVERGENCE",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "COOLANT",
+      "rarity": "Rare",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "COOLHEADED",
+      "rarity": "Common",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "COORDINATE",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "MultiplayerOnly"
+    },
+    {
+      "id": "CORROSIVE_WAVE",
+      "rarity": "Rare",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "CORRUPTION",
+      "rarity": "Ancient",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "COSMIC_INDIFFERENCE",
+      "rarity": "Common",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "COUNTDOWN",
+      "rarity": "Uncommon",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "CRASH_LANDING",
+      "rarity": "Rare",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "CREATIVE_AI",
+      "rarity": "Rare",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "CRESCENT_SPEAR",
+      "rarity": "Common",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "CRIMSON_MANTLE",
+      "rarity": "Rare",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "CRUELTY",
+      "rarity": "Rare",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "CRUSH_UNDER",
+      "rarity": "Common",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "DAGGER_SPRAY",
+      "rarity": "Common",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "DAGGER_THROW",
+      "rarity": "Common",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "DANSE_MACABRE",
+      "rarity": "Uncommon",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "DARK_EMBRACE",
+      "rarity": "Rare",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "DARK_SHACKLES",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "DARKNESS",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "DASH",
+      "rarity": "Uncommon",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "DEADLY_POISON",
+      "rarity": "Common",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "DEATH_MARCH",
+      "rarity": "Uncommon",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "DEATHBRINGER",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "DEATHS_DOOR",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "DEBILITATE",
+      "rarity": "Uncommon",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "DECISIONS_DECISIONS",
+      "rarity": "Rare",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "DEFEND_DEFECT",
+      "rarity": "Basic",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "DEFEND_IRONCLAD",
+      "rarity": "Basic",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "DEFEND_NECROBINDER",
+      "rarity": "Basic",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "DEFEND_REGENT",
+      "rarity": "Basic",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "DEFEND_SILENT",
+      "rarity": "Basic",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "DEFILE",
+      "rarity": "Common",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "DEFLECT",
+      "rarity": "Common",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "DEFRAGMENT",
+      "rarity": "Rare",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "DEFY",
+      "rarity": "Common",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "DELAY",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "DEMESNE",
+      "rarity": "Rare",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "DEMON_FORM",
+      "rarity": "Rare",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "DEMONIC_SHIELD",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "MultiplayerOnly"
+    },
+    {
+      "id": "DEVASTATE",
+      "rarity": "Uncommon",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "DEVOUR_LIFE",
+      "rarity": "Rare",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "DIRGE",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "DISCOVERY",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "DISMANTLE",
+      "rarity": "Uncommon",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "DODGE_AND_ROLL",
+      "rarity": "Common",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "DOMINATE",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "DOUBLE_ENERGY",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "DRAIN_POWER",
+      "rarity": "Common",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "DRAMATIC_ENTRANCE",
+      "rarity": "Uncommon",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "DREDGE",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "DRUM_OF_BATTLE",
+      "rarity": "Uncommon",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "DUALCAST",
+      "rarity": "Basic",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "DYING_STAR",
+      "rarity": "Rare",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "ECHO_FORM",
+      "rarity": "Rare",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "ECHOING_SLASH",
+      "rarity": "Rare",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "EIDOLON",
+      "rarity": "Rare",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "END_OF_DAYS",
+      "rarity": "Rare",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "ENERGY_SURGE",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "MultiplayerOnly"
+    },
+    {
+      "id": "ENFEEBLING_TOUCH",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "ENTROPY",
+      "rarity": "Rare",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "ENVENOM",
+      "rarity": "Rare",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "EQUILIBRIUM",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "ERADICATE",
+      "rarity": "Rare",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "ESCAPE_PLAN",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "ETERNAL_ARMOR",
+      "rarity": "Rare",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "EVIL_EYE",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "EXPECT_A_FIGHT",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "EXPERTISE",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "EXPOSE",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "FALLING_STAR",
+      "rarity": "Basic",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "FAN_OF_KNIVES",
+      "rarity": "Rare",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "FASTEN",
+      "rarity": "Uncommon",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "FEAR",
+      "rarity": "Common",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "FEED",
+      "rarity": "Rare",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "FEEL_NO_PAIN",
+      "rarity": "Uncommon",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "FERAL",
+      "rarity": "Uncommon",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "FETCH",
+      "rarity": "Uncommon",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "FIEND_FIRE",
+      "rarity": "Rare",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "FIGHT_ME",
+      "rarity": "Uncommon",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "FIGHT_THROUGH",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "FINESSE",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "FINISHER",
+      "rarity": "Uncommon",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "FISTICUFFS",
+      "rarity": "Uncommon",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "FLAK_CANNON",
+      "rarity": "Rare",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "FLAME_BARRIER",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "FLANKING",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "MultiplayerOnly"
+    },
+    {
+      "id": "FLASH_OF_STEEL",
+      "rarity": "Uncommon",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "FLATTEN",
+      "rarity": "Common",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "FLECHETTES",
+      "rarity": "Uncommon",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "FLICK_FLACK",
+      "rarity": "Common",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "FOCUSED_STRIKE",
+      "rarity": "Common",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "FOLLOW_THROUGH",
+      "rarity": "Common",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "FOOTWORK",
+      "rarity": "Uncommon",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "FORBIDDEN_GRIMOIRE",
+      "rarity": "Ancient",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "FOREGONE_CONCLUSION",
+      "rarity": "Rare",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "FORGOTTEN_RITUAL",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "FRIENDSHIP",
+      "rarity": "Uncommon",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "FTL",
+      "rarity": "Uncommon",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "FURNACE",
+      "rarity": "Uncommon",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "FUSION",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "GAMMA_BLAST",
+      "rarity": "Uncommon",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "GANG_UP",
+      "rarity": "Uncommon",
+      "type": "Attack",
+      "multiplayerConstraint": "MultiplayerOnly"
+    },
+    {
+      "id": "GATHER_LIGHT",
+      "rarity": "Common",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "GENESIS",
+      "rarity": "Rare",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "GENETIC_ALGORITHM",
+      "rarity": "Rare",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "GLACIER",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "GLASSWORK",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "GLIMMER",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "GLIMPSE_BEYOND",
+      "rarity": "Rare",
+      "type": "Skill",
+      "multiplayerConstraint": "MultiplayerOnly"
+    },
+    {
+      "id": "GLITTERSTREAM",
+      "rarity": "Common",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "GLOW",
+      "rarity": "Common",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "GO_FOR_THE_EYES",
+      "rarity": "Common",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "GOLD_AXE",
+      "rarity": "Rare",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "GRAND_FINALE",
+      "rarity": "Rare",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "GRAVE_WARDEN",
+      "rarity": "Common",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "GRAVEBLAST",
+      "rarity": "Common",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "GUARDS",
+      "rarity": "Rare",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "GUIDING_STAR",
+      "rarity": "Common",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "GUNK_UP",
+      "rarity": "Common",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "HAILSTORM",
+      "rarity": "Uncommon",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "HAMMER_TIME",
+      "rarity": "Rare",
+      "type": "Power",
+      "multiplayerConstraint": "MultiplayerOnly"
+    },
+    {
+      "id": "HAND_OF_GREED",
+      "rarity": "Rare",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "HAND_TRICK",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "HANG",
+      "rarity": "Rare",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "HAUNT",
+      "rarity": "Uncommon",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "HAVOC",
+      "rarity": "Common",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "HAZE",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "HEADBUTT",
+      "rarity": "Common",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "HEAVENLY_DRILL",
+      "rarity": "Rare",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "HEGEMONY",
+      "rarity": "Uncommon",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "HEIRLOOM_HAMMER",
+      "rarity": "Rare",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "HELIX_DRILL",
+      "rarity": "Rare",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "HELLRAISER",
+      "rarity": "Rare",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "HEMOKINESIS",
+      "rarity": "Uncommon",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "HIDDEN_CACHE",
+      "rarity": "Common",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "HIDDEN_DAGGERS",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "HIDDEN_GEM",
+      "rarity": "Rare",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "HIGH_FIVE",
+      "rarity": "Uncommon",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "HOLOGRAM",
+      "rarity": "Common",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "HOTFIX",
+      "rarity": "Common",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "HOWL_FROM_BEYOND",
+      "rarity": "Uncommon",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "HUDDLE_UP",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "MultiplayerOnly"
+    },
+    {
+      "id": "HYPERBEAM",
+      "rarity": "Rare",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "I_AM_INVINCIBLE",
+      "rarity": "Rare",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "ICE_LANCE",
+      "rarity": "Rare",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "IGNITION",
+      "rarity": "Rare",
+      "type": "Skill",
+      "multiplayerConstraint": "MultiplayerOnly"
+    },
+    {
+      "id": "IMPATIENCE",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "IMPERVIOUS",
+      "rarity": "Rare",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "INFERNAL_BLADE",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "INFERNO",
+      "rarity": "Uncommon",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "INFINITE_BLADES",
+      "rarity": "Uncommon",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "INFLAME",
+      "rarity": "Uncommon",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "INTERCEPT",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "MultiplayerOnly"
+    },
+    {
+      "id": "INVOKE",
+      "rarity": "Common",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "IRON_WAVE",
+      "rarity": "Common",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "ITERATION",
+      "rarity": "Uncommon",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "JACK_OF_ALL_TRADES",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "JACKPOT",
+      "rarity": "Rare",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "JUGGERNAUT",
+      "rarity": "Rare",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "JUGGLING",
+      "rarity": "Uncommon",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "KINGLY_KICK",
+      "rarity": "Uncommon",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "KINGLY_PUNCH",
+      "rarity": "Uncommon",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "KNIFE_TRAP",
+      "rarity": "Rare",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "KNOCKDOWN",
+      "rarity": "Rare",
+      "type": "Attack",
+      "multiplayerConstraint": "MultiplayerOnly"
+    },
+    {
+      "id": "KNOCKOUT_BLOW",
+      "rarity": "Uncommon",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "KNOW_THY_PLACE",
+      "rarity": "Common",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "LARGESSE",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "MultiplayerOnly"
+    },
+    {
+      "id": "LEADING_STRIKE",
+      "rarity": "Common",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "LEAP",
+      "rarity": "Common",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "LEG_SWEEP",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "LEGION_OF_BONE",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "MultiplayerOnly"
+    },
+    {
+      "id": "LETHALITY",
+      "rarity": "Uncommon",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "LIFT",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "MultiplayerOnly"
+    },
+    {
+      "id": "LIGHTNING_ROD",
+      "rarity": "Common",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "LOOP",
+      "rarity": "Uncommon",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "LUNAR_BLAST",
+      "rarity": "Uncommon",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "MACHINE_LEARNING",
+      "rarity": "Rare",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "MAKE_IT_SO",
+      "rarity": "Rare",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "MALAISE",
+      "rarity": "Rare",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "MANGLE",
+      "rarity": "Rare",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "MANIFEST_AUTHORITY",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "MASTER_OF_STRATEGY",
+      "rarity": "Rare",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "MASTER_PLANNER",
+      "rarity": "Rare",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "MAYHEM",
+      "rarity": "Rare",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "MELANCHOLY",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "MEMENTO_MORI",
+      "rarity": "Uncommon",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "METEOR_SHOWER",
+      "rarity": "Ancient",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "METEOR_STRIKE",
+      "rarity": "Rare",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "MIMIC",
+      "rarity": "Rare",
+      "type": "Skill",
+      "multiplayerConstraint": "MultiplayerOnly"
+    },
+    {
+      "id": "MIND_BLAST",
+      "rarity": "Uncommon",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "MIRAGE",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "MISERY",
+      "rarity": "Rare",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "MODDED",
+      "rarity": "Rare",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "MOLTEN_FIST",
+      "rarity": "Common",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "MOMENTUM_STRIKE",
+      "rarity": "Common",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "MONARCHS_GAZE",
+      "rarity": "Rare",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "MONOLOGUE",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "MULTI_CAST",
+      "rarity": "Rare",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "MURDER",
+      "rarity": "Rare",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "NECRO_MASTERY",
+      "rarity": "Rare",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "NEGATIVE_PULSE",
+      "rarity": "Common",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "NEUROSURGE",
+      "rarity": "Rare",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "NEUTRALIZE",
+      "rarity": "Basic",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "NEUTRON_AEGIS",
+      "rarity": "Rare",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "NIGHTMARE",
+      "rarity": "Rare",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "NO_ESCAPE",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "NOSTALGIA",
+      "rarity": "Rare",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "NOT_YET",
+      "rarity": "Rare",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "NOXIOUS_FUMES",
+      "rarity": "Uncommon",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "NULL",
+      "rarity": "Uncommon",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "OBLIVION",
+      "rarity": "Rare",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "OFFERING",
+      "rarity": "Rare",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "OMNISLICE",
+      "rarity": "Uncommon",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "ONE_TWO_PUNCH",
+      "rarity": "Rare",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "ORBIT",
+      "rarity": "Uncommon",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "OUTBREAK",
+      "rarity": "Uncommon",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "OVERCLOCK",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "PACTS_END",
+      "rarity": "Rare",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "PAGESTORM",
+      "rarity": "Uncommon",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "PALE_BLUE_DOT",
+      "rarity": "Uncommon",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "PANACHE",
+      "rarity": "Uncommon",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "PANIC_BUTTON",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "PARRY",
+      "rarity": "Uncommon",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "PARSE",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "PARTICLE_WALL",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "PATTER",
+      "rarity": "Common",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "PERFECTED_STRIKE",
+      "rarity": "Common",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "PHANTOM_BLADES",
+      "rarity": "Uncommon",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "PHOTON_CUT",
+      "rarity": "Common",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "PIERCING_WAIL",
+      "rarity": "Common",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "PILLAGE",
+      "rarity": "Uncommon",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "PILLAR_OF_CREATION",
+      "rarity": "Uncommon",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "PINPOINT",
+      "rarity": "Uncommon",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "POISONED_STAB",
+      "rarity": "Common",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "POKE",
+      "rarity": "Common",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "POMMEL_STRIKE",
+      "rarity": "Common",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "POUNCE",
+      "rarity": "Uncommon",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "PRECISE_CUT",
+      "rarity": "Uncommon",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "PREDATOR",
+      "rarity": "Uncommon",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "PREP_TIME",
+      "rarity": "Uncommon",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "PREPARED",
+      "rarity": "Common",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "PRIMAL_FORCE",
+      "rarity": "Rare",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "PRODUCTION",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "PROLONG",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "PROPHESIZE",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "PROTECTOR",
+      "rarity": "Ancient",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "PROWESS",
+      "rarity": "Uncommon",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "PULL_AGGRO",
+      "rarity": "Common",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "PULL_FROM_BELOW",
+      "rarity": "Uncommon",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "PURITY",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "PUTREFY",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "PYRE",
+      "rarity": "Rare",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "QUADCAST",
+      "rarity": "Ancient",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "QUASAR",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "RADIATE",
+      "rarity": "Uncommon",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "RAGE",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "RAINBOW",
+      "rarity": "Rare",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "RALLY",
+      "rarity": "Rare",
+      "type": "Skill",
+      "multiplayerConstraint": "MultiplayerOnly"
+    },
+    {
+      "id": "RAMPAGE",
+      "rarity": "Uncommon",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "RATTLE",
+      "rarity": "Uncommon",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "REANIMATE",
+      "rarity": "Rare",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "REAP",
+      "rarity": "Common",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "REAPER_FORM",
+      "rarity": "Rare",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "REAVE",
+      "rarity": "Common",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "REBOOT",
+      "rarity": "Rare",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "REFINE_BLADE",
+      "rarity": "Common",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "REFLECT",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "REFLEX",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "REFRACT",
+      "rarity": "Uncommon",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "REND",
+      "rarity": "Rare",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "RESONANCE",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "RESTLESSNESS",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "RICOCHET",
+      "rarity": "Common",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "RIGHT_HAND_HAND",
+      "rarity": "Uncommon",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "ROCKET_PUNCH",
+      "rarity": "Uncommon",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "ROLLING_BOULDER",
+      "rarity": "Rare",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "ROYAL_GAMBLE",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "ROYALTIES",
+      "rarity": "Rare",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "RUPTURE",
+      "rarity": "Uncommon",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "SACRIFICE",
+      "rarity": "Rare",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "SALVO",
+      "rarity": "Rare",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "SCAVENGE",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "SCOURGE",
+      "rarity": "Common",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "SCRAPE",
+      "rarity": "Uncommon",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "SCRAWL",
+      "rarity": "Rare",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "SCULPTING_STRIKE",
+      "rarity": "Common",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "SEANCE",
+      "rarity": "Rare",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "SECOND_WIND",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "SECRET_TECHNIQUE",
+      "rarity": "Rare",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "SECRET_WEAPON",
+      "rarity": "Rare",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "SEEKER_STRIKE",
+      "rarity": "Uncommon",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "SEEKING_EDGE",
+      "rarity": "Rare",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "SENTRY_MODE",
+      "rarity": "Rare",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "SERPENT_FORM",
+      "rarity": "Rare",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "SETUP_STRIKE",
+      "rarity": "Common",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "SEVEN_STARS",
+      "rarity": "Rare",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "SEVERANCE",
+      "rarity": "Uncommon",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "SHADOW_SHIELD",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "SHADOW_STEP",
+      "rarity": "Rare",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "SHADOWMELD",
+      "rarity": "Rare",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "SHARED_FATE",
+      "rarity": "Rare",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "SHATTER",
+      "rarity": "Rare",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "SHINING_STRIKE",
+      "rarity": "Uncommon",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "SHOCKWAVE",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "SHROUD",
+      "rarity": "Uncommon",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "SHRUG_IT_OFF",
+      "rarity": "Common",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "SIC_EM",
+      "rarity": "Uncommon",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "SIGNAL_BOOST",
+      "rarity": "Rare",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "SKEWER",
+      "rarity": "Uncommon",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "SKIM",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "SLEIGHT_OF_FLESH",
+      "rarity": "Uncommon",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "SLICE",
+      "rarity": "Common",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "SMOKESTACK",
+      "rarity": "Uncommon",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "SNAKEBITE",
+      "rarity": "Common",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "SNAP",
+      "rarity": "Common",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "SNEAKY",
+      "rarity": "Rare",
+      "type": "Power",
+      "multiplayerConstraint": "MultiplayerOnly"
+    },
+    {
+      "id": "SOLAR_STRIKE",
+      "rarity": "Common",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "SOUL_STORM",
+      "rarity": "Rare",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "SOW",
+      "rarity": "Common",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "SPECTRUM_SHIFT",
+      "rarity": "Uncommon",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "SPEEDSTER",
+      "rarity": "Uncommon",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "SPINNER",
+      "rarity": "Rare",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "SPIRIT_OF_ASH",
+      "rarity": "Rare",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "SPITE",
+      "rarity": "Uncommon",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "SPLASH",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "SPOILS_OF_BATTLE",
+      "rarity": "Common",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "SPUR",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "SQUEEZE",
+      "rarity": "Rare",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "STAMPEDE",
+      "rarity": "Uncommon",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "STARDUST",
+      "rarity": "Uncommon",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "STOKE",
+      "rarity": "Rare",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "STOMP",
+      "rarity": "Uncommon",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "STONE_ARMOR",
+      "rarity": "Uncommon",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "STORM",
+      "rarity": "Uncommon",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "STORM_OF_STEEL",
+      "rarity": "Rare",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "STRANGLE",
+      "rarity": "Uncommon",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "STRATAGEM",
+      "rarity": "Uncommon",
+      "type": "Power",
+      "multiplayerConstraint": "SingleplayerOnly"
+    },
+    {
+      "id": "STRIKE_DEFECT",
+      "rarity": "Basic",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "STRIKE_IRONCLAD",
+      "rarity": "Basic",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "STRIKE_NECROBINDER",
+      "rarity": "Basic",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "STRIKE_REGENT",
+      "rarity": "Basic",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "STRIKE_SILENT",
+      "rarity": "Basic",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "SUBROUTINE",
+      "rarity": "Uncommon",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "SUCKER_PUNCH",
+      "rarity": "Common",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "SUMMON_FORTH",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "SUNDER",
+      "rarity": "Uncommon",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "SUPERCRITICAL",
+      "rarity": "Rare",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "SUPERMASSIVE",
+      "rarity": "Uncommon",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "SUPPRESS",
+      "rarity": "Ancient",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "SURVIVOR",
+      "rarity": "Basic",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "SWEEPING_BEAM",
+      "rarity": "Common",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "SWORD_BOOMERANG",
+      "rarity": "Common",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "SWORD_SAGE",
+      "rarity": "Rare",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "SYNCHRONIZE",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "SYNTHESIS",
+      "rarity": "Uncommon",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "TACTICIAN",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "TAG_TEAM",
+      "rarity": "Uncommon",
+      "type": "Attack",
+      "multiplayerConstraint": "MultiplayerOnly"
+    },
+    {
+      "id": "TANK",
+      "rarity": "Rare",
+      "type": "Power",
+      "multiplayerConstraint": "MultiplayerOnly"
+    },
+    {
+      "id": "TAUNT",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "TEAR_ASUNDER",
+      "rarity": "Rare",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "TEMPEST",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "TERRAFORMING",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "TESLA_COIL",
+      "rarity": "Uncommon",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "THE_BOMB",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "THE_GAMBIT",
+      "rarity": "Rare",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "THE_HUNT",
+      "rarity": "Rare",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "THE_SCYTHE",
+      "rarity": "Rare",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "THE_SEALED_THRONE",
+      "rarity": "Ancient",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "THE_SMITH",
+      "rarity": "Rare",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "THINKING_AHEAD",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "THRASH",
+      "rarity": "Rare",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "THRUMMING_HATCHET",
+      "rarity": "Uncommon",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "THUNDER",
+      "rarity": "Uncommon",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "THUNDERCLAP",
+      "rarity": "Common",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "TIMES_UP",
+      "rarity": "Rare",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "TOOLS_OF_THE_TRADE",
+      "rarity": "Rare",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "TRACKING",
+      "rarity": "Rare",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "TRANSFIGURE",
+      "rarity": "Rare",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "TRASH_TO_TREASURE",
+      "rarity": "Rare",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "TREMBLE",
+      "rarity": "Common",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "TRUE_GRIT",
+      "rarity": "Common",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "TURBO",
+      "rarity": "Common",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "TWIN_STRIKE",
+      "rarity": "Common",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "TYRANNY",
+      "rarity": "Rare",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "ULTIMATE_DEFEND",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "ULTIMATE_STRIKE",
+      "rarity": "Uncommon",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "UNDEATH",
+      "rarity": "Rare",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "UNLEASH",
+      "rarity": "Basic",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "UNMOVABLE",
+      "rarity": "Rare",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "UNRELENTING",
+      "rarity": "Uncommon",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "UNTOUCHABLE",
+      "rarity": "Common",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "UP_MY_SLEEVE",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "UPPERCUT",
+      "rarity": "Uncommon",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "UPROAR",
+      "rarity": "Common",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "VEILPIERCER",
+      "rarity": "Uncommon",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "VENERATE",
+      "rarity": "Basic",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "VICIOUS",
+      "rarity": "Uncommon",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "VOID_FORM",
+      "rarity": "Rare",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "VOLLEY",
+      "rarity": "Uncommon",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "VOLTAIC",
+      "rarity": "Rare",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "WELL_LAID_PLANS",
+      "rarity": "Uncommon",
+      "type": "Power",
+      "multiplayerConstraint": "SingleplayerOnly"
+    },
+    {
+      "id": "WHIRLWIND",
+      "rarity": "Uncommon",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "WHITE_NOISE",
+      "rarity": "Uncommon",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "WISP",
+      "rarity": "Common",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "WRAITH_FORM",
+      "rarity": "Ancient",
+      "type": "Power",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "WROUGHT_IN_WAR",
+      "rarity": "Common",
+      "type": "Attack",
+      "multiplayerConstraint": "None"
+    },
+    {
+      "id": "ZAP",
+      "rarity": "Basic",
+      "type": "Skill",
+      "multiplayerConstraint": "None"
+    }
+  ],
+  "colorlessCardPool": [
+    "ALCHEMIZE",
+    "ANOINTED",
+    "AUTOMATION",
+    "BEACON_OF_HOPE",
+    "BEAT_DOWN",
+    "BELIEVE_IN_YOU",
+    "BOLAS",
+    "CALAMITY",
+    "CATASTROPHE",
+    "COORDINATE",
+    "DARK_SHACKLES",
+    "DISCOVERY",
+    "DRAMATIC_ENTRANCE",
+    "ENTROPY",
+    "EQUILIBRIUM",
+    "ETERNAL_ARMOR",
+    "FASTEN",
+    "FINESSE",
+    "FISTICUFFS",
+    "FLASH_OF_STEEL",
+    "GANG_UP",
+    "GOLD_AXE",
+    "HAND_OF_GREED",
+    "HIDDEN_GEM",
+    "HUDDLE_UP",
+    "IMPATIENCE",
+    "INTERCEPT",
+    "JACK_OF_ALL_TRADES",
+    "JACKPOT",
+    "KNOCKDOWN",
+    "LIFT",
+    "MASTER_OF_STRATEGY",
+    "MAYHEM",
+    "MIMIC",
+    "MIND_BLAST",
+    "NOSTALGIA",
+    "OMNISLICE",
+    "PANACHE",
+    "PANIC_BUTTON",
+    "PREP_TIME",
+    "PRODUCTION",
+    "PROLONG",
+    "PROWESS",
+    "PURITY",
+    "RALLY",
+    "REND",
+    "RESTLESSNESS",
+    "ROLLING_BOULDER",
+    "SALVO",
+    "SCRAWL",
+    "SECRET_TECHNIQUE",
+    "SECRET_WEAPON",
+    "SEEKER_STRIKE",
+    "SHOCKWAVE",
+    "SPLASH",
+    "STRATAGEM",
+    "TAG_TEAM",
+    "THE_BOMB",
+    "THE_GAMBIT",
+    "THINKING_AHEAD",
+    "THRUMMING_HATCHET",
+    "ULTIMATE_DEFEND",
+    "ULTIMATE_STRIKE",
+    "VOLLEY"
+  ],
+  "potionPools": {
+    "Ironclad": [
+      "BLOOD_POTION",
+      "SOLDIERS_STEW",
+      "ASHWATER"
+    ],
+    "Silent": [
+      "POISON_POTION",
+      "GHOST_IN_A_JAR",
+      "CUNNING_POTION"
+    ],
+    "Defect": [
+      "FOCUS_POTION",
+      "ESSENCE_OF_DARKNESS",
+      "POTION_OF_CAPACITY"
+    ],
+    "Necrobinder": [
+      "POTION_OF_DOOM",
+      "POT_OF_GHOULS",
+      "BONE_BREW"
+    ],
+    "Regent": [
+      "STAR_POTION",
+      "COSMIC_CONCOCTION",
+      "KINGS_COURAGE"
+    ]
+  },
+  "sharedPotionPool": [
+    "ATTACK_POTION",
+    "BEETLE_JUICE",
+    "BLESSING_OF_THE_FORGE",
+    "BLOCK_POTION",
+    "BOTTLED_POTENTIAL",
+    "CLARITY",
+    "COLORLESS_POTION",
+    "CURE_ALL",
+    "DEXTERITY_POTION",
+    "DISTILLED_CHAOS",
+    "DROPLET_OF_PRECOGNITION",
+    "DUPLICATOR",
+    "ENERGY_POTION",
+    "ENTROPIC_BREW",
+    "EXPLOSIVE_AMPOULE",
+    "FAIRY_IN_A_BOTTLE",
+    "FIRE_POTION",
+    "FLEX_POTION",
+    "FORTIFIER",
+    "FRUIT_JUICE",
+    "FYSH_OIL",
+    "GAMBLERS_BREW",
+    "GIGANTIFICATION_POTION",
+    "HEART_OF_IRON",
+    "LIQUID_BRONZE",
+    "LIQUID_MEMORIES",
+    "LUCKY_TONIC",
+    "MAZALETHS_GIFT",
+    "OROBIC_ACID",
+    "POTION_OF_BINDING",
+    "POWDERED_DEMISE",
+    "POWER_POTION",
+    "RADIANT_TINCTURE",
+    "REGEN_POTION",
+    "SHACKLING_POTION",
+    "SHIP_IN_A_BOTTLE",
+    "SKILL_POTION",
+    "SNECKO_OIL",
+    "SPEED_POTION",
+    "STABLE_SERUM",
+    "STRENGTH_POTION",
+    "SWIFT_POTION",
+    "TOUCH_OF_INSANITY",
+    "VULNERABLE_POTION",
+    "WEAK_POTION"
+  ],
+  "potionMetadata": [
+    {
+      "id": "ASHWATER",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "ATTACK_POTION",
+      "rarity": "Common"
+    },
+    {
+      "id": "BEETLE_JUICE",
+      "rarity": "Rare"
+    },
+    {
+      "id": "BLESSING_OF_THE_FORGE",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "BLOCK_POTION",
+      "rarity": "Common"
+    },
+    {
+      "id": "BLOOD_POTION",
+      "rarity": "Common"
+    },
+    {
+      "id": "BONE_BREW",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "BOTTLED_POTENTIAL",
+      "rarity": "Rare"
+    },
+    {
+      "id": "CLARITY",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "COLORLESS_POTION",
+      "rarity": "Common"
+    },
+    {
+      "id": "COSMIC_CONCOCTION",
+      "rarity": "Rare"
+    },
+    {
+      "id": "CUNNING_POTION",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "CURE_ALL",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "DEPRECATED_POTION",
+      "rarity": "None"
+    },
+    {
+      "id": "DEXTERITY_POTION",
+      "rarity": "Common"
+    },
+    {
+      "id": "DISTILLED_CHAOS",
+      "rarity": "Rare"
+    },
+    {
+      "id": "DROPLET_OF_PRECOGNITION",
+      "rarity": "Rare"
+    },
+    {
+      "id": "DUPLICATOR",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "ENERGY_POTION",
+      "rarity": "Common"
+    },
+    {
+      "id": "ENTROPIC_BREW",
+      "rarity": "Rare"
+    },
+    {
+      "id": "ESSENCE_OF_DARKNESS",
+      "rarity": "Rare"
+    },
+    {
+      "id": "EXPLOSIVE_AMPOULE",
+      "rarity": "Common"
+    },
+    {
+      "id": "FAIRY_IN_A_BOTTLE",
+      "rarity": "Rare"
+    },
+    {
+      "id": "FIRE_POTION",
+      "rarity": "Common"
+    },
+    {
+      "id": "FLEX_POTION",
+      "rarity": "Common"
+    },
+    {
+      "id": "FOCUS_POTION",
+      "rarity": "Common"
+    },
+    {
+      "id": "FORTIFIER",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "FOUL_POTION",
+      "rarity": "Event"
+    },
+    {
+      "id": "FRUIT_JUICE",
+      "rarity": "Rare"
+    },
+    {
+      "id": "FYSH_OIL",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "GAMBLERS_BREW",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "GHOST_IN_A_JAR",
+      "rarity": "Rare"
+    },
+    {
+      "id": "GIGANTIFICATION_POTION",
+      "rarity": "Rare"
+    },
+    {
+      "id": "GLOWWATER_POTION",
+      "rarity": "Event"
+    },
+    {
+      "id": "HEART_OF_IRON",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "KINGS_COURAGE",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "LIQUID_BRONZE",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "LIQUID_MEMORIES",
+      "rarity": "Rare"
+    },
+    {
+      "id": "LUCKY_TONIC",
+      "rarity": "Rare"
+    },
+    {
+      "id": "MAZALETHS_GIFT",
+      "rarity": "Rare"
+    },
+    {
+      "id": "OROBIC_ACID",
+      "rarity": "Rare"
+    },
+    {
+      "id": "POISON_POTION",
+      "rarity": "Common"
+    },
+    {
+      "id": "POTION_OF_BINDING",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "POTION_OF_CAPACITY",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "POTION_OF_DOOM",
+      "rarity": "Common"
+    },
+    {
+      "id": "POTION_SHAPED_ROCK",
+      "rarity": "Token"
+    },
+    {
+      "id": "POT_OF_GHOULS",
+      "rarity": "Rare"
+    },
+    {
+      "id": "POWDERED_DEMISE",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "POWER_POTION",
+      "rarity": "Common"
+    },
+    {
+      "id": "RADIANT_TINCTURE",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "REGEN_POTION",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "SHACKLING_POTION",
+      "rarity": "Rare"
+    },
+    {
+      "id": "SHIP_IN_A_BOTTLE",
+      "rarity": "Rare"
+    },
+    {
+      "id": "SKILL_POTION",
+      "rarity": "Common"
+    },
+    {
+      "id": "SNECKO_OIL",
+      "rarity": "Rare"
+    },
+    {
+      "id": "SOLDIERS_STEW",
+      "rarity": "Rare"
+    },
+    {
+      "id": "SPEED_POTION",
+      "rarity": "Common"
+    },
+    {
+      "id": "STABLE_SERUM",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "STAR_POTION",
+      "rarity": "Common"
+    },
+    {
+      "id": "STRENGTH_POTION",
+      "rarity": "Common"
+    },
+    {
+      "id": "SWIFT_POTION",
+      "rarity": "Common"
+    },
+    {
+      "id": "TOUCH_OF_INSANITY",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "VULNERABLE_POTION",
+      "rarity": "Common"
+    },
+    {
+      "id": "WEAK_POTION",
+      "rarity": "Common"
+    }
+  ],
+  "relicPools": {
+    "Shared": [
+      "AKABEKO",
+      "AMETHYST_AUBERGINE",
+      "ANCHOR",
+      "ART_OF_WAR",
+      "BAG_OF_MARBLES",
+      "BAG_OF_PREPARATION",
+      "BEATING_REMNANT",
+      "BELLOWS",
+      "BELT_BUCKLE",
+      "BLOOD_VIAL",
+      "BOOK_OF_FIVE_RINGS",
+      "BOWLER_HAT",
+      "BREAD",
+      "BRONZE_SCALES",
+      "BURNING_STICKS",
+      "CANDELABRA",
+      "CAPTAINS_WHEEL",
+      "CAULDRON",
+      "CENTENNIAL_PUZZLE",
+      "CHANDELIER",
+      "CHEMICAL_X",
+      "CLOAK_CLASP",
+      "DINGY_RUG",
+      "DOLLYS_MIRROR",
+      "DRAGON_FRUIT",
+      "ETERNAL_FEATHER",
+      "FESTIVE_POPPER",
+      "FRESNEL_LENS",
+      "FROZEN_EGG",
+      "GAMBLING_CHIP",
+      "GAME_PIECE",
+      "GHOST_SEED",
+      "GIRYA",
+      "GNARLED_HAMMER",
+      "GORGET",
+      "GREMLIN_HORN",
+      "HAPPY_FLOWER",
+      "HORN_CLEAT",
+      "ICE_CREAM",
+      "INTIMIDATING_HELMET",
+      "JOSS_PAPER",
+      "JUZU_BRACELET",
+      "KIFUDA",
+      "KUNAI",
+      "KUSARIGAMA",
+      "LANTERN",
+      "LASTING_CANDY",
+      "LAVA_LAMP",
+      "LEES_WAFFLE",
+      "LETTER_OPENER",
+      "LIZARD_TAIL",
+      "LOOMING_FRUIT",
+      "LUCKY_FYSH",
+      "MANGO",
+      "MEAL_TICKET",
+      "MEAT_ON_THE_BONE",
+      "MEMBERSHIP_CARD",
+      "MERCURY_HOURGLASS",
+      "MINIATURE_CANNON",
+      "MINIATURE_TENT",
+      "MOLTEN_EGG",
+      "MUMMIFIED_HAND",
+      "MYSTIC_LIGHTER",
+      "NUNCHAKU",
+      "ODDLY_SMOOTH_STONE",
+      "OLD_COIN",
+      "ORICHALCUM",
+      "ORNAMENTAL_FAN",
+      "ORRERY",
+      "PANTOGRAPH",
+      "PARRYING_SHIELD",
+      "PEAR",
+      "PEN_NIB",
+      "PENDULUM",
+      "PERMAFROST",
+      "PETRIFIED_TOAD",
+      "PLANISPHERE",
+      "POCKETWATCH",
+      "POTION_BELT",
+      "PRAYER_WHEEL",
+      "PUNCH_DAGGER",
+      "RAINBOW_RING",
+      "RAZOR_TOOTH",
+      "RED_MASK",
+      "REGAL_PILLOW",
+      "REPTILE_TRINKET",
+      "RINGING_TRIANGLE",
+      "RIPPLE_BASIN",
+      "ROYAL_STAMP",
+      "SCREAMING_FLAGON",
+      "SHOVEL",
+      "SHURIKEN",
+      "SLING_OF_COURAGE",
+      "SPARKLING_ROUGE",
+      "STONE_CALENDAR",
+      "STONE_CRACKER",
+      "STRAWBERRY",
+      "STRIKE_DUMMY",
+      "STURDY_CLAMP",
+      "THE_ABACUS",
+      "THE_COURIER",
+      "TINY_MAILBOX",
+      "TOOLBOX",
+      "TOXIC_EGG",
+      "TUNGSTEN_ROD",
+      "TUNING_FORK",
+      "UNCEASING_TOP",
+      "UNSETTLING_LAMP",
+      "VAJRA",
+      "VAMBRACE",
+      "VENERABLE_TEA_SET",
+      "VERY_HOT_COCOA",
+      "VEXING_PUZZLEBOX",
+      "WAR_PAINT",
+      "WHETSTONE",
+      "WHITE_BEAST_STATUE",
+      "WHITE_STAR",
+      "WING_CHARM"
+    ],
+    "Ironclad": [
+      "BRIMSTONE",
+      "BURNING_BLOOD",
+      "CHARONS_ASHES",
+      "DEMON_TONGUE",
+      "PAPER_PHROG",
+      "RED_SKULL",
+      "RUINED_HELMET",
+      "SELF_FORMING_CLAY"
+    ],
+    "Silent": [
+      "HELICAL_DART",
+      "NINJA_SCROLL",
+      "PAPER_KRANE",
+      "RING_OF_THE_SNAKE",
+      "SNECKO_SKULL",
+      "TINGSHA",
+      "TOUGH_BANDAGES",
+      "TWISTED_FUNNEL"
+    ],
+    "Defect": [
+      "CRACKED_CORE",
+      "DATA_DISK",
+      "EMOTION_CHIP",
+      "GOLD_PLATED_CABLES",
+      "POWER_CELL",
+      "METRONOME",
+      "RUNIC_CAPACITOR",
+      "SYMBIOTIC_VIRUS"
+    ],
+    "Necrobinder": [
+      "BIG_HAT",
+      "BONE_FLUTE",
+      "BOOK_REPAIR_KNIFE",
+      "BOOKMARK",
+      "BOUND_PHYLACTERY",
+      "FUNERARY_MASK",
+      "IVORY_TILE",
+      "UNDYING_SIGIL"
+    ],
+    "Regent": [
+      "DIVINE_RIGHT",
+      "FENCING_MANUAL",
+      "GALACTIC_DUST",
+      "LUNAR_PASTRY",
+      "MINI_REGENT",
+      "ORANGE_DOUGH",
+      "REGALITE",
+      "VITRUVIAN_MINION"
+    ]
+  },
+  "relicMetadata": [
+    {
+      "id": "AKABEKO",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "AMETHYST_AUBERGINE",
+      "rarity": "Common"
+    },
+    {
+      "id": "ANCHOR",
+      "rarity": "Common"
+    },
+    {
+      "id": "ART_OF_WAR",
+      "rarity": "Rare"
+    },
+    {
+      "id": "BAG_OF_MARBLES",
+      "rarity": "Common"
+    },
+    {
+      "id": "BAG_OF_PREPARATION",
+      "rarity": "Common"
+    },
+    {
+      "id": "BEATING_REMNANT",
+      "rarity": "Rare"
+    },
+    {
+      "id": "BELLOWS",
+      "rarity": "Rare"
+    },
+    {
+      "id": "BELT_BUCKLE",
+      "rarity": "Shop"
+    },
+    {
+      "id": "BIG_HAT",
+      "rarity": "Rare"
+    },
+    {
+      "id": "BLOOD_VIAL",
+      "rarity": "Common"
+    },
+    {
+      "id": "BONE_FLUTE",
+      "rarity": "Common"
+    },
+    {
+      "id": "BOOKMARK",
+      "rarity": "Rare"
+    },
+    {
+      "id": "BOOK_OF_FIVE_RINGS",
+      "rarity": "Common"
+    },
+    {
+      "id": "BOOK_REPAIR_KNIFE",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "BOUND_PHYLACTERY",
+      "rarity": "Starter"
+    },
+    {
+      "id": "BOWLER_HAT",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "BREAD",
+      "rarity": "Shop"
+    },
+    {
+      "id": "BRIMSTONE",
+      "rarity": "Shop"
+    },
+    {
+      "id": "BRONZE_SCALES",
+      "rarity": "Common"
+    },
+    {
+      "id": "BURNING_BLOOD",
+      "rarity": "Starter"
+    },
+    {
+      "id": "BURNING_STICKS",
+      "rarity": "Shop"
+    },
+    {
+      "id": "CANDELABRA",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "CAPTAINS_WHEEL",
+      "rarity": "Rare"
+    },
+    {
+      "id": "CAULDRON",
+      "rarity": "Shop"
+    },
+    {
+      "id": "CENTENNIAL_PUZZLE",
+      "rarity": "Common"
+    },
+    {
+      "id": "CHANDELIER",
+      "rarity": "Rare"
+    },
+    {
+      "id": "CHARONS_ASHES",
+      "rarity": "Rare"
+    },
+    {
+      "id": "CHEMICAL_X",
+      "rarity": "Shop"
+    },
+    {
+      "id": "CLOAK_CLASP",
+      "rarity": "Rare"
+    },
+    {
+      "id": "CRACKED_CORE",
+      "rarity": "Starter"
+    },
+    {
+      "id": "DATA_DISK",
+      "rarity": "Common"
+    },
+    {
+      "id": "DEMON_TONGUE",
+      "rarity": "Rare"
+    },
+    {
+      "id": "DINGY_RUG",
+      "rarity": "Shop"
+    },
+    {
+      "id": "DIVINE_RIGHT",
+      "rarity": "Starter"
+    },
+    {
+      "id": "DOLLYS_MIRROR",
+      "rarity": "Shop"
+    },
+    {
+      "id": "DRAGON_FRUIT",
+      "rarity": "Shop"
+    },
+    {
+      "id": "EMOTION_CHIP",
+      "rarity": "Rare"
+    },
+    {
+      "id": "ETERNAL_FEATHER",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "FENCING_MANUAL",
+      "rarity": "Common"
+    },
+    {
+      "id": "FESTIVE_POPPER",
+      "rarity": "Common"
+    },
+    {
+      "id": "FRESNEL_LENS",
+      "rarity": "Event"
+    },
+    {
+      "id": "FROZEN_EGG",
+      "rarity": "Rare"
+    },
+    {
+      "id": "FUNERARY_MASK",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "GALACTIC_DUST",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "GAMBLING_CHIP",
+      "rarity": "Rare"
+    },
+    {
+      "id": "GAME_PIECE",
+      "rarity": "Rare"
+    },
+    {
+      "id": "GHOST_SEED",
+      "rarity": "Shop"
+    },
+    {
+      "id": "GIRYA",
+      "rarity": "Rare"
+    },
+    {
+      "id": "GNARLED_HAMMER",
+      "rarity": "Shop"
+    },
+    {
+      "id": "GOLD_PLATED_CABLES",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "GORGET",
+      "rarity": "Common"
+    },
+    {
+      "id": "GREMLIN_HORN",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "HAPPY_FLOWER",
+      "rarity": "Common"
+    },
+    {
+      "id": "HELICAL_DART",
+      "rarity": "Rare"
+    },
+    {
+      "id": "HORN_CLEAT",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "ICE_CREAM",
+      "rarity": "Rare"
+    },
+    {
+      "id": "INTIMIDATING_HELMET",
+      "rarity": "Rare"
+    },
+    {
+      "id": "IVORY_TILE",
+      "rarity": "Rare"
+    },
+    {
+      "id": "JOSS_PAPER",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "JUZU_BRACELET",
+      "rarity": "Common"
+    },
+    {
+      "id": "KIFUDA",
+      "rarity": "Shop"
+    },
+    {
+      "id": "KUNAI",
+      "rarity": "Rare"
+    },
+    {
+      "id": "KUSARIGAMA",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "LANTERN",
+      "rarity": "Common"
+    },
+    {
+      "id": "LASTING_CANDY",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "LAVA_LAMP",
+      "rarity": "Shop"
+    },
+    {
+      "id": "LEES_WAFFLE",
+      "rarity": "Shop"
+    },
+    {
+      "id": "LETTER_OPENER",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "LIZARD_TAIL",
+      "rarity": "Rare"
+    },
+    {
+      "id": "LOOMING_FRUIT",
+      "rarity": "Ancient"
+    },
+    {
+      "id": "LUCKY_FYSH",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "LUNAR_PASTRY",
+      "rarity": "Rare"
+    },
+    {
+      "id": "MANGO",
+      "rarity": "Rare"
+    },
+    {
+      "id": "MEAL_TICKET",
+      "rarity": "Common"
+    },
+    {
+      "id": "MEAT_ON_THE_BONE",
+      "rarity": "Rare"
+    },
+    {
+      "id": "MEMBERSHIP_CARD",
+      "rarity": "Shop"
+    },
+    {
+      "id": "MERCURY_HOURGLASS",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "METRONOME",
+      "rarity": "Rare"
+    },
+    {
+      "id": "MINIATURE_CANNON",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "MINIATURE_TENT",
+      "rarity": "Shop"
+    },
+    {
+      "id": "MINI_REGENT",
+      "rarity": "Rare"
+    },
+    {
+      "id": "MOLTEN_EGG",
+      "rarity": "Rare"
+    },
+    {
+      "id": "MUMMIFIED_HAND",
+      "rarity": "Rare"
+    },
+    {
+      "id": "MYSTIC_LIGHTER",
+      "rarity": "Shop"
+    },
+    {
+      "id": "NINJA_SCROLL",
+      "rarity": "Shop"
+    },
+    {
+      "id": "NUNCHAKU",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "ODDLY_SMOOTH_STONE",
+      "rarity": "Common"
+    },
+    {
+      "id": "OLD_COIN",
+      "rarity": "Rare"
+    },
+    {
+      "id": "ORANGE_DOUGH",
+      "rarity": "Rare"
+    },
+    {
+      "id": "ORICHALCUM",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "ORNAMENTAL_FAN",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "ORRERY",
+      "rarity": "Shop"
+    },
+    {
+      "id": "PANTOGRAPH",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "PAPER_KRANE",
+      "rarity": "Rare"
+    },
+    {
+      "id": "PAPER_PHROG",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "PARRYING_SHIELD",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "PEAR",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "PENDULUM",
+      "rarity": "Common"
+    },
+    {
+      "id": "PEN_NIB",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "PERMAFROST",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "PETRIFIED_TOAD",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "PLANISPHERE",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "POCKETWATCH",
+      "rarity": "Rare"
+    },
+    {
+      "id": "POTION_BELT",
+      "rarity": "Common"
+    },
+    {
+      "id": "POWER_CELL",
+      "rarity": "Rare"
+    },
+    {
+      "id": "PRAYER_WHEEL",
+      "rarity": "Rare"
+    },
+    {
+      "id": "PUNCH_DAGGER",
+      "rarity": "Shop"
+    },
+    {
+      "id": "RAINBOW_RING",
+      "rarity": "Rare"
+    },
+    {
+      "id": "RAZOR_TOOTH",
+      "rarity": "Rare"
+    },
+    {
+      "id": "RED_MASK",
+      "rarity": "Common"
+    },
+    {
+      "id": "RED_SKULL",
+      "rarity": "Common"
+    },
+    {
+      "id": "REGALITE",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "REGAL_PILLOW",
+      "rarity": "Common"
+    },
+    {
+      "id": "REPTILE_TRINKET",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "RINGING_TRIANGLE",
+      "rarity": "Shop"
+    },
+    {
+      "id": "RING_OF_THE_SNAKE",
+      "rarity": "Starter"
+    },
+    {
+      "id": "RIPPLE_BASIN",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "ROYAL_STAMP",
+      "rarity": "Shop"
+    },
+    {
+      "id": "RUINED_HELMET",
+      "rarity": "Rare"
+    },
+    {
+      "id": "RUNIC_CAPACITOR",
+      "rarity": "Shop"
+    },
+    {
+      "id": "SCREAMING_FLAGON",
+      "rarity": "Shop"
+    },
+    {
+      "id": "SELF_FORMING_CLAY",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "SHOVEL",
+      "rarity": "Rare"
+    },
+    {
+      "id": "SHURIKEN",
+      "rarity": "Rare"
+    },
+    {
+      "id": "SLING_OF_COURAGE",
+      "rarity": "Shop"
+    },
+    {
+      "id": "SNECKO_SKULL",
+      "rarity": "Common"
+    },
+    {
+      "id": "SPARKLING_ROUGE",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "STONE_CALENDAR",
+      "rarity": "Rare"
+    },
+    {
+      "id": "STONE_CRACKER",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "STRAWBERRY",
+      "rarity": "Common"
+    },
+    {
+      "id": "STRIKE_DUMMY",
+      "rarity": "Common"
+    },
+    {
+      "id": "STURDY_CLAMP",
+      "rarity": "Rare"
+    },
+    {
+      "id": "SYMBIOTIC_VIRUS",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "THE_ABACUS",
+      "rarity": "Shop"
+    },
+    {
+      "id": "THE_COURIER",
+      "rarity": "Rare"
+    },
+    {
+      "id": "TINGSHA",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "TINY_MAILBOX",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "TOOLBOX",
+      "rarity": "Shop"
+    },
+    {
+      "id": "TOUGH_BANDAGES",
+      "rarity": "Rare"
+    },
+    {
+      "id": "TOXIC_EGG",
+      "rarity": "Rare"
+    },
+    {
+      "id": "TUNGSTEN_ROD",
+      "rarity": "Rare"
+    },
+    {
+      "id": "TUNING_FORK",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "TWISTED_FUNNEL",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "UNCEASING_TOP",
+      "rarity": "Rare"
+    },
+    {
+      "id": "UNDYING_SIGIL",
+      "rarity": "Shop"
+    },
+    {
+      "id": "UNSETTLING_LAMP",
+      "rarity": "Rare"
+    },
+    {
+      "id": "VAJRA",
+      "rarity": "Common"
+    },
+    {
+      "id": "VAMBRACE",
+      "rarity": "Uncommon"
+    },
+    {
+      "id": "VENERABLE_TEA_SET",
+      "rarity": "Common"
+    },
+    {
+      "id": "VERY_HOT_COCOA",
+      "rarity": "Ancient"
+    },
+    {
+      "id": "VEXING_PUZZLEBOX",
+      "rarity": "Rare"
+    },
+    {
+      "id": "VITRUVIAN_MINION",
+      "rarity": "Shop"
+    },
+    {
+      "id": "WAR_PAINT",
+      "rarity": "Common"
+    },
+    {
+      "id": "WHETSTONE",
+      "rarity": "Common"
+    },
+    {
+      "id": "WHITE_BEAST_STATUE",
+      "rarity": "Rare"
+    },
+    {
+      "id": "WHITE_STAR",
+      "rarity": "Rare"
+    },
+    {
+      "id": "WING_CHARM",
+      "rarity": "Shop"
+    }
+  ]
+}

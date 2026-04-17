@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using SeedModel.Neow;
 using SeedModel.Rng;
+using SeedModel.Run;
 using SeedModel.Sts2.Ancients;
 using SeedModel.Sts2.Generation;
 
@@ -142,5 +143,28 @@ public sealed class Sts2RunPreviewer
         }
 
         return preview;
+    }
+
+    public ShopPreview PreviewFirstShop(
+        NeowOptionDataset dataset,
+        SeedRunEvaluationContext context,
+        IReadOnlyList<NeowOptionResult> neowOptions)
+    {
+        return PreviewFirstShop(dataset, context, neowOptions, ShopPreviewRequest.Full);
+    }
+
+    internal ShopPreview PreviewFirstShop(
+        NeowOptionDataset dataset,
+        SeedRunEvaluationContext context,
+        IReadOnlyList<NeowOptionResult> neowOptions,
+        ShopPreviewRequest request)
+    {
+        var previewer = new Sts2StandardShopPreviewer(dataset, _world);
+        return previewer.PreviewFirstShop(context, neowOptions, request);
+    }
+
+    internal FirstShopRouteInfo? GetFirstShopRouteInfo(SeedRunEvaluationContext context)
+    {
+        return Sts2StandardShopPreviewer.GetFirstShopRouteInfo(_world, context);
     }
 }

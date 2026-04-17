@@ -16,16 +16,16 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="..\..\data\neow\options.json">
+    <EmbeddedResource Include="..\..\data\0.99.1\neow\options.json">
       <LogicalName>SeedUi.Data.Neow.options.json</LogicalName>
     </EmbeddedResource>
-    <EmbeddedResource Include="..\..\data\sts2\acts.json">
+    <EmbeddedResource Include="..\..\data\0.99.1\sts2\acts.json">
       <LogicalName>SeedUi.Data.sts2.acts.json</LogicalName>
     </EmbeddedResource>
-    <EmbeddedResource Include="..\..\data\ancients\options.json">
+    <EmbeddedResource Include="..\..\data\0.99.1\ancients\options.json">
       <LogicalName>SeedUi.Data.ancients.options.json</LogicalName>
     </EmbeddedResource>
-    <EmbeddedResource Include="..\..\data\ancients\options.zhs.json">
+    <EmbeddedResource Include="..\..\data\0.99.1\ancients\options.zhs.json">
       <LogicalName>SeedUi.Data.ancients.options.zhs.json</LogicalName>
     </EmbeddedResource>
   </ItemGroup>

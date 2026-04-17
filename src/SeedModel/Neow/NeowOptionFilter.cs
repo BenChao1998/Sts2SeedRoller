@@ -77,7 +77,7 @@ public sealed class NeowOptionFilter
         }
 
         if (RelicIds.Count > 0 &&
-            !RelicIds.Contains(option.RelicId, StringComparer.OrdinalIgnoreCase))
+            !MatchesRelicIds(option))
         {
             return false;
         }
@@ -110,7 +110,11 @@ public sealed class NeowOptionFilter
             if (Contains(option.RelicId, term) ||
                 Contains(option.Title, term) ||
                 Contains(option.Description ?? string.Empty, term) ||
-                Contains(option.Note ?? string.Empty, term))
+                Contains(option.Note ?? string.Empty, term) ||
+                option.Details.Any(detail =>
+                    Contains(detail.Label, term) ||
+                    Contains(detail.Value, term) ||
+                    Contains(detail.ModelId, term)))
             {
                 return true;
             }
@@ -119,10 +123,45 @@ public sealed class NeowOptionFilter
         return false;
     }
 
+    private bool MatchesRelicIds(NeowOptionResult option)
+    {
+        return MatchesModelIds(
+            RelicIds,
+            EnumerateRelicIds(option));
+    }
+
     private static bool MatchesDetailIds(
         IReadOnlyList<RewardDetail> details,
         RewardDetailType type,
         IReadOnlyList<string> requiredIds)
+    {
+        return MatchesModelIds(
+            requiredIds,
+            details
+                .Where(detail => detail.Type == type)
+                .Select(detail => detail.ModelId));
+    }
+
+    private static IEnumerable<string> EnumerateRelicIds(NeowOptionResult option)
+    {
+        if (!string.IsNullOrWhiteSpace(option.RelicId))
+        {
+            yield return option.RelicId;
+        }
+
+        foreach (var detail in option.Details)
+        {
+            if (detail.Type == RewardDetailType.Relic &&
+                !string.IsNullOrWhiteSpace(detail.ModelId))
+            {
+                yield return detail.ModelId;
+            }
+        }
+    }
+
+    private static bool MatchesModelIds(
+        IReadOnlyList<string> requiredIds,
+        IEnumerable<string?> availableIds)
     {
         if (requiredIds.Count == 0)
         {
@@ -146,14 +185,14 @@ public sealed class NeowOptionFilter
         }
 
         var availableCounts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-        foreach (var detail in details)
+        foreach (var availableId in availableIds)
         {
-            if (detail.Type != type || string.IsNullOrWhiteSpace(detail.ModelId))
+            if (string.IsNullOrWhiteSpace(availableId))
             {
                 continue;
             }
 
-            var key = detail.ModelId;
+            var key = availableId;
             availableCounts[key] = availableCounts.TryGetValue(key, out var count) ? count + 1 : 1;
         }
 

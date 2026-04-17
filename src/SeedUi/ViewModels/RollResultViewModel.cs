@@ -19,7 +19,9 @@ internal sealed class RollResultViewModel
         Sts2RunPreview? ancientPreview,
         bool requiresAct2,
         bool requiresAct3,
-        int ascensionLevel)
+        int ascensionLevel,
+        ShopPreview? shopPreview = null,
+        bool shopFilterMatched = false)
     {
         SeedString = seedString;
         SeedValue = seedValue;
@@ -34,7 +36,28 @@ internal sealed class RollResultViewModel
         AncientActs = ancientPreview == null
             ? Array.Empty<AncientActViewModel>()
             : ancientPreview.Acts.Select(act => new AncientActViewModel(act)).ToList();
+
+        ShopPreview = shopPreview;
+        ShopFilterMatched = shopFilterMatched;
+        HasShopPreview = shopPreview != null;
+        if (shopPreview != null)
+        {
+            var colored = shopPreview.ColoredCards;
+            ShopCardEntries = colored.Select((c, i) => new ShopItemViewModel(c.Id, c.Price, IsDiscounted(shopPreview.DiscountedColoredSlot, i), MainWindowViewModel.GetCardDisplayName(c.Id))).ToList();
+            ShopColorlessEntries = shopPreview.ColorlessCards.Select(c => new ShopItemViewModel(c.Id, c.Price, false, MainWindowViewModel.GetCardDisplayName(c.Id))).ToList();
+            ShopRelicEntries = shopPreview.Relics.Select(r => new ShopItemViewModel(r.Id, r.Price, false, MainWindowViewModel.GetRelicDisplayName(r.Id))).ToList();
+            ShopPotionEntries = shopPreview.Potions.Select(p => new ShopItemViewModel(p.Id, p.Price, false, MainWindowViewModel.GetPotionDisplayName(p.Id))).ToList();
+        }
+        else
+        {
+            ShopCardEntries = Array.Empty<ShopItemViewModel>();
+            ShopColorlessEntries = Array.Empty<ShopItemViewModel>();
+            ShopRelicEntries = Array.Empty<ShopItemViewModel>();
+            ShopPotionEntries = Array.Empty<ShopItemViewModel>();
+        }
     }
+
+    private static bool IsDiscounted(int discountedSlot, int index) => discountedSlot == index && discountedSlot >= 0;
 
     public string SeedString { get; }
 
@@ -73,6 +96,14 @@ internal sealed class RollResultViewModel
     public string Act3AncientDisplay => AncientActs.FirstOrDefault(a => a.ActNumber == 3)?.AncientDisplay ?? "—";
 
     public bool MatchesRequiredActs => (!RequiresAct2 || HasAct2) && (!RequiresAct3 || HasAct3);
+
+    public ShopPreview? ShopPreview { get; }
+    public bool ShopFilterMatched { get; }
+    public bool HasShopPreview { get; }
+    public IReadOnlyList<ShopItemViewModel> ShopCardEntries { get; }
+    public IReadOnlyList<ShopItemViewModel> ShopColorlessEntries { get; }
+    public IReadOnlyList<ShopItemViewModel> ShopRelicEntries { get; }
+    public IReadOnlyList<ShopItemViewModel> ShopPotionEntries { get; }
 
     internal sealed class AncientActViewModel
     {
@@ -140,5 +171,23 @@ internal sealed class RollResultViewModel
             text = VariablePattern.Replace(text, string.Empty);
             return text;
         }
+    }
+
+    internal sealed class ShopItemViewModel
+    {
+        public ShopItemViewModel(string id, int price, bool isDiscounted, string displayName)
+        {
+            Id = id;
+            Price = price;
+            IsDiscounted = isDiscounted;
+            DisplayName = displayName;
+        }
+
+        public string Id { get; }
+        public int Price { get; }
+        public bool IsDiscounted { get; }
+        public string DisplayName { get; }
+        public string PriceDisplay => Price.ToString();
+        public string DiscountLabel => IsDiscounted ? " (折)" : string.Empty;
     }
 }

@@ -16,6 +16,11 @@ public sealed class NeowOptionDataset
     private IReadOnlyList<string>? _sharedPotionPool;
     private IReadOnlyDictionary<string, NeowCardMetadata>? _cardMetadataCache;
     private IReadOnlyDictionary<string, NeowPotionMetadata>? _potionMetadataCache;
+    private IReadOnlyDictionary<string, NeowRelicMetadata>? _relicMetadataCache;
+    private IReadOnlyDictionary<string, IReadOnlyList<string>>? _relicPoolCache;
+
+    [JsonPropertyName("version")]
+    public string? Version { get; set; }
 
     [JsonPropertyName("options")]
     public required List<NeowOptionMetadata> Options { get; init; }
@@ -43,6 +48,12 @@ public sealed class NeowOptionDataset
 
     [JsonPropertyName("potionMetadata")]
     public List<NeowPotionMetadata> PotionMetadata { get; init; } = new();
+
+    [JsonPropertyName("relicMetadata")]
+    public List<NeowRelicMetadata> RelicMetadata { get; init; } = new();
+
+    [JsonPropertyName("relicPools")]
+    public Dictionary<string, List<string>> RelicPools { get; init; } = new();
 
     [JsonIgnore]
     public IReadOnlyDictionary<string, NeowOptionMetadata> OptionMap =>
@@ -79,6 +90,14 @@ public sealed class NeowOptionDataset
     [JsonIgnore]
     public IReadOnlyDictionary<string, NeowPotionMetadata> PotionMetadataMap =>
         _potionMetadataCache ??= BuildPotionMetadataMap();
+
+    [JsonIgnore]
+    public IReadOnlyDictionary<string, NeowRelicMetadata> RelicMetadataMap =>
+        _relicMetadataCache ??= BuildRelicMetadataMap();
+
+    [JsonIgnore]
+    public IReadOnlyDictionary<string, IReadOnlyList<string>> RelicPoolMap =>
+        _relicPoolCache ??= BuildRelicPoolMap();
 
     private IReadOnlyDictionary<CharacterId, IReadOnlyList<string>> BuildCardPoolMap()
     {
@@ -132,6 +151,33 @@ public sealed class NeowOptionDataset
     {
         var result = new Dictionary<string, NeowPotionMetadata>(StringComparer.OrdinalIgnoreCase);
         foreach (var metadata in PotionMetadata)
+        {
+            if (string.IsNullOrWhiteSpace(metadata.Id))
+            {
+                continue;
+            }
+
+            result[metadata.Id] = metadata;
+        }
+
+        return result;
+    }
+
+    private IReadOnlyDictionary<string, IReadOnlyList<string>> BuildRelicPoolMap()
+    {
+        var result = new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase);
+        foreach (var entry in RelicPools)
+        {
+            result[entry.Key] = entry.Value.AsReadOnly();
+        }
+
+        return result;
+    }
+
+    private IReadOnlyDictionary<string, NeowRelicMetadata> BuildRelicMetadataMap()
+    {
+        var result = new Dictionary<string, NeowRelicMetadata>(StringComparer.OrdinalIgnoreCase);
+        foreach (var metadata in RelicMetadata)
         {
             if (string.IsNullOrWhiteSpace(metadata.Id))
             {

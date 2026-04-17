@@ -79,6 +79,21 @@ public sealed class GameRng
         return _random.NextDouble();
     }
 
+    public int NextGaussianInt(int mean, int stdDev, int min, int max)
+    {
+        int value;
+        do
+        {
+            var d = 1.0 - _random.NextDouble();
+            var angleSeed = 1.0 - _random.NextDouble();
+            var normal = Math.Sqrt(-2.0 * Math.Log(d)) * Math.Sin(Math.PI * 2.0 * angleSeed);
+            value = (int)Math.Round(mean + stdDev * normal);
+        }
+        while (value < min || value > max);
+
+        return value;
+    }
+
     public float NextFloat()
     {
         Counter++;
@@ -116,7 +131,7 @@ public sealed class GameRng
         }
     }
 
-    private static int GetDeterministicHashCode(string text)
+    internal static int GetDeterministicHashCode(string text)
     {
         unchecked
         {

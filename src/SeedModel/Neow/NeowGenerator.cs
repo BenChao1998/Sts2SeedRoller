@@ -33,10 +33,38 @@ public sealed class NeowGenerator : ISeedEventGenerator<NeowGenerationContext, I
         NeowOptionIds.PrecariousShears
     ];
 
+    private static readonly string[] ModernPositiveOptions =
+    [
+        NeowOptionIds.ArcaneScroll,
+        NeowOptionIds.BoomingConch,
+        NeowOptionIds.GoldenPearl,
+        NeowOptionIds.LeadPaperweight,
+        NeowOptionIds.LostCoffer,
+        NeowOptionIds.NeowsTorment,
+        NeowOptionIds.NewLeaf,
+        NeowOptionIds.PreciseScissors,
+        NeowOptionIds.PhialHolster,
+        NeowOptionIds.WingedBoots,
+        NeowOptionIds.MassiveScroll
+    ];
+
+    private static readonly string[] ModernNegativeOptions =
+    [
+        NeowOptionIds.CursedPearl,
+        NeowOptionIds.HeftyTablet,
+        NeowOptionIds.LargeCapsule,
+        NeowOptionIds.LeafyPoultice,
+        NeowOptionIds.PrecariousShears,
+        NeowOptionIds.SilverCrucible,
+        NeowOptionIds.NeowsBones
+    ];
+
     private readonly NeowOptionDataset _dataset;
     private readonly NeowRewardPreviewer _rewardPreviewer;
 
     public SeedEventType EventType => SeedEventType.Act1Neow;
+
+    private bool UsesModernRules => string.Equals(_dataset.Version, "0.103.2", StringComparison.OrdinalIgnoreCase);
 
     public NeowGenerator(NeowOptionDataset dataset)
     {
@@ -78,6 +106,22 @@ public sealed class NeowGenerator : ISeedEventGenerator<NeowGenerationContext, I
 
     private List<string> BuildNegativePool(NeowGenerationContext context)
     {
+        if (UsesModernRules)
+        {
+            var modernPool = new List<string>(ModernNegativeOptions);
+            if (context.ScrollBoxesEligible)
+            {
+                modernPool.Add(NeowOptionIds.ScrollBoxes);
+            }
+
+            if (context.PlayerCount > 1)
+            {
+                modernPool.Remove(NeowOptionIds.SilverCrucible);
+            }
+
+            return modernPool;
+        }
+
         var pool = new List<string>(BaseNegativeOptions);
         if (context.ScrollBoxesEligible)
         {
@@ -94,6 +138,46 @@ public sealed class NeowGenerator : ISeedEventGenerator<NeowGenerationContext, I
 
     private List<string> BuildPositivePool(NeowGenerationContext context, string negativePick, GameRng rng)
     {
+        if (UsesModernRules)
+        {
+            var modernPool = new List<string>(ModernPositiveOptions);
+
+            if (context.PlayerCount <= 1)
+            {
+                modernPool.Remove(NeowOptionIds.MassiveScroll);
+            }
+
+            if (string.Equals(negativePick, NeowOptionIds.CursedPearl, StringComparison.OrdinalIgnoreCase))
+            {
+                modernPool.Remove(NeowOptionIds.GoldenPearl);
+            }
+
+            if (string.Equals(negativePick, NeowOptionIds.HeftyTablet, StringComparison.OrdinalIgnoreCase))
+            {
+                modernPool.Remove(NeowOptionIds.ArcaneScroll);
+            }
+
+            if (string.Equals(negativePick, NeowOptionIds.LeafyPoultice, StringComparison.OrdinalIgnoreCase))
+            {
+                modernPool.Remove(NeowOptionIds.NewLeaf);
+            }
+
+            if (string.Equals(negativePick, NeowOptionIds.PrecariousShears, StringComparison.OrdinalIgnoreCase))
+            {
+                modernPool.Remove(NeowOptionIds.PreciseScissors);
+            }
+
+            modernPool.Add(rng.NextBool() ? NeowOptionIds.NutritiousOyster : NeowOptionIds.StoneHumidifier);
+
+            if (!string.Equals(negativePick, NeowOptionIds.LargeCapsule, StringComparison.OrdinalIgnoreCase))
+            {
+                modernPool.Add(rng.NextBool() ? NeowOptionIds.LavaRock : NeowOptionIds.SmallCapsule);
+            }
+
+            modernPool.Add(rng.NextBool() ? NeowOptionIds.NeowsTalisman : NeowOptionIds.Pomander);
+            return modernPool;
+        }
+
         var pool = new List<string>(BasePositiveOptions);
 
         if (string.Equals(negativePick, NeowOptionIds.CursedPearl, StringComparison.OrdinalIgnoreCase))

@@ -17,6 +17,11 @@ public static class NeowOptionIds
     public const string LavaRock = "LAVA_ROCK";
     public const string SmallCapsule = "SMALL_CAPSULE";
     public const string SilverCrucible = "SILVER_CRUCIBLE";
+    public const string HeftyTablet = "HEFTY_TABLET";
+    public const string PhialHolster = "PHIAL_HOLSTER";
+    public const string WingedBoots = "WINGED_BOOTS";
+    public const string NeowsBones = "NEOWS_BONES";
+    public const string NeowsTalisman = "NEOWS_TALISMAN";
     public const string ScrollBoxes = "SCROLL_BOXES";
     public const string CursedPearl = "CURSED_PEARL";
     public const string LargeCapsule = "LARGE_CAPSULE";

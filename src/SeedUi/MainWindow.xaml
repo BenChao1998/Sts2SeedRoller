@@ -185,12 +185,11 @@
                             <!-- 事件与数据 -->
                             <Border Style="{StaticResource CardStyle}" Margin="0 0 0 16">
                                 <StackPanel>
-                                    <TextBlock Text="事件与数据" FontSize="16" FontWeight="SemiBold" Margin="0 0 0 16" Foreground="#333"/>
-                                    <TextBlock Text="选择事件" FontSize="13" Foreground="#666" Margin="0 0 0 8"/>
-                                    <ComboBox ItemsSource="{Binding EventOptions}" DisplayMemberPath="DisplayName"
-                                              SelectedItem="{Binding SelectedEvent}" Margin="0 0 0 12" MinHeight="25" VerticalContentAlignment="Center"/>
-                                    <TextBlock Text="{Binding SelectedEventStatusText}" FontSize="12" Foreground="#999" Margin="0 0 0 4"/>
-                                    <TextBlock Text="{Binding SelectedEventDataHint}" FontSize="12" Foreground="#1976D2"/>
+                                    <TextBlock Text="版本与数据" FontSize="16" FontWeight="SemiBold" Margin="0 0 0 16" Foreground="#333"/>
+                                    <TextBlock Text="游戏版本" FontSize="13" Foreground="#666" Margin="0 0 0 8"/>
+                                    <ComboBox ItemsSource="{Binding GameVersionOptions}" DisplayMemberPath="DisplayName"
+                                              SelectedItem="{Binding SelectedGameVersion}" Margin="0 0 0 12" MinHeight="25" VerticalContentAlignment="Center"/>
+                                    <TextBlock Text="{Binding SelectedGameVersionStatusText}" FontSize="12" Foreground="#999" Margin="0 0 0 4"/>
                                 </StackPanel>
                             </Border>
 
@@ -497,6 +496,124 @@
                                 </StackPanel>
                             </Border>
 
+                            <!-- 商店筛选 -->
+                            <Border Style="{StaticResource CardStyle}" Margin="0 0 0 16">
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0 0 0 16">
+                                        <TextBlock Text="商店筛选" FontSize="16" FontWeight="SemiBold" Foreground="#333"/>
+                                        <CheckBox IsChecked="{Binding IncludeShop}" Content="启用" Margin="16 0 0 0" VerticalAlignment="Center"/>
+                                        <TextBlock Text="模拟第一幕商店，筛选卡牌/遗物/药水" FontSize="11" Foreground="#888" Margin="8 0 0 0" VerticalAlignment="Center" TextWrapping="Wrap" MaxWidth="300"/>
+                                    </StackPanel>
+
+                                    <StackPanel IsEnabled="{Binding IncludeShop}">
+                                        <TextBlock Text="第一家商店最远层数" FontSize="13" Foreground="#666" Margin="0 0 0 8"/>
+                                        <TextBox Text="{Binding ShopMaxFirstRow, UpdateSourceTrigger=PropertyChanged}"
+                                                 hc:InfoElement.Placeholder="留空表示不限，例如 2 表示第一家商店最晚出现在第 2 层" Margin="0 0 0 12" Height="30"/>
+                                        <!-- 卡牌 -->
+                                        <TextBlock Text="搜索卡牌" FontSize="13" Foreground="#666" Margin="0 0 0 8"/>
+                                        <TextBox Text="{Binding ShopCardCatalogFilter, UpdateSourceTrigger=PropertyChanged}"
+                                                 hc:InfoElement.Placeholder="输入文字过滤卡牌列表..." Margin="0 0 0 12" Height="30"/>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <ComboBox Grid.Column="0" ItemsSource="{Binding ShopCardCatalogView}" DisplayMemberPath="Display"
+                                                      SelectedItem="{Binding SelectedShopCardCatalogItem}" Margin="0 0 8 0" MinHeight="25" VerticalContentAlignment="Center"/>
+                                            <Button Grid.Column="1" Content="添加" Command="{Binding AddShopCardFilterCommand}"
+                                                    Style="{StaticResource ButtonPrimary}"/>
+                                        </Grid>
+                                        <TextBlock Text="已选卡牌" FontSize="13" Foreground="#666" Margin="0 16 0 8"/>
+                                        <ItemsControl ItemsSource="{Binding ShopCardFilterChips}">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border Style="{StaticResource FilterTagStyle}">
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <TextBlock Text="{Binding Label}" Foreground="#1976D2" FontSize="12"/>
+                                                            <Button Content="&#xE711;" FontFamily="Segoe MDL2 Assets" FontSize="10"
+                                                                    Command="{Binding DataContext.RemoveShopCardFilterCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                                    CommandParameter="{Binding Id}" Margin="6 0 0 0" Padding="2"
+                                                                    Style="{StaticResource GhostButtonStyle}"/>
+                                                        </StackPanel>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+
+                                        <!-- 遗物 -->
+                                        <TextBlock Text="搜索遗物" FontSize="13" Foreground="#666" Margin="0 16 0 8"/>
+                                        <TextBox Text="{Binding ShopRelicCatalogFilter, UpdateSourceTrigger=PropertyChanged}"
+                                                 hc:InfoElement.Placeholder="输入文字过滤遗物列表..." Margin="0 0 0 12" Height="30"/>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <ComboBox Grid.Column="0" ItemsSource="{Binding ShopRelicCatalogView}" DisplayMemberPath="Display"
+                                                      SelectedItem="{Binding SelectedShopRelicCatalogItem}" Margin="0 0 8 0" MinHeight="25" VerticalContentAlignment="Center"/>
+                                            <Button Grid.Column="1" Content="添加" Command="{Binding AddShopRelicFilterCommand}"
+                                                    Style="{StaticResource ButtonPrimary}"/>
+                                        </Grid>
+                                        <TextBlock Text="已选遗物" FontSize="13" Foreground="#666" Margin="0 16 0 8"/>
+                                        <ItemsControl ItemsSource="{Binding ShopRelicFilterChips}">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border Style="{StaticResource FilterTagStyle}">
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <TextBlock Text="{Binding Label}" Foreground="#1976D2" FontSize="12"/>
+                                                            <Button Content="&#xE711;" FontFamily="Segoe MDL2 Assets" FontSize="10"
+                                                                    Command="{Binding DataContext.RemoveShopRelicFilterCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                                    CommandParameter="{Binding Id}" Margin="6 0 0 0" Padding="2"
+                                                                    Style="{StaticResource GhostButtonStyle}"/>
+                                                        </StackPanel>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+
+                                        <!-- 药水 -->
+                                        <TextBlock Text="搜索药水" FontSize="13" Foreground="#666" Margin="0 16 0 8"/>
+                                        <TextBox Text="{Binding ShopPotionCatalogFilter, UpdateSourceTrigger=PropertyChanged}"
+                                                 hc:InfoElement.Placeholder="输入文字过滤药水列表..." Margin="0 0 0 12" Height="30"/>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <ComboBox Grid.Column="0" ItemsSource="{Binding ShopPotionCatalogView}" DisplayMemberPath="Display"
+                                                      SelectedItem="{Binding SelectedShopPotionCatalogItem}" Margin="0 0 8 0" MinHeight="25" VerticalContentAlignment="Center"/>
+                                            <Button Grid.Column="1" Content="添加" Command="{Binding AddShopPotionFilterCommand}"
+                                                    Style="{StaticResource ButtonPrimary}"/>
+                                        </Grid>
+                                        <TextBlock Text="已选药水" FontSize="13" Foreground="#666" Margin="0 16 0 8"/>
+                                        <ItemsControl ItemsSource="{Binding ShopPotionFilterChips}">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border Style="{StaticResource FilterTagStyle}">
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <TextBlock Text="{Binding Label}" Foreground="#1976D2" FontSize="12"/>
+                                                            <Button Content="&#xE711;" FontFamily="Segoe MDL2 Assets" FontSize="10"
+                                                                    Command="{Binding DataContext.RemoveShopPotionFilterCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                                    CommandParameter="{Binding Id}" Margin="6 0 0 0" Padding="2"
+                                                                    Style="{StaticResource GhostButtonStyle}"/>
+                                                        </StackPanel>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+
                             <!-- 开始Roll按钮 -->
                             <Border Style="{StaticResource CardStyle}" Background="#1976D2" BorderBrush="#1565C0">
                                 <Grid>
@@ -786,6 +903,66 @@
                                                                 </DataTemplate>
                                                             </ItemsControl.ItemTemplate>
                                                         </ItemsControl>
+
+                                                        <!-- 商店信息 -->
+                                                        <Border Visibility="{Binding HasShopPreview, Converter={StaticResource BooleanVisibilityConverter}}"
+                                                                Background="#E8F5E9" BorderBrush="#C8E6C9" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0 8 0 0">
+                                                            <StackPanel>
+                                                                <StackPanel Orientation="Horizontal" Margin="0 0 0 8">
+                                                                    <TextBlock Text="&#xE719;" FontFamily="Segoe MDL2 Assets" FontSize="14" Foreground="#388E3C" Margin="0 0 6 0"/>
+                                                                    <TextBlock Text="商店" FontWeight="SemiBold" FontSize="13" Foreground="#388E3C"/>
+                                                                    <Border Visibility="{Binding ShopFilterMatched, Converter={StaticResource BooleanVisibilityConverter}}"
+                                                                            Background="#4CAF50" CornerRadius="3" Padding="6 2" Margin="8 0 0 0">
+                                                                        <TextBlock Text="筛选命中" FontSize="10" Foreground="White" FontWeight="SemiBold"/>
+                                                                    </Border>
+                                                                </StackPanel>
+                                                                <TextBlock Text="角色卡" FontSize="11" Foreground="#666" Margin="0 0 0 2"/>
+                                                                <ItemsControl ItemsSource="{Binding ShopCardEntries}">
+                                                                    <ItemsControl.ItemTemplate>
+                                                                        <DataTemplate>
+                                                                            <StackPanel Orientation="Horizontal" Margin="0 2 0 0">
+                                                                                <TextBlock Text="{Binding DisplayName}" FontSize="12" Foreground="#333"/>
+                                                                                <TextBlock Text="{Binding PriceDisplay}" FontSize="12" Foreground="#666" Margin="8 0 0 0"/>
+                                                                                <TextBlock Text="{Binding DiscountLabel}" FontSize="12" Foreground="#4CAF50" FontWeight="SemiBold" Margin="4 0 0 0"/>
+                                                                            </StackPanel>
+                                                                        </DataTemplate>
+                                                                    </ItemsControl.ItemTemplate>
+                                                                </ItemsControl>
+                                                                <TextBlock Text="无色卡" FontSize="11" Foreground="#666" Margin="0 6 0 2"/>
+                                                                <ItemsControl ItemsSource="{Binding ShopColorlessEntries}">
+                                                                    <ItemsControl.ItemTemplate>
+                                                                        <DataTemplate>
+                                                                            <StackPanel Orientation="Horizontal" Margin="0 2 0 0">
+                                                                                <TextBlock Text="{Binding DisplayName}" FontSize="12" Foreground="#555" FontStyle="Italic"/>
+                                                                                <TextBlock Text="{Binding PriceDisplay}" FontSize="12" Foreground="#666" Margin="8 0 0 0"/>
+                                                                            </StackPanel>
+                                                                        </DataTemplate>
+                                                                    </ItemsControl.ItemTemplate>
+                                                                </ItemsControl>
+                                                                <TextBlock Text="遗物" FontSize="11" Foreground="#666" Margin="0 6 0 2"/>
+                                                                <ItemsControl ItemsSource="{Binding ShopRelicEntries}">
+                                                                    <ItemsControl.ItemTemplate>
+                                                                        <DataTemplate>
+                                                                            <StackPanel Orientation="Horizontal" Margin="0 2 0 0">
+                                                                                <TextBlock Text="{Binding DisplayName}" FontSize="12" Foreground="#333"/>
+                                                                                <TextBlock Text="{Binding PriceDisplay}" FontSize="12" Foreground="#666" Margin="8 0 0 0"/>
+                                                                            </StackPanel>
+                                                                        </DataTemplate>
+                                                                    </ItemsControl.ItemTemplate>
+                                                                </ItemsControl>
+                                                                <TextBlock Text="药水" FontSize="11" Foreground="#666" Margin="0 6 0 2"/>
+                                                                <ItemsControl ItemsSource="{Binding ShopPotionEntries}">
+                                                                    <ItemsControl.ItemTemplate>
+                                                                        <DataTemplate>
+                                                                            <StackPanel Orientation="Horizontal" Margin="0 2 0 0">
+                                                                                <TextBlock Text="{Binding DisplayName}" FontSize="12" Foreground="#333"/>
+                                                                                <TextBlock Text="{Binding PriceDisplay}" FontSize="12" Foreground="#666" Margin="8 0 0 0"/>
+                                                                            </StackPanel>
+                                                                        </DataTemplate>
+                                                                    </ItemsControl.ItemTemplate>
+                                                                </ItemsControl>
+                                                            </StackPanel>
+                                                        </Border>
                                                     </StackPanel>
                                                 </Border>
                                             </DataTemplate>

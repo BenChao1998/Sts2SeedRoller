@@ -57,6 +57,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
     private readonly RelayCommand _removeAct3OptionFilterCommand;
 
     private NeowOptionDataset? _dataset;
+    private GameVersionOption _selectedGameVersion;
     private SeedEventMetadata _selectedEvent;
     private CancellationTokenSource? _rollCancellation;
     private bool _isRolling;
@@ -96,12 +97,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
     private bool _includeAct2;
     private bool _includeAct3;
     private bool _isAncientPreviewAvailable;
-    private readonly Sts2RunPreviewer? _ancientPreviewer;
-    private readonly IReadOnlyList<AncientDisplayCatalog.AncientDisplayOption> _act2FilterOptions =
-        AncientDisplayCatalog.AllowedForAct2;
-
-    private readonly IReadOnlyList<AncientDisplayCatalog.AncientDisplayOption> _act3FilterOptions =
-        AncientDisplayCatalog.AllowedForAct3;
+    private Sts2RunPreviewer? _ancientPreviewer;
     private string _act2AncientFilter = string.Empty;
     private string _act3AncientFilter = string.Empty;
     private IReadOnlyList<AncientDisplayCatalog.AncientRelicDisplayOption> _act2RelicOptions =
@@ -111,6 +107,19 @@ internal sealed partial class MainWindowViewModel : ObservableObject
     private AncientDisplayCatalog.AncientRelicDisplayOption? _selectedAct2RelicOption;
     private AncientDisplayCatalog.AncientRelicDisplayOption? _selectedAct3RelicOption;
     private string _ancientFilterSummary = "第二幕：任意 | 第三幕：任意";
+
+    private bool _includeShop;
+    private string _shopMaxFirstRow = string.Empty;
+    private string _shopCardCatalogFilter = string.Empty;
+    private string _shopRelicCatalogFilter = string.Empty;
+    private string _shopPotionCatalogFilter = string.Empty;
+    private CatalogItem? _selectedShopCardCatalogItem;
+    private CatalogItem? _selectedShopRelicCatalogItem;
+    private CatalogItem? _selectedShopPotionCatalogItem;
+    private IReadOnlyList<CatalogItem> _filteredShopCards = Array.Empty<CatalogItem>();
+    private IReadOnlyList<CatalogItem> _filteredShopRelics = Array.Empty<CatalogItem>();
+    private IReadOnlyList<CatalogItem> _filteredShopPotions = Array.Empty<CatalogItem>();
+
     private RollResultViewModel? _selectedResult;
     private int _selectedTabIndex;
 
@@ -118,8 +127,33 @@ internal sealed partial class MainWindowViewModel : ObservableObject
 
     public ObservableCollection<FilterChipViewModel> Act3OptionFilterChips { get; } = new();
 
+    public ObservableCollection<FilterChipViewModel> ShopCardFilterChips { get; } = new();
+
+    public ObservableCollection<FilterChipViewModel> ShopRelicFilterChips { get; } = new();
+
+    public ObservableCollection<FilterChipViewModel> ShopPotionFilterChips { get; } = new();
+
+    public RelayCommand AddShopCardFilterCommand { get; private set; } = null!;
+
+    public RelayCommand RemoveShopCardFilterCommand { get; private set; } = null!;
+
+    public RelayCommand AddShopRelicFilterCommand { get; private set; } = null!;
+
+    public RelayCommand RemoveShopRelicFilterCommand { get; private set; } = null!;
+
+    public RelayCommand AddShopPotionFilterCommand { get; private set; } = null!;
+
+    public RelayCommand RemoveShopPotionFilterCommand { get; private set; } = null!;
+
     public MainWindowViewModel()
     {
+        GameVersionOptions =
+        [
+            new GameVersionOption("0.103.2", "v0.103.2", "从源码 C# 文件中解析"),
+            new GameVersionOption("0.99.1", "v0.99.1", "内置数据，数据来源于 seed_info.json 提取")
+        ];
+        _selectedGameVersion = GameVersionOptions.First();
+
         EventOptions = SeedEventRegistry.All;
         _selectedEvent = EventOptions.First();
 
@@ -136,8 +170,14 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         RelicFilterChips = new ObservableCollection<FilterChipViewModel>();
         CardFilterChips = new ObservableCollection<FilterChipViewModel>();
         PotionFilterChips = new ObservableCollection<FilterChipViewModel>();
+        ShopCardFilterChips = new ObservableCollection<FilterChipViewModel>();
+        ShopRelicFilterChips = new ObservableCollection<FilterChipViewModel>();
+        ShopPotionFilterChips = new ObservableCollection<FilterChipViewModel>();
         Act2OptionFilterChips.CollectionChanged += OnAncientOptionChipsChanged;
         Act3OptionFilterChips.CollectionChanged += OnAncientOptionChipsChanged;
+        ShopCardFilterChips.CollectionChanged += OnShopFilterChipsChanged;
+        ShopRelicFilterChips.CollectionChanged += OnShopFilterChipsChanged;
+        ShopPotionFilterChips.CollectionChanged += OnShopFilterChipsChanged;
 
         Results.CollectionChanged += OnResultsChanged;
 
@@ -156,6 +196,12 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         RemoveCardFilterCommand = new RelayCommand(RemoveCardFilter);
         AddPotionFilterCommand = new RelayCommand(AddPotionFilter);
         RemovePotionFilterCommand = new RelayCommand(RemovePotionFilter);
+        AddShopCardFilterCommand = new RelayCommand(AddShopCardFilter);
+        RemoveShopCardFilterCommand = new RelayCommand(RemoveShopCardFilter);
+        AddShopRelicFilterCommand = new RelayCommand(AddShopRelicFilter);
+        RemoveShopRelicFilterCommand = new RelayCommand(RemoveShopRelicFilter);
+        AddShopPotionFilterCommand = new RelayCommand(AddShopPotionFilter);
+        RemoveShopPotionFilterCommand = new RelayCommand(RemoveShopPotionFilter);
         _addAct2OptionFilterCommand = new RelayCommand(AddAct2OptionFilter);
         _removeAct2OptionFilterCommand = new RelayCommand(RemoveAct2OptionFilter);
         _addAct3OptionFilterCommand = new RelayCommand(AddAct3OptionFilter);
@@ -171,9 +217,15 @@ internal sealed partial class MainWindowViewModel : ObservableObject
 
     private Sts2RunPreviewer? InitializeAncientPreviewer()
     {
+        var version = SelectedGameVersion.Id;
+        var versionDir = $"data/{version}";
+
+        // Reload AncientDisplayCatalog for the current version
+        AncientDisplayCatalog.ReloadForVersion(version);
+
         // Try loading from files first
-        var optionPath = AncientDisplayCatalog.ResolveOptionDataPath();
-        var actDataPath = Path.Combine(AppContext.BaseDirectory, "data", "sts2", "acts.json");
+        var optionPath = AncientDisplayCatalog.ResolveOptionDataPath(version);
+        var actDataPath = Path.Combine(AppContext.BaseDirectory, versionDir, "sts2", "acts.json");
 
         if (File.Exists(optionPath) && File.Exists(actDataPath))
         {
@@ -254,6 +306,27 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         return null;
     }
 
+    public IReadOnlyList<GameVersionOption> GameVersionOptions { get; }
+
+    public GameVersionOption SelectedGameVersion
+    {
+        get => _selectedGameVersion;
+        set => SetSelectedGameVersion(value);
+    }
+
+    public string SelectedGameVersionStatusText
+    {
+        get
+        {
+            if (SelectedGameVersion == null)
+            {
+                return string.Empty;
+            }
+
+            return $"{SelectedGameVersion.Description}";
+        }
+    }
+
     public IReadOnlyList<SeedEventMetadata> EventOptions { get; }
 
     public SeedEventMetadata SelectedEvent
@@ -298,9 +371,9 @@ internal sealed partial class MainWindowViewModel : ObservableObject
 
     public IReadOnlyList<SeedModeOption> SeedModeOptions { get; }
 
-    public IReadOnlyList<AncientDisplayCatalog.AncientDisplayOption> Act2FilterOptions => _act2FilterOptions;
+    public IReadOnlyList<AncientDisplayCatalog.AncientDisplayOption> Act2FilterOptions => AncientDisplayCatalog.AllowedForAct2;
 
-    public IReadOnlyList<AncientDisplayCatalog.AncientDisplayOption> Act3FilterOptions => _act3FilterOptions;
+    public IReadOnlyList<AncientDisplayCatalog.AncientDisplayOption> Act3FilterOptions => AncientDisplayCatalog.AllowedForAct3;
 
     public IReadOnlyList<AncientDisplayCatalog.AncientRelicDisplayOption> Act2RelicOptions => _act2RelicOptions;
 
@@ -327,6 +400,60 @@ internal sealed partial class MainWindowViewModel : ObservableObject
     public IEnumerable<CatalogItem> CardCatalogView => _filteredCards;
 
     public IEnumerable<CatalogItem> PotionCatalogView => _filteredPotions;
+
+    public IEnumerable<CatalogItem> ShopCardCatalogView => _filteredShopCards;
+
+    public IEnumerable<CatalogItem> ShopRelicCatalogView => _filteredShopRelics;
+
+    public IEnumerable<CatalogItem> ShopPotionCatalogView => _filteredShopPotions;
+
+    public string ShopCardCatalogFilter
+    {
+        get => _shopCardCatalogFilter;
+        set
+        {
+            if (SetProperty(ref _shopCardCatalogFilter, value))
+                ApplyShopCardFilter();
+        }
+    }
+
+    public string ShopRelicCatalogFilter
+    {
+        get => _shopRelicCatalogFilter;
+        set
+        {
+            if (SetProperty(ref _shopRelicCatalogFilter, value))
+                ApplyShopRelicFilter();
+        }
+    }
+
+    public string ShopPotionCatalogFilter
+    {
+        get => _shopPotionCatalogFilter;
+        set
+        {
+            if (SetProperty(ref _shopPotionCatalogFilter, value))
+                ApplyShopPotionFilter();
+        }
+    }
+
+    public CatalogItem? SelectedShopCardCatalogItem
+    {
+        get => _selectedShopCardCatalogItem;
+        set => SetProperty(ref _selectedShopCardCatalogItem, value);
+    }
+
+    public CatalogItem? SelectedShopRelicCatalogItem
+    {
+        get => _selectedShopRelicCatalogItem;
+        set => SetProperty(ref _selectedShopRelicCatalogItem, value);
+    }
+
+    public CatalogItem? SelectedShopPotionCatalogItem
+    {
+        get => _selectedShopPotionCatalogItem;
+        set => SetProperty(ref _selectedShopPotionCatalogItem, value);
+    }
 
     public ICommand LoadDatasetCommand => _loadDatasetCommand;
 
@@ -502,7 +629,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
             {
                 if (value && string.IsNullOrWhiteSpace(Act2AncientFilter))
                 {
-                    Act2AncientFilter = _act2FilterOptions.FirstOrDefault()?.Id ?? string.Empty;
+                    Act2AncientFilter = Act2FilterOptions.FirstOrDefault()?.Id ?? string.Empty;
                 }
                 RaisePropertyChanged(nameof(AncientPreviewStatusText));
                 UpdateAncientFilterSummary();
@@ -519,7 +646,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
             {
                 if (value && string.IsNullOrWhiteSpace(Act3AncientFilter))
                 {
-                    Act3AncientFilter = _act3FilterOptions.FirstOrDefault()?.Id ?? string.Empty;
+                    Act3AncientFilter = Act3FilterOptions.FirstOrDefault()?.Id ?? string.Empty;
                 }
                 RaisePropertyChanged(nameof(AncientPreviewStatusText));
                 UpdateAncientFilterSummary();
@@ -549,6 +676,30 @@ internal sealed partial class MainWindowViewModel : ObservableObject
             {
                 UpdateAct3RelicOptions();
                 UpdateAncientFilterSummary();
+            }
+        }
+    }
+
+    public bool IncludeShop
+    {
+        get => _includeShop;
+        set
+        {
+            if (SetProperty(ref _includeShop, value))
+            {
+                UpdateShopFilterSummary();
+            }
+        }
+    }
+
+    public string ShopMaxFirstRow
+    {
+        get => _shopMaxFirstRow;
+        set
+        {
+            if (SetProperty(ref _shopMaxFirstRow, value?.Trim() ?? string.Empty))
+            {
+                UpdateShopFilterSummary();
             }
         }
     }
@@ -613,6 +764,8 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         get => _ancientFilterSummary;
         private set => SetProperty(ref _ancientFilterSummary, value);
     }
+
+    public string ShopFilterSummary { get; private set; } = "商店：关闭";
 
     public int ScannedSeeds
     {
@@ -704,14 +857,23 @@ internal sealed partial class MainWindowViewModel : ObservableObject
 
         try
         {
-            var dataPath = ResolveDefaultDataPath(SelectedEvent);
-            StatusMessage = "正在加载第一幕数据…";
-            var dataset = await Task.Run(() => LoadDatasetInternal(dataPath));
+            var version = SelectedGameVersion.Id;
+            var versionDir = $"data/{version}";
+            var neowPath = Path.Combine(AppContext.BaseDirectory, versionDir, "neow", "options.json");
+
+            // Fallback: old flat path (for backward compatibility during transition)
+            if (!File.Exists(neowPath))
+            {
+                neowPath = Path.Combine(AppContext.BaseDirectory, "data", "0.99.1", "neow", "options.json");
+            }
+
+            StatusMessage = $"正在加载第一幕数据（{version}）…";
+            var dataset = await Task.Run(() => LoadDatasetInternal(neowPath));
             _dataset = dataset;
-            DatasetSummary = $"已加载 {dataset.Options.Count} 条遗物、{dataset.Cards.Count} 张卡牌、{dataset.Potions.Count} 瓶药水";
+            DatasetSummary = $"已加载 {dataset.Options.Count} 条遗物、{dataset.Cards.Count} 张卡牌、{dataset.Potions.Count} 瓶药水（{version}）";
             BuildCatalogs(dataset);
-            var sourceLabel = File.Exists(dataPath) ? dataPath : "内置数据";
-            StatusMessage = $"已从 {sourceLabel} 加载 {SelectedEvent.DisplayName} 数据。";
+            var sourceLabel = File.Exists(neowPath) ? neowPath : "内置数据";
+            StatusMessage = $"已从 {sourceLabel} 加载 Neow 数据（{version}）。";
             LogInfo(StatusMessage);
         }
         catch (Exception ex)
@@ -774,10 +936,20 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         ApplyRelicFilter();
         ApplyCardFilter();
         ApplyPotionFilter();
+        ApplyShopCardFilter();
+        ApplyShopRelicFilter();
+        ApplyShopPotionFilter();
+
+        _staticCardCatalog = _cardCatalog;
+        _staticRelicCatalog = _relicCatalog;
+        _staticPotionCatalog = _potionCatalog;
 
         SelectedRelicCatalogItem = null;
         SelectedCardCatalogItem = null;
         SelectedPotionCatalogItem = null;
+        SelectedShopCardCatalogItem = null;
+        SelectedShopRelicCatalogItem = null;
+        SelectedShopPotionCatalogItem = null;
     }
 
     private static string BuildSearchKey(params string?[] fragments)
@@ -802,6 +974,24 @@ internal sealed partial class MainWindowViewModel : ObservableObject
     {
         _filteredPotions = FilterCatalog(_potionCatalog, _potionCatalogFilter);
         RaisePropertyChanged(nameof(PotionCatalogView));
+    }
+
+    private void ApplyShopCardFilter()
+    {
+        _filteredShopCards = FilterCatalog(_cardCatalog, _shopCardCatalogFilter);
+        RaisePropertyChanged(nameof(ShopCardCatalogView));
+    }
+
+    private void ApplyShopRelicFilter()
+    {
+        _filteredShopRelics = FilterCatalog(_relicCatalog, _shopRelicCatalogFilter);
+        RaisePropertyChanged(nameof(ShopRelicCatalogView));
+    }
+
+    private void ApplyShopPotionFilter()
+    {
+        _filteredShopPotions = FilterCatalog(_potionCatalog, _shopPotionCatalogFilter);
+        RaisePropertyChanged(nameof(ShopPotionCatalogView));
     }
 
     private static IReadOnlyList<CatalogItem> FilterCatalog(IReadOnlyList<CatalogItem> source, string filter)
@@ -903,6 +1093,93 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         RemoveChipById(PotionFilterChips, parameter as string);
     }
 
+    private void AddShopCardFilter()
+    {
+        if (_dataset == null)
+        {
+            LogWarn("请先加载数据再添加卡牌筛选。");
+            return;
+        }
+
+        if (SelectedShopCardCatalogItem is null)
+        {
+            LogWarn("请选择要添加的卡牌。");
+            return;
+        }
+
+        if (ShopCardFilterChips.Any(chip => string.Equals(chip.Value, SelectedShopCardCatalogItem.Value, StringComparison.OrdinalIgnoreCase)))
+        {
+            LogWarn("该卡牌已在筛选条件中。");
+            return;
+        }
+
+        ShopCardFilterChips.Add(FilterChipViewModel.FromCatalog(SelectedShopCardCatalogItem));
+        SelectedShopCardCatalogItem = null;
+    }
+
+    private void RemoveShopCardFilter(object? parameter)
+    {
+        RemoveChipById(ShopCardFilterChips, parameter as string);
+    }
+
+    private void AddShopRelicFilter()
+    {
+        if (_dataset == null)
+        {
+            LogWarn("请先加载数据再添加遗物筛选。");
+            return;
+        }
+
+        if (SelectedShopRelicCatalogItem is null)
+        {
+            LogWarn("请选择要添加的遗物。");
+            return;
+        }
+
+        if (ShopRelicFilterChips.Any(chip => string.Equals(chip.Value, SelectedShopRelicCatalogItem.Value, StringComparison.OrdinalIgnoreCase)))
+        {
+            LogWarn("该遗物已在筛选条件中。");
+            return;
+        }
+
+        ShopRelicFilterChips.Add(FilterChipViewModel.FromCatalog(SelectedShopRelicCatalogItem));
+        SelectedShopRelicCatalogItem = null;
+    }
+
+    private void RemoveShopRelicFilter(object? parameter)
+    {
+        RemoveChipById(ShopRelicFilterChips, parameter as string);
+    }
+
+    private void AddShopPotionFilter()
+    {
+        if (_dataset == null)
+        {
+            LogWarn("请先加载数据再添加药水筛选。");
+            return;
+        }
+
+        if (SelectedShopPotionCatalogItem is null)
+        {
+            LogWarn("请选择要添加的药水。");
+            return;
+        }
+
+        if (ShopPotionFilterChips.Any(chip => string.Equals(chip.Value, SelectedShopPotionCatalogItem.Value, StringComparison.OrdinalIgnoreCase)))
+        {
+            LogWarn("该药水已在筛选条件中。");
+            return;
+        }
+
+        ShopPotionFilterChips.Add(FilterChipViewModel.FromCatalog(SelectedShopPotionCatalogItem));
+        SelectedShopPotionCatalogItem = null;
+    }
+
+    private void RemoveShopPotionFilter(object? parameter)
+    {
+        RemoveChipById(ShopPotionFilterChips, parameter as string);
+    }
+
     private void AddAct2OptionFilter()
     {
         TryAddAncientOptionChip(Act2OptionFilterChips, SelectedAct2RelicOption);
@@ -959,6 +1236,26 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         RollProgressText = string.Empty;
     }
 
+    private void SetSelectedGameVersion(GameVersionOption? version)
+    {
+        if (version is null)
+        {
+            return;
+        }
+
+        if (SetProperty(ref _selectedGameVersion, version, nameof(SelectedGameVersion)))
+        {
+            ResetDatasetForEventChange();
+            _ = LoadDatasetAsync();
+
+            // Reload ancient previewer and catalog for new version
+            _ancientPreviewer = InitializeAncientPreviewer();
+            UpdateAct2RelicOptions();
+            UpdateAct3RelicOptions();
+            UpdateAncientFilterSummary();
+        }
+    }
+
     private void SetSelectedEvent(SeedEventMetadata? metadata)
     {
         if (metadata is null)
@@ -987,9 +1284,21 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         ApplyRelicFilter();
         ApplyCardFilter();
         ApplyPotionFilter();
+        ApplyShopCardFilter();
+        ApplyShopRelicFilter();
+        ApplyShopPotionFilter();
         SelectedRelicCatalogItem = null;
         SelectedCardCatalogItem = null;
         SelectedPotionCatalogItem = null;
+        SelectedShopCardCatalogItem = null;
+        SelectedShopRelicCatalogItem = null;
+        SelectedShopPotionCatalogItem = null;
+        RelicFilterChips.Clear();
+        CardFilterChips.Clear();
+        PotionFilterChips.Clear();
+        ShopCardFilterChips.Clear();
+        ShopRelicFilterChips.Clear();
+        ShopPotionFilterChips.Clear();
         RaiseSelectedEventComputedProperties();
     }
 
@@ -1047,6 +1356,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         SelectedResult = null;
         ResetCounters();
         ProgressMaximum = config.StopOnFirstMatch ? 1 : config.RollCount;
+        RollProgressText = "已扫描 0，命中 0 个种子、0 个选项";
 
         IsRolling = true;
         _rollCommand.RaiseCanExecuteChanged();
@@ -1147,6 +1457,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         var includeAct3 = IncludeAct3 && IsAncientPreviewAvailable;
         var requireAct2Match = filter.AncientFilter.HasAct2Criteria;
         var requireAct3Match = filter.AncientFilter.HasAct3Criteria;
+        var progressReportInterval = GetProgressReportInterval(filter);
 
         return config.StopOnFirstMatch
             ? ExecuteUntilHit(
@@ -1157,6 +1468,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
                 includeAct3,
                 requireAct2Match,
                 requireAct3Match,
+                progressReportInterval,
                 progress,
                 token)
             : ExecuteFixedCount(
@@ -1167,6 +1479,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
                 includeAct3,
                 requireAct2Match,
                 requireAct3Match,
+                progressReportInterval,
                 progress,
                 token);
     }
@@ -1179,6 +1492,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         bool includeAct3,
         bool requireAct2Match,
         bool requireAct3Match,
+        int progressReportInterval,
         IProgress<RollProgress> progress,
         CancellationToken token)
     {
@@ -1201,6 +1515,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
                 includeAct3,
                 requireAct2Match,
                 requireAct3Match,
+                progressReportInterval,
                 stopOnFirstMatch: false,
                 totalTarget,
                 hits,
@@ -1237,6 +1552,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         bool includeAct3,
         bool requireAct2Match,
         bool requireAct3Match,
+        int progressReportInterval,
         IProgress<RollProgress> progress,
         CancellationToken token)
     {
@@ -1281,6 +1597,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
                 includeAct3,
                 requireAct2Match,
                 requireAct3Match,
+                progressReportInterval,
                 stopOnFirstMatch: true,
                 totalTarget: int.MaxValue,
                 hits,
@@ -1324,6 +1641,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         bool includeAct3,
         bool requireAct2Match,
         bool requireAct3Match,
+        int progressReportInterval,
         bool stopOnFirstMatch,
         int totalTarget,
         ConcurrentBag<RollHit> hits,
@@ -1393,14 +1711,14 @@ internal sealed partial class MainWindowViewModel : ObservableObject
 
                 if (!stopOnFirstMatch)
                 {
-                    if (scanned == totalTarget || scanned % ProgressReportMinimum == 0)
+                    if (ShouldReportProgress(scanned, totalTarget, progressReportInterval))
                     {
                         ReportProgress(progress, scanned, Volatile.Read(ref state.TotalHitSeeds), Volatile.Read(ref state.TotalHitOptions));
                     }
                 }
                 else
                 {
-                    if (hit != null || scanned % ProgressReportMinimum == 0)
+                    if (hit != null || ShouldReportProgress(scanned, totalTarget, progressReportInterval))
                     {
                         ReportProgress(progress, scanned, Volatile.Read(ref state.TotalHitSeeds), Volatile.Read(ref state.TotalHitOptions));
                     }
@@ -1411,6 +1729,36 @@ internal sealed partial class MainWindowViewModel : ObservableObject
             _ => { });
 
         return Volatile.Read(ref hitFlag) == 1;
+    }
+
+    private static int GetProgressReportInterval(SeedRunFilter filter)
+    {
+        if (filter.ShopFilter.HasCriteria)
+        {
+            return 25;
+        }
+
+        if (filter.AncientFilter.HasCriteria)
+        {
+            return 100;
+        }
+
+        return ProgressReportMinimum;
+    }
+
+    private static bool ShouldReportProgress(int scanned, int totalTarget, int reportInterval)
+    {
+        if (scanned <= 10)
+        {
+            return true;
+        }
+
+        if (totalTarget != int.MaxValue && scanned >= totalTarget)
+        {
+            return true;
+        }
+
+        return scanned % Math.Max(1, reportInterval) == 0;
     }
 
     private static (string FirstSeed, string LastSeed) ResolveSeedRange(
@@ -1589,10 +1937,21 @@ internal sealed partial class MainWindowViewModel : ObservableObject
             Act3OptionIds = act3OptionIds
         };
 
+        var shopFilter = IncludeShop
+            ? new Sts2ShopFilter
+            {
+                MaxFirstShopRow = ParsePositiveIntOrNull(ShopMaxFirstRow),
+                CardIds = ShopCardFilterChips.Select(chip => chip.Value).ToList(),
+                RelicIds = ShopRelicFilterChips.Select(chip => chip.Value).ToList(),
+                PotionIds = ShopPotionFilterChips.Select(chip => chip.Value).ToList()
+            }
+            : Sts2ShopFilter.Empty;
+
         return new SeedRunFilter
         {
             NeowFilter = neowFilter,
-            AncientFilter = ancientFilter
+            AncientFilter = ancientFilter,
+            ShopFilter = shopFilter
         };
     }
 
@@ -1678,6 +2037,40 @@ internal sealed partial class MainWindowViewModel : ObservableObject
     private void OnAncientOptionChipsChanged(object? sender, NotifyCollectionChangedEventArgs e) =>
         UpdateAncientFilterSummary();
 
+    private void OnShopFilterChipsChanged(object? sender, NotifyCollectionChangedEventArgs e) =>
+        UpdateShopFilterSummary();
+
+    private void UpdateShopFilterSummary()
+    {
+        if (!IncludeShop)
+        {
+            RaisePropertyChanged(nameof(ShopFilterSummary));
+            return;
+        }
+
+        var parts = new List<string>();
+        var maxFirstShopRow = ParsePositiveIntOrNull(ShopMaxFirstRow);
+        if (maxFirstShopRow.HasValue)
+        {
+            parts.Add($"最远：第{maxFirstShopRow.Value}层");
+        }
+        if (ShopCardFilterChips.Count > 0)
+        {
+            parts.Add($"卡牌：{string.Join(", ", ShopCardFilterChips.Select(chip => chip.Label))}");
+        }
+        if (ShopRelicFilterChips.Count > 0)
+        {
+            parts.Add($"遗物：{string.Join(", ", ShopRelicFilterChips.Select(chip => chip.Label))}");
+        }
+        if (ShopPotionFilterChips.Count > 0)
+        {
+            parts.Add($"药水：{string.Join(", ", ShopPotionFilterChips.Select(chip => chip.Label))}");
+        }
+
+        ShopFilterSummary = parts.Count > 0 ? string.Join(" | ", parts) : "商店：任意";
+        RaisePropertyChanged(nameof(ShopFilterSummary));
+    }
+
     private static string NormalizeAncientInput(string? value) =>
         value?.Trim().ToUpperInvariant() ?? string.Empty;
 
@@ -1693,6 +2086,18 @@ internal sealed partial class MainWindowViewModel : ObservableObject
 
     private static string NormalizeOptionInput(string? value) =>
         value?.Trim().ToUpperInvariant() ?? string.Empty;
+
+    private static int? ParsePositiveIntOrNull(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return null;
+        }
+
+        return int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsed) && parsed > 0
+            ? parsed
+            : null;
+    }
 
     private static bool TryAddAncientOptionChip(
         ObservableCollection<FilterChipViewModel> target,
@@ -1790,7 +2195,43 @@ internal sealed partial class MainWindowViewModel : ObservableObject
                     Character = result.CharacterName,
                     Ascension = result.AscensionLevel,
                     Options = act1Options,
-                    AncientActs = ancientActs
+                    AncientActs = ancientActs,
+                    Shop = result.ShopPreview == null
+                        ? null
+                        : new ShopExportRecord
+                        {
+                            AssumedNeowOptionId = result.ShopPreview.AssumedNeowOptionId,
+                            DiscountedColoredSlot = result.ShopPreview.DiscountedColoredSlot,
+                            RouteRooms = result.ShopPreview.RouteRooms.ToList(),
+                            ColoredCards = result.ShopCardEntries.Select(entry => new ShopItemExportRecord
+                            {
+                                Id = entry.Id,
+                                DisplayName = entry.DisplayName,
+                                Price = entry.Price,
+                                IsDiscounted = entry.IsDiscounted
+                            }).ToList(),
+                            ColorlessCards = result.ShopColorlessEntries.Select(entry => new ShopItemExportRecord
+                            {
+                                Id = entry.Id,
+                                DisplayName = entry.DisplayName,
+                                Price = entry.Price,
+                                IsDiscounted = entry.IsDiscounted
+                            }).ToList(),
+                            Relics = result.ShopRelicEntries.Select(entry => new ShopItemExportRecord
+                            {
+                                Id = entry.Id,
+                                DisplayName = entry.DisplayName,
+                                Price = entry.Price,
+                                IsDiscounted = entry.IsDiscounted
+                            }).ToList(),
+                            Potions = result.ShopPotionEntries.Select(entry => new ShopItemExportRecord
+                            {
+                                Id = entry.Id,
+                                DisplayName = entry.DisplayName,
+                                Price = entry.Price,
+                                IsDiscounted = entry.IsDiscounted
+                            }).ToList()
+                        }
                 };
             })
             .ToList();
@@ -1849,10 +2290,15 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         PotionFilterChips.Clear();
         IncludeAct2 = false;
         IncludeAct3 = false;
+        IncludeShop = false;
+        ShopMaxFirstRow = string.Empty;
         Act2AncientFilter = string.Empty;
         Act3AncientFilter = string.Empty;
         Act2OptionFilterChips.Clear();
         Act3OptionFilterChips.Clear();
+        ShopCardFilterChips.Clear();
+        ShopRelicFilterChips.Clear();
+        ShopPotionFilterChips.Clear();
         SelectedAct2RelicOption = null;
         SelectedAct3RelicOption = null;
         StatusMessage = "配置已重置为默认值。";
@@ -1895,6 +2341,17 @@ internal sealed partial class MainWindowViewModel : ObservableObject
 
     private void ApplyConfig(AppConfig config)
     {
+        // Restore game version first (triggers data reload)
+        if (!string.IsNullOrWhiteSpace(config.GameVersion))
+        {
+            var versionOption = GameVersionOptions.FirstOrDefault(v =>
+                string.Equals(v.Id, config.GameVersion, StringComparison.OrdinalIgnoreCase))
+                ?? GameVersionOptions.First();
+            // Temporarily bypass async reload by directly setting field
+            _selectedGameVersion = versionOption;
+            RaisePropertyChanged(nameof(SelectedGameVersion));
+        }
+
         if (!string.IsNullOrWhiteSpace(config.EventId) &&
             SeedEventRegistry.TryGetById(config.EventId, out var eventMetadata))
         {
@@ -1934,6 +2391,11 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         ResetValueChips(Act3OptionFilterChips, config.Act3OptionIds);
         IncludeAct2 = config.IncludeAct2;
         IncludeAct3 = config.IncludeAct3;
+        IncludeShop = config.IncludeShop;
+        ShopMaxFirstRow = config.ShopMaxFirstRow?.ToString(CultureInfo.InvariantCulture) ?? string.Empty;
+        ResetChips(ShopCardFilterChips, config.ShopCardIds, _cardCatalog);
+        ResetChips(ShopRelicFilterChips, config.ShopRelicIds, _relicCatalog);
+        ResetChips(ShopPotionFilterChips, config.ShopPotionIds, _potionCatalog);
 
         ResetChips(RelicFilterChips, config.RelicIds, _relicCatalog);
         ResetChips(CardFilterChips, config.CardIds, _cardCatalog);
@@ -1993,6 +2455,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         {
             var model = new AppConfig
             {
+                GameVersion = SelectedGameVersion.Id,
                 EventId = SelectedEvent.Id,
                 Seed = SeedText,
                 SeedMode = SelectedSeedMode.ToString(),
@@ -2002,6 +2465,11 @@ internal sealed partial class MainWindowViewModel : ObservableObject
                 Ascension = SelectedAscensionLevel,
                 IncludeAct2 = IncludeAct2,
                 IncludeAct3 = IncludeAct3,
+                IncludeShop = IncludeShop,
+                ShopMaxFirstRow = ParsePositiveIntOrNull(ShopMaxFirstRow),
+                ShopCardIds = ShopCardFilterChips.Select(chip => chip.Value).ToList(),
+                ShopRelicIds = ShopRelicFilterChips.Select(chip => chip.Value).ToList(),
+                ShopPotionIds = ShopPotionFilterChips.Select(chip => chip.Value).ToList(),
                 Act2AncientId = Act2AncientFilter,
                 Act3AncientId = Act3AncientFilter,
                 Act2OptionIds = Act2OptionFilterChips.Select(chip => chip.Value).ToList(),
@@ -2086,6 +2554,47 @@ internal sealed partial class MainWindowViewModel : ObservableObject
     }
 
     internal sealed record CatalogItem(string Value, string Display, string SearchText);
+
+    private static IReadOnlyList<CatalogItem> _staticCardCatalog = Array.Empty<CatalogItem>();
+    private static IReadOnlyList<CatalogItem> _staticRelicCatalog = Array.Empty<CatalogItem>();
+    private static IReadOnlyList<CatalogItem> _staticPotionCatalog = Array.Empty<CatalogItem>();
+
+    internal static IReadOnlyList<CatalogItem> StaticCardCatalog => _staticCardCatalog;
+    internal static IReadOnlyList<CatalogItem> StaticRelicCatalog => _staticRelicCatalog;
+    internal static IReadOnlyList<CatalogItem> StaticPotionCatalog => _staticPotionCatalog;
+
+    internal static string GetCardDisplayName(string cardId)
+    {
+        var catalog = _staticCardCatalog;
+        for (int i = 0; i < catalog.Count; i++)
+        {
+            if (string.Equals(catalog[i].Value, cardId, StringComparison.OrdinalIgnoreCase))
+                return catalog[i].Display;
+        }
+        return cardId;
+    }
+
+    internal static string GetRelicDisplayName(string relicId)
+    {
+        var catalog = _staticRelicCatalog;
+        for (int i = 0; i < catalog.Count; i++)
+        {
+            if (string.Equals(catalog[i].Value, relicId, StringComparison.OrdinalIgnoreCase))
+                return catalog[i].Display;
+        }
+        return relicId;
+    }
+
+    internal static string GetPotionDisplayName(string potionId)
+    {
+        var catalog = _staticPotionCatalog;
+        for (int i = 0; i < catalog.Count; i++)
+        {
+            if (string.Equals(catalog[i].Value, potionId, StringComparison.OrdinalIgnoreCase))
+                return catalog[i].Display;
+        }
+        return potionId;
+    }
 
     internal sealed record CharacterOption(CharacterId Id, string DisplayName);
 
@@ -2228,7 +2737,9 @@ internal sealed partial class MainWindowViewModel : ObservableObject
                 match.Sts2Preview,
                 _requireAct2Match,
                 _requireAct3Match,
-                _ascensionLevel);
+                _ascensionLevel,
+                match.ShopPreview,
+                match.ShopFilterMatched);
 
             return new RollHit(workItem.Index, viewModel, displayNeow.Count);
         }
@@ -2295,6 +2806,8 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         public List<OptionExportRecord> Options { get; init; } = new();
 
         public List<AncientActExportRecord> AncientActs { get; init; } = new();
+
+        public ShopExportRecord? Shop { get; init; }
     }
 
     private sealed class OptionExportRecord
@@ -2347,8 +2860,40 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         public string? Note { get; init; }
     }
 
+    private sealed class ShopExportRecord
+    {
+        public string? AssumedNeowOptionId { get; init; }
+
+        public int DiscountedColoredSlot { get; init; }
+
+        public List<string> RouteRooms { get; init; } = new();
+
+        public List<ShopItemExportRecord> ColoredCards { get; init; } = new();
+
+        public List<ShopItemExportRecord> ColorlessCards { get; init; } = new();
+
+        public List<ShopItemExportRecord> Relics { get; init; } = new();
+
+        public List<ShopItemExportRecord> Potions { get; init; } = new();
+    }
+
+    private sealed class ShopItemExportRecord
+    {
+        public string Id { get; init; } = string.Empty;
+
+        public string DisplayName { get; init; } = string.Empty;
+
+        public int Price { get; init; }
+
+        public bool IsDiscounted { get; init; }
+    }
+
+    internal sealed record GameVersionOption(string Id, string DisplayName, string Description);
+
     internal sealed class AppConfig
     {
+        public string? GameVersion { get; init; }
+
         public string? EventId { get; init; }
 
         public string? Seed { get; init; }
@@ -2374,6 +2919,16 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         public List<string>? Act2OptionIds { get; init; }
 
         public List<string>? Act3OptionIds { get; init; }
+
+        public bool IncludeShop { get; init; }
+
+        public int? ShopMaxFirstRow { get; init; }
+
+        public List<string>? ShopCardIds { get; init; }
+
+        public List<string>? ShopRelicIds { get; init; }
+
+        public List<string>? ShopPotionIds { get; init; }
 
         public List<string>? RelicIds { get; init; }
 

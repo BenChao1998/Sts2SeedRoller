@@ -282,7 +282,7 @@ static string ResolveDataPath(string? overrideValue, string fallback)
 
 static string ResolveAncientDataPath(string? overrideValue)
 {
-    var baseDirectory = Path.Combine(AppContext.BaseDirectory, "data", "ancients");
+    var baseDirectory = Path.Combine(AppContext.BaseDirectory, "data", "0.99.1", "ancients");
     var localized = Path.Combine(baseDirectory, "options.zhs.json");
     var defaultPath = File.Exists(localized)
         ? localized
@@ -292,7 +292,7 @@ static string ResolveAncientDataPath(string? overrideValue)
 
 static string ResolveActDataPath(string? overrideValue)
 {
-    var defaultPath = Path.Combine(AppContext.BaseDirectory, "data", "sts2", "acts.json");
+    var defaultPath = Path.Combine(AppContext.BaseDirectory, "data", "0.99.1", "sts2", "acts.json");
     return ResolveDataPath(overrideValue, defaultPath);
 }
 
