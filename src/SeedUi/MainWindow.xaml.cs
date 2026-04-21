@@ -1,6 +1,8 @@
+using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media.Imaging;
 using HandyControl.Controls;
 using SeedUi.ViewModels;
 
@@ -11,6 +13,7 @@ public partial class MainWindow : HandyControl.Controls.Window
     public MainWindow()
     {
         InitializeComponent();
+        Icon = BitmapFrame.Create(new Uri("pack://application:,,,/Assets/app.ico", UriKind.Absolute));
         // 初始化导航状态，修复首次打开时事件触发时机早于 InitializeComponent 的问题
         NavigateToPage(0);
     }

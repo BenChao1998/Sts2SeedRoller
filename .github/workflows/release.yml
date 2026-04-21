@@ -130,9 +130,10 @@ jobs:
           $shortcutPath = Join-Path $packageRoot "Sts2SeedRoller.lnk"
           $shell = New-Object -ComObject WScript.Shell
           $shortcut = $shell.CreateShortcut($shortcutPath)
-          $shortcut.TargetPath = Join-Path $uiDest "Sts2SeedRollerUi.exe"
+          $exePath = Join-Path $uiDest "Sts2SeedRollerUi.exe"
+          $shortcut.TargetPath = $exePath
           $shortcut.WorkingDirectory = $uiDest
-          $shortcut.IconLocation = 'Sts2SeedRollerUi.exe'
+          $shortcut.IconLocation = "$exePath,0"
           $shortcut.Save()
 
           $zipName = "sts2seedroller-win-x64$vs.zip"

@@ -16,6 +16,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Resource Include="Assets\app.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
     <EmbeddedResource Include="..\..\data\0.99.1\neow\options.json">
       <LogicalName>SeedUi.Data.Neow.options.json</LogicalName>
     </EmbeddedResource>
