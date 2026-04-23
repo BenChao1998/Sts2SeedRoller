@@ -7,6 +7,10 @@ namespace SeedModel.Neow;
 public sealed class NeowOptionFilter
 {
     private static readonly StringComparison Comparison = StringComparison.OrdinalIgnoreCase;
+    private static readonly StringComparer Comparer = StringComparer.OrdinalIgnoreCase;
+    private readonly IReadOnlyDictionary<string, int> _requiredRelicCounts;
+    private readonly IReadOnlyDictionary<string, int> _requiredCardCounts;
+    private readonly IReadOnlyDictionary<string, int> _requiredPotionCounts;
 
     private NeowOptionFilter(
         NeowOptionKind? kind,
@@ -22,6 +26,9 @@ public sealed class NeowOptionFilter
         CardIds = cardIds;
         PotionIds = potionIds;
         HasCriteria = hasCriteria;
+        _requiredRelicCounts = BuildRequiredCounts(relicIds);
+        _requiredCardCounts = BuildRequiredCounts(cardIds);
+        _requiredPotionCounts = BuildRequiredCounts(potionIds);
     }
 
     public NeowOptionKind? Kind { get; }
@@ -76,26 +83,24 @@ public sealed class NeowOptionFilter
             return false;
         }
 
-        if (RelicIds.Count > 0 &&
-            !MatchesRelicIds(option))
+        if (RelicIds.Count > 0 && !MatchesRelicIds(option))
         {
             return false;
         }
 
-        if (RelicTerms.Count > 0 &&
-            !MatchesText(option))
+        if (RelicTerms.Count > 0 && !MatchesText(option))
         {
             return false;
         }
 
         if (CardIds.Count > 0 &&
-            !MatchesDetailIds(option.Details, RewardDetailType.Card, CardIds))
+            !MatchesDetailIds(option, RewardDetailType.Card, _requiredCardCounts, NeowDetailHint.Card))
         {
             return false;
         }
 
         if (PotionIds.Count > 0 &&
-            !MatchesDetailIds(option.Details, RewardDetailType.Potion, PotionIds))
+            !MatchesDetailIds(option, RewardDetailType.Potion, _requiredPotionCounts, NeowDetailHint.Potion))
         {
             return false;
         }
@@ -105,18 +110,36 @@ public sealed class NeowOptionFilter
 
     private bool MatchesText(NeowOptionResult option)
     {
-        foreach (var term in RelicTerms)
+        for (var i = 0; i < RelicTerms.Count; i++)
         {
+            var term = RelicTerms[i];
             if (Contains(option.RelicId, term) ||
                 Contains(option.Title, term) ||
                 Contains(option.Description ?? string.Empty, term) ||
-                Contains(option.Note ?? string.Empty, term) ||
-                option.Details.Any(detail =>
-                    Contains(detail.Label, term) ||
-                    Contains(detail.Value, term) ||
-                    Contains(detail.ModelId, term)))
+                Contains(option.Note ?? string.Empty, term))
             {
                 return true;
+            }
+        }
+
+        if (option.DetailHint == NeowDetailHint.None)
+        {
+            return false;
+        }
+
+        var details = option.Details;
+        for (var i = 0; i < RelicTerms.Count; i++)
+        {
+            var term = RelicTerms[i];
+            for (var detailIndex = 0; detailIndex < details.Count; detailIndex++)
+            {
+                var detail = details[detailIndex];
+                if (Contains(detail.Label, term) ||
+                    Contains(detail.Value, term) ||
+                    Contains(detail.ModelId, term))
+                {
+                    return true;
+                }
             }
         }
 
@@ -125,74 +148,64 @@ public sealed class NeowOptionFilter
 
     private bool MatchesRelicIds(NeowOptionResult option)
     {
-        return MatchesModelIds(
-            RelicIds,
-            EnumerateRelicIds(option));
-    }
-
-    private static bool MatchesDetailIds(
-        IReadOnlyList<RewardDetail> details,
-        RewardDetailType type,
-        IReadOnlyList<string> requiredIds)
-    {
-        return MatchesModelIds(
-            requiredIds,
-            details
-                .Where(detail => detail.Type == type)
-                .Select(detail => detail.ModelId));
-    }
-
-    private static IEnumerable<string> EnumerateRelicIds(NeowOptionResult option)
-    {
-        if (!string.IsNullOrWhiteSpace(option.RelicId))
-        {
-            yield return option.RelicId;
-        }
-
-        foreach (var detail in option.Details)
-        {
-            if (detail.Type == RewardDetailType.Relic &&
-                !string.IsNullOrWhiteSpace(detail.ModelId))
-            {
-                yield return detail.ModelId;
-            }
-        }
-    }
-
-    private static bool MatchesModelIds(
-        IReadOnlyList<string> requiredIds,
-        IEnumerable<string?> availableIds)
-    {
-        if (requiredIds.Count == 0)
+        if (_requiredRelicCounts.Count == 0)
         {
             return true;
         }
 
-        var requiredCounts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-        foreach (var id in requiredIds)
+        if ((option.DetailHint & NeowDetailHint.Relic) == 0)
         {
-            if (string.IsNullOrWhiteSpace(id))
-            {
-                continue;
-            }
-
-            requiredCounts[id] = requiredCounts.TryGetValue(id, out var count) ? count + 1 : 1;
+            return MatchesPrimaryIdOnly(_requiredRelicCounts, option.RelicId);
         }
 
+        return MatchesModelIds(_requiredRelicCounts, option.RelicId, option.Details, RewardDetailType.Relic);
+    }
+
+    private bool MatchesDetailIds(
+        NeowOptionResult option,
+        RewardDetailType type,
+        IReadOnlyDictionary<string, int> requiredCounts,
+        NeowDetailHint requiredHint)
+    {
         if (requiredCounts.Count == 0)
         {
             return true;
         }
 
-        var availableCounts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-        foreach (var availableId in availableIds)
+        if ((option.DetailHint & requiredHint) == 0)
         {
-            if (string.IsNullOrWhiteSpace(availableId))
+            return false;
+        }
+
+        return MatchesModelIds(requiredCounts, primaryId: null, option.Details, type);
+    }
+
+    private static bool MatchesModelIds(
+        IReadOnlyDictionary<string, int> requiredCounts,
+        string? primaryId,
+        IReadOnlyList<RewardDetail> details,
+        RewardDetailType detailType)
+    {
+        if (requiredCounts.Count == 0)
+        {
+            return true;
+        }
+
+        var availableCounts = new Dictionary<string, int>(Comparer);
+        if (!string.IsNullOrWhiteSpace(primaryId))
+        {
+            availableCounts[primaryId] = 1;
+        }
+
+        for (var i = 0; i < details.Count; i++)
+        {
+            var detail = details[i];
+            if (detail.Type != detailType || string.IsNullOrWhiteSpace(detail.ModelId))
             {
                 continue;
             }
 
-            var key = availableId;
+            var key = detail.ModelId;
             availableCounts[key] = availableCounts.TryGetValue(key, out var count) ? count + 1 : 1;
         }
 
@@ -205,6 +218,37 @@ public sealed class NeowOptionFilter
         }
 
         return true;
+    }
+
+    private static bool MatchesPrimaryIdOnly(IReadOnlyDictionary<string, int> requiredCounts, string? primaryId)
+    {
+        foreach (var requirement in requiredCounts)
+        {
+            var available = !string.IsNullOrWhiteSpace(primaryId) && Comparer.Equals(primaryId, requirement.Key) ? 1 : 0;
+            if (available < requirement.Value)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static Dictionary<string, int> BuildRequiredCounts(IReadOnlyList<string> ids)
+    {
+        var result = new Dictionary<string, int>(Comparer);
+        for (var i = 0; i < ids.Count; i++)
+        {
+            var id = ids[i];
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                continue;
+            }
+
+            result[id] = result.TryGetValue(id, out var count) ? count + 1 : 1;
+        }
+
+        return result;
     }
 
     private static List<string> NormalizeTerms(IEnumerable<string>? terms, bool deduplicate = true)

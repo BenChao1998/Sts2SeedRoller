@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using SeedModel.Collections;
 using SeedModel.Events;
 using SeedModel.Rng;
 
@@ -95,11 +94,18 @@ public sealed class NeowGenerator : ISeedEventGenerator<NeowGenerationContext, I
             throw new InvalidOperationException("Neow positive pool does not contain enough entries.");
         }
 
-        var positives = positivePool.UnstableShuffle(rng)
-            .Take(2)
-            .ToList();
+        var positivePickA = rng.NextInt(positivePool.Count);
+        var positivePickB = rng.NextInt(positivePool.Count - 1);
+        if (positivePickB >= positivePickA)
+        {
+            positivePickB++;
+        }
 
-        var results = positives.Select(id => ToResult(id, PositivePoolName, context)).ToList();
+        var results = new List<NeowOptionResult>(3)
+        {
+            ToResult(positivePool[positivePickA], PositivePoolName, context),
+            ToResult(positivePool[positivePickB], PositivePoolName, context)
+        };
         results.Add(ToResult(negativePick, NegativePoolName, context));
         return results;
     }
@@ -224,7 +230,10 @@ public sealed class NeowGenerator : ISeedEventGenerator<NeowGenerationContext, I
             };
         }
 
-        var details = _rewardPreviewer.Build(metadata.RelicId, context);
+        var detailHint = NeowRewardPreviewer.GetDetailHint(metadata.RelicId);
+        IReadOnlyList<RewardDetail> details = detailHint == NeowDetailHint.None
+            ? Array.Empty<RewardDetail>()
+            : new DeferredRewardDetails(() => _rewardPreviewer.Build(metadata.RelicId, context));
 
         return new NeowOptionResult
         {
@@ -235,7 +244,8 @@ public sealed class NeowGenerator : ISeedEventGenerator<NeowGenerationContext, I
             Title = metadata.Title ?? metadata.Id,
             Description = metadata.Description,
             Note = metadata.Note,
-            Details = details
+            Details = details,
+            DetailHint = detailHint
         };
     }
 }

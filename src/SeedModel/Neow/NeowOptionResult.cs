@@ -17,4 +17,6 @@ public sealed record NeowOptionResult
     public string? Note { get; init; }
 
     public IReadOnlyList<RewardDetail> Details { get; init; } = Array.Empty<RewardDetail>();
+
+    internal NeowDetailHint DetailHint { get; init; }
 }
