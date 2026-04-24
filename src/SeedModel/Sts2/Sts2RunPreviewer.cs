@@ -98,7 +98,7 @@ public sealed class Sts2RunPreviewer
             ActIndex: 0,
             DefaultUnlockedCharacters);
 
-        var actResults = _simulator.Simulate(upFrontRng);
+        var actResults = _simulator.Simulate(upFrontRng, request.SeedValue);
         foreach (var result in actResults)
         {
             var shouldInclude = (result.ActNumber == 2 && request.IncludeAct2) ||
@@ -154,7 +154,7 @@ public sealed class Sts2RunPreviewer
 
         var upFrontRng = new GameRng(request.SeedValue, "up_front");
         var relicPools = _primer.PrimeAndCapture(upFrontRng, request.Character, playerCount: 1);
-        var actPools = _simulator.Analyze(upFrontRng);
+        var actPools = _simulator.Analyze(upFrontRng, request.SeedValue);
 
         return new Sts2SeedAnalysis
         {

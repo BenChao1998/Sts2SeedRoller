@@ -1,4 +1,4 @@
-{
+﻿{
     "acts":  [
                  {
                      "ancients":  [
@@ -1222,7 +1222,7 @@
                                           ]
                    },
     "sharedAncients":  [
-                           "DARV"
+
                        ],
     "sharedEvents":  [
                          "BrainLeech",

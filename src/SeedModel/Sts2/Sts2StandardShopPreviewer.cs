@@ -51,7 +51,9 @@ internal sealed class Sts2StandardShopPreviewer
 
         ApplyStandardNeowRule(state, neowOptions);
 
-        var actOne = _world.Acts.FirstOrDefault(act => act.ActNumber == 1) ?? _world.Acts[0];
+        var actOne = _world.ResolveActOne(context.RunSeed)
+            ?? _world.Acts.FirstOrDefault(act => act.ActNumber == 1)
+            ?? _world.Acts[0];
         var map = StandardActMapState.Create(actOne, context.PlayerCount > 1, context.AscensionLevel, runRng.Get("act_1_map"));
         var route = map.GetShortestRouteToFirstVisibleShop();
         if (route.Count == 0)
@@ -85,7 +87,9 @@ internal sealed class Sts2StandardShopPreviewer
         ArgumentNullException.ThrowIfNull(context);
 
         var runRng = new RunRngSet(context.RunSeed);
-        var actOne = world.Acts.FirstOrDefault(act => act.ActNumber == 1) ?? world.Acts[0];
+        var actOne = world.ResolveActOne(context.RunSeed)
+            ?? world.Acts.FirstOrDefault(act => act.ActNumber == 1)
+            ?? world.Acts[0];
         var map = StandardActMapState.Create(actOne, context.PlayerCount > 1, context.AscensionLevel, runRng.Get("act_1_map"));
         var route = map.GetShortestRouteToFirstVisibleShop();
         if (route.Count == 0)

@@ -8,8 +8,6 @@ namespace SeedModel.Sts2.Generation;
 
 internal sealed class Sts2RelicShufflePrimer
 {
-    private static readonly string[] TrackedRarities = ["Common", "Uncommon", "Rare", "Shop"];
-
     private readonly Sts2WorldData.RelicPoolInfo _pools;
 
     internal Sts2RelicShufflePrimer(Sts2WorldData world)
@@ -25,6 +23,7 @@ internal sealed class Sts2RelicShufflePrimer
         }
 
         ShuffleBag(rng, _pools.SharedSequence);
+        rng.FastForward(rng.Counter + 1);
 
         var combined = CombineSequences(_pools.SharedSequence, _pools.GetSequenceFor(character));
         var players = Math.Max(1, playerCount);
@@ -42,6 +41,7 @@ internal sealed class Sts2RelicShufflePrimer
         }
 
         var sharedPools = ShuffleBagAndCapture(rng, _pools.SharedSequence);
+        rng.FastForward(rng.Counter + 1);
         var combined = CombineSequences(_pools.SharedSequence, _pools.GetSequenceFor(character));
         var playerPools = Array.Empty<Sts2RelicPoolPreviewGroup>();
         var players = Math.Max(1, playerCount);
@@ -70,28 +70,7 @@ internal sealed class Sts2RelicShufflePrimer
 
     private void ShuffleBag(GameRng rng, IReadOnlyList<string> sequence)
     {
-        var buckets = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
-        foreach (var relic in sequence)
-        {
-            if (!_pools.RarityMap.TryGetValue(relic, out var rarity))
-            {
-                continue;
-            }
-
-            if (!TrackedRarities.Contains(rarity, StringComparer.OrdinalIgnoreCase))
-            {
-                continue;
-            }
-
-            if (!buckets.TryGetValue(rarity, out var list))
-            {
-                list = new List<string>();
-                buckets[rarity] = list;
-            }
-
-            list.Add(relic);
-        }
-
+        var buckets = BuildBuckets(sequence);
         foreach (var list in buckets.Values)
         {
             if (list.Count <= 1)
@@ -116,13 +95,11 @@ internal sealed class Sts2RelicShufflePrimer
             rng.Shuffle(list);
         }
 
-        return TrackedRarities
-            .Select(rarity => new Sts2RelicPoolPreviewGroup
+        return buckets
+            .Select(entry => new Sts2RelicPoolPreviewGroup
             {
-                Rarity = rarity,
-                Relics = buckets.TryGetValue(rarity, out var list)
-                    ? list.ToList()
-                    : Array.Empty<string>()
+                Rarity = entry.Key,
+                Relics = entry.Value.ToList()
             })
             .ToList();
     }
@@ -132,12 +109,17 @@ internal sealed class Sts2RelicShufflePrimer
         var buckets = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
         foreach (var relic in sequence)
         {
+            if (string.IsNullOrWhiteSpace(relic))
+            {
+                continue;
+            }
+
             if (!_pools.RarityMap.TryGetValue(relic, out var rarity))
             {
                 continue;
             }
 
-            if (!TrackedRarities.Contains(rarity, StringComparer.OrdinalIgnoreCase))
+            if (string.IsNullOrWhiteSpace(rarity))
             {
                 continue;
             }

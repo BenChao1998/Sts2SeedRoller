@@ -4,12 +4,17 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using SeedModel.Neow;
+using SeedModel.Rng;
 
 namespace SeedModel.Sts2.Generation;
 
 internal sealed class Sts2WorldData
 {
     public IReadOnlyList<Sts2ActBlueprint> Acts { get; }
+
+    private IReadOnlyList<Sts2ActBlueprint> ActOneChoices { get; }
+
+    private IReadOnlyList<Sts2ActBlueprint> LaterActs { get; }
 
     public IReadOnlyList<string> SharedEvents { get; }
 
@@ -24,6 +29,16 @@ internal sealed class Sts2WorldData
         RelicPoolInfo relicPools)
     {
         Acts = acts;
+        ActOneChoices = acts
+            .Where(act => act.ActNumber == 1)
+            .ToList()
+            .AsReadOnly();
+        LaterActs = acts
+            .Where(act => act.ActNumber > 1)
+            .OrderBy(act => act.ActNumber)
+            .ThenBy(act => act.Name, StringComparer.OrdinalIgnoreCase)
+            .ToList()
+            .AsReadOnly();
         SharedEvents = sharedEvents;
         SharedAncients = sharedAncients;
         RelicPools = relicPools;
@@ -64,6 +79,7 @@ internal sealed class Sts2WorldData
 
         var acts = model.Acts
             .OrderBy(act => act.Number)
+            .ThenBy(act => act.Name, StringComparer.OrdinalIgnoreCase)
             .Select(act => Sts2ActBlueprint.Create(act, encounters))
             .ToList();
 
@@ -74,6 +90,42 @@ internal sealed class Sts2WorldData
             model.SharedEvents.AsReadOnly(),
             model.SharedAncients.AsReadOnly(),
             relicPools);
+    }
+
+    public IReadOnlyList<Sts2ActBlueprint> ResolveActs(uint runSeed)
+    {
+        var resolved = new List<Sts2ActBlueprint>(LaterActs.Count + 1);
+        var actOne = ResolveActOne(runSeed);
+        if (actOne != null)
+        {
+            resolved.Add(actOne);
+        }
+
+        resolved.AddRange(LaterActs);
+        return resolved;
+    }
+
+    public Sts2ActBlueprint? ResolveActOne(uint runSeed)
+    {
+        if (ActOneChoices.Count == 0)
+        {
+            return null;
+        }
+
+        if (ActOneChoices.Count == 1)
+        {
+            return ActOneChoices[0];
+        }
+
+        var underdocks = ActOneChoices.FirstOrDefault(act => string.Equals(act.Name, "Underdocks", StringComparison.OrdinalIgnoreCase));
+        var overgrowth = ActOneChoices.FirstOrDefault(act => string.Equals(act.Name, "Overgrowth", StringComparison.OrdinalIgnoreCase));
+        if (underdocks != null && overgrowth != null)
+        {
+            var rng = new GameRng(runSeed);
+            return rng.NextBool() ? underdocks : overgrowth;
+        }
+
+        return ActOneChoices[0];
     }
 
     private sealed class Sts2DataModel

@@ -20,33 +20,44 @@ internal sealed class Sts2RunSimulator
 
     public IReadOnlyList<ActAncientResult> Simulate(GameRng rng)
     {
-        return Analyze(rng)
+        return Simulate(rng, InferRunSeed(rng));
+    }
+
+    public IReadOnlyList<ActAncientResult> Simulate(GameRng rng, uint runSeed)
+    {
+        return Analyze(rng, runSeed)
             .Select(result => new ActAncientResult(result.ActIndex, result.ActNumber, result.AncientId))
             .ToList();
     }
 
     public IReadOnlyList<ActPoolResult> Analyze(GameRng rng)
     {
+        return Analyze(rng, InferRunSeed(rng));
+    }
+
+    public IReadOnlyList<ActPoolResult> Analyze(GameRng rng, uint runSeed)
+    {
         if (rng is null)
         {
             throw new ArgumentNullException(nameof(rng));
         }
 
-        var sharedAssignments = AssignSharedAncients(rng);
-        var results = new List<ActPoolResult>(_world.Acts.Count);
+        var acts = _world.ResolveActs(runSeed);
+        var sharedAssignments = AssignSharedAncients(rng, acts);
+        var results = new List<ActPoolResult>(acts.Count);
 
-        for (var i = 0; i < _world.Acts.Count; i++)
+        for (var i = 0; i < acts.Count; i++)
         {
-            var act = _world.Acts[i];
+            var act = acts[i];
             sharedAssignments.TryGetValue(i, out var shared);
             var sharedAncients = (IReadOnlyList<string>? )shared ?? Array.Empty<string>();
-            results.Add(ConsumeAct(act, rng, sharedAncients));
+            results.Add(ConsumeAct(i, act, rng, sharedAncients));
         }
 
         return results;
     }
 
-    private ActPoolResult ConsumeAct(Sts2ActBlueprint act, GameRng rng, IReadOnlyList<string> sharedAncients)
+    private ActPoolResult ConsumeAct(int actIndex, Sts2ActBlueprint act, GameRng rng, IReadOnlyList<string> sharedAncients)
     {
         var events = ShuffleEvents(act, rng);
         var normalEncounters = GenerateNormalEncounters(act, rng);
@@ -54,7 +65,7 @@ internal sealed class Sts2RunSimulator
         SelectBoss(act, rng);
         var chosenAncient = SelectAncient(act, rng, sharedAncients);
         return new ActPoolResult(
-            act.Index,
+            actIndex,
             act.ActNumber,
             act.Name,
             events,
@@ -141,7 +152,7 @@ internal sealed class Sts2RunSimulator
         return rng.NextItem(available) ?? available[0];
     }
 
-    private Dictionary<int, List<string>> AssignSharedAncients(GameRng rng)
+    private Dictionary<int, List<string>> AssignSharedAncients(GameRng rng, IReadOnlyList<Sts2ActBlueprint> acts)
     {
         var assignments = new Dictionary<int, List<string>>();
         if (_world.SharedAncients.Count == 0)
@@ -152,7 +163,7 @@ internal sealed class Sts2RunSimulator
         var pool = _world.SharedAncients.ToList();
         rng.Shuffle(pool);
 
-        for (var i = 1; i < _world.Acts.Count; i++)
+        for (var i = 1; i < acts.Count; i++)
         {
             if (pool.Count == 0)
             {
@@ -218,6 +229,12 @@ internal sealed class Sts2RunSimulator
         }
 
         return current.Tags.Intersect(previous.Tags, StringComparer.OrdinalIgnoreCase).Any();
+    }
+
+    private static uint InferRunSeed(GameRng rng)
+    {
+        ArgumentNullException.ThrowIfNull(rng);
+        return unchecked(rng.Seed - (uint)GameRng.GetDeterministicHashCode("up_front"));
     }
 
     internal sealed record ActAncientResult(int ActIndex, int ActNumber, string AncientId);
