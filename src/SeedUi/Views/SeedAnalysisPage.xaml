@@ -104,6 +104,16 @@
 
                 <TextBlock Text="{Binding SeedAnalysisSummary}" Foreground="#333" TextWrapping="Wrap" Margin="0 0 0 4"/>
                 <TextBlock Text="{Binding SeedAnalysisSeedValueText}" Foreground="#1976D2" FontSize="12"/>
+                <TextBlock Text="补充：起始遗物、古神遗物，以及部分事件直接发放的固定遗物，不属于随机遗物池；它们即使会在游戏中出现，也不会显示在共享/角色遗物池里。"
+                           Foreground="#888"
+                           FontSize="12"
+                           TextWrapping="Wrap"
+                           Margin="0 6 0 0"/>
+                <TextBlock Text="说明：这里展示的是该种子按顺序生成的优先候选，不代表本局一定会把这些事件或遗物全部看到。实际是否出现，还会受到路线、奖励、事件消耗和当时可用条件影响。"
+                           Foreground="#888"
+                           FontSize="12"
+                           TextWrapping="Wrap"
+                           Margin="0 8 0 0"/>
                 <TextBlock Text="说明：当前页面展示的事件池、普通怪池、精英池、遗物池顺序不受进阶等级影响；进阶主要影响地图房型分布和战斗难度。事件名称支持鼠标悬浮查看说明。"
                            Foreground="#888"
                            FontSize="12"

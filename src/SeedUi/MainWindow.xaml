@@ -1148,6 +1148,16 @@
                                                                     <TextBlock Text="&#xE8B7;" FontFamily="Segoe MDL2 Assets" FontSize="14" Foreground="#7B1FA2" Margin="0 0 6 0"/>
                                                                     <TextBlock Text="种子分析命中" FontWeight="SemiBold" FontSize="13" Foreground="#7B1FA2"/>
                                                                 </StackPanel>
+                                                                <TextBlock Text="说明：这里展示的是该种子按顺序生成的优先候选，不代表本局一定会把这些事件或遗物全部看到。实际是否出现，还会受到路线、奖励、事件消耗和当时可用条件影响。"
+                                                                           FontSize="11"
+                                                                           Foreground="#7B1FA2"
+                                                                           TextWrapping="Wrap"
+                                                                           Margin="0 0 0 8"/>
+                                                                <TextBlock Text="补充：起始遗物、古神遗物，以及部分事件直接发放的固定遗物，不属于随机遗物池；它们即使会在游戏中出现，也不会显示在共享/角色遗物池里。"
+                                                                           FontSize="11"
+                                                                           Foreground="#7B1FA2"
+                                                                           TextWrapping="Wrap"
+                                                                           Margin="0 0 0 8"/>
                                                                 <ItemsControl ItemsSource="{Binding PoolActs}">
                                                                     <ItemsControl.ItemTemplate>
                                                                         <DataTemplate>

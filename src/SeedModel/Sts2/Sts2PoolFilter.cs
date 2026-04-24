@@ -60,7 +60,7 @@ public sealed record Sts2PoolFilter
             return false;
         }
 
-        return MatchesIds(requiredEventIds, act.EventPool);
+        return MatchesIds(requiredEventIds, act.EventPool.Take(act.PriorityEventCount));
     }
 
     private static bool MatchesRelicPools(
@@ -72,7 +72,7 @@ public sealed record Sts2PoolFilter
             return true;
         }
 
-        return MatchesIds(requiredRelicIds, pools.SelectMany(group => group.Relics));
+        return MatchesIds(requiredRelicIds, pools.SelectMany(group => group.Relics.Take(group.PriorityCount)));
     }
 
     private static bool MatchesIds(

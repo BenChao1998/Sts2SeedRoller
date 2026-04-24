@@ -174,7 +174,11 @@ public sealed class Sts2RunPreviewer
                 {
                     ActNumber = act.ActNumber,
                     ActName = act.ActName,
-                    EventPool = act.Events,
+                    PriorityEventCount = Math.Min(act.EventPreviewLimit, act.Events.Count),
+                    TotalEventCount = act.Events.Count,
+                    EventPool = act.Events
+                        .Take(act.EventPreviewLimit)
+                        .ToList(),
                     MonsterPool = act.NormalEncounters,
                     ElitePool = act.EliteEncounters
                 })

@@ -133,10 +133,10 @@ internal sealed class RollResultViewModel
     {
         public PoolActViewModel(Sts2ActPoolPreview act, HashSet<string> requiredIds)
         {
-            Title = $"第{act.ActNumber}幕事件池";
+            Title = $"第{act.ActNumber}幕事件池 (优先候选{act.PriorityEventCount}个 / 共{act.TotalEventCount}个)";
             Events = act.EventPool
-                .Select(eventId => new PoolEventItemViewModel(
-                    MainWindowViewModel.CreateSeedAnalysisEventDisplayItem(eventId),
+                .Select((eventId, index) => new PoolEventItemViewModel(
+                    MainWindowViewModel.CreateSeedAnalysisEventDisplayItem(eventId, index + 1),
                     requiredIds.Contains(eventId)))
                 .ToList();
         }
@@ -150,11 +150,12 @@ internal sealed class RollResultViewModel
     {
         public PoolRelicGroupViewModel(Sts2RelicPoolPreviewGroup group, HashSet<string> requiredIds)
         {
-            Title = $"{FormatRarity(group.Rarity)} ({group.Relics.Count})";
+            Title = $"{FormatRarity(group.Rarity)} (优先候选{group.PriorityCount}个 / 共{group.TotalCount}个)";
             Relics = group.Relics
-                .Select(relicId => new PoolRelicItemViewModel(
+                .Select((relicId, index) => new PoolRelicItemViewModel(
                     MainWindowViewModel.GetRelicDisplayName(relicId),
-                    requiredIds.Contains(relicId)))
+                    requiredIds.Contains(relicId),
+                    index + 1))
                 .ToList();
         }
 
@@ -192,9 +193,9 @@ internal sealed class RollResultViewModel
 
     internal sealed class PoolRelicItemViewModel
     {
-        public PoolRelicItemViewModel(string displayName, bool isMatched)
+        public PoolRelicItemViewModel(string displayName, bool isMatched, int orderIndex)
         {
-            DisplayName = displayName;
+            DisplayName = $"{orderIndex:D2}. {displayName}";
             IsMatched = isMatched;
         }
 

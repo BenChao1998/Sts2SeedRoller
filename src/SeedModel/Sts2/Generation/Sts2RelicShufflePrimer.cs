@@ -8,6 +8,8 @@ namespace SeedModel.Sts2.Generation;
 
 internal sealed class Sts2RelicShufflePrimer
 {
+    private const int PreviewLimitPerRarity = 12;
+
     private readonly Sts2WorldData.RelicPoolInfo _pools;
 
     internal Sts2RelicShufflePrimer(Sts2WorldData world)
@@ -96,11 +98,23 @@ internal sealed class Sts2RelicShufflePrimer
         }
 
         return buckets
-            .Select(entry => new Sts2RelicPoolPreviewGroup
+            .Select(entry =>
             {
-                Rarity = entry.Key,
-                Relics = entry.Value.ToList()
+                var totalCount = entry.Value.Count;
+                var preview = entry.Value
+                    .Take(PreviewLimitPerRarity)
+                    .ToList();
+
+                return new Sts2RelicPoolPreviewGroup
+                {
+                    Rarity = entry.Key,
+                    PriorityCount = Math.Min(PreviewLimitPerRarity, totalCount),
+                    TotalCount = totalCount,
+                    Relics = preview
+                };
             })
+            .OrderBy(group => GetRarityPriority(group.Rarity))
+            .ThenBy(group => group.Rarity, StringComparer.OrdinalIgnoreCase)
             .ToList();
     }
 
@@ -134,6 +148,18 @@ internal sealed class Sts2RelicShufflePrimer
         }
 
         return buckets;
+    }
+
+    private static int GetRarityPriority(string rarity)
+    {
+        return rarity switch
+        {
+            "Common" => 0,
+            "Uncommon" => 1,
+            "Rare" => 2,
+            "Shop" => 3,
+            _ => 10
+        };
     }
 
     internal sealed record RelicPoolPreviewResult(

@@ -115,8 +115,8 @@ internal sealed partial class MainWindowViewModel
         foreach (var act in analysis.Acts)
         {
             SeedAnalysisActs.Add(new SeedAnalysisActViewModel(
-                $"第{act.ActNumber}幕 · {FormatActName(act.ActName)}",
-                act.EventPool.Select(CreateEventDisplayItem).ToList(),
+                $"第{act.ActNumber}幕 · {FormatActName(act.ActName)} (优先候选{act.PriorityEventCount}个 / 共{act.TotalEventCount}个)",
+                act.EventPool.Select((eventId, index) => CreateEventDisplayItem(eventId, index + 1)).ToList(),
                 act.MonsterPool.Select(FormatEncounterId).ToList(),
                 act.ElitePool.Select(FormatEncounterId).ToList()));
         }
@@ -124,15 +124,15 @@ internal sealed partial class MainWindowViewModel
         foreach (var rarityGroup in analysis.SharedRelicPools)
         {
             SeedAnalysisSharedRelicPools.Add(new SeedAnalysisRelicGroupViewModel(
-                $"{FormatRarity(rarityGroup.Rarity)} ({rarityGroup.Relics.Count})",
-                rarityGroup.Relics.Select(FormatRelicId).ToList()));
+                $"{FormatRarity(rarityGroup.Rarity)} (优先候选{rarityGroup.PriorityCount}个 / 共{rarityGroup.TotalCount}个)",
+                rarityGroup.Relics.Select((relicId, index) => FormatOrderedName(index + 1, FormatRelicId(relicId))).ToList()));
         }
 
         foreach (var rarityGroup in analysis.PlayerRelicPools)
         {
             SeedAnalysisPlayerRelicPools.Add(new SeedAnalysisRelicGroupViewModel(
-                $"{FormatRarity(rarityGroup.Rarity)} ({rarityGroup.Relics.Count})",
-                rarityGroup.Relics.Select(FormatRelicId).ToList()));
+                $"{FormatRarity(rarityGroup.Rarity)} (优先候选{rarityGroup.PriorityCount}个 / 共{rarityGroup.TotalCount}个)",
+                rarityGroup.Relics.Select((relicId, index) => FormatOrderedName(index + 1, FormatRelicId(relicId))).ToList()));
         }
 
         HasSeedAnalysisResult = true;
@@ -174,11 +174,13 @@ internal sealed partial class MainWindowViewModel
         _staticSeedAnalysisEncounterLocalization = _seedAnalysisEncounterLocalization;
     }
 
-    internal static SeedAnalysisDisplayItemViewModel CreateSeedAnalysisEventDisplayItem(string eventId)
+    internal static SeedAnalysisDisplayItemViewModel CreateSeedAnalysisEventDisplayItem(string eventId, int? orderIndex = null)
     {
         var preferredPage = GetPreferredEventPage(eventId, _staticSeedAnalysisEventLocalization);
         return new SeedAnalysisDisplayItemViewModel(
-            FormatEventId(eventId, _staticSeedAnalysisEventLocalization),
+            orderIndex.HasValue
+                ? FormatOrderedName(orderIndex.Value, FormatEventId(eventId, _staticSeedAnalysisEventLocalization))
+                : FormatEventId(eventId, _staticSeedAnalysisEventLocalization),
             GetEventDescription(eventId, preferredPage, _staticSeedAnalysisEventLocalization),
             GetEventOptions(eventId, preferredPage, _staticSeedAnalysisEventLocalization));
     }
@@ -364,14 +366,19 @@ internal sealed partial class MainWindowViewModel
         return FormatEventId(eventId, _seedAnalysisEventLocalization);
     }
 
-    private SeedAnalysisDisplayItemViewModel CreateEventDisplayItem(string eventId)
+    private SeedAnalysisDisplayItemViewModel CreateEventDisplayItem(string eventId, int orderIndex)
     {
         var preferredPage = GetPreferredEventPage(eventId, _seedAnalysisEventLocalization);
 
         return new SeedAnalysisDisplayItemViewModel(
-            FormatEventId(eventId, _seedAnalysisEventLocalization),
+            FormatOrderedName(orderIndex, FormatEventId(eventId, _seedAnalysisEventLocalization)),
             GetEventDescription(eventId, preferredPage, _seedAnalysisEventLocalization),
             GetEventOptions(eventId, preferredPage, _seedAnalysisEventLocalization));
+    }
+
+    private static string FormatOrderedName(int orderIndex, string title)
+    {
+        return $"{orderIndex:D2}. {title}";
     }
 
     private static string GetPreferredEventPage(string eventId, IReadOnlyDictionary<string, string> localizationTable)

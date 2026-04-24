@@ -36,6 +36,10 @@ public sealed class Sts2ActPoolPreview
 
     public required string ActName { get; init; }
 
+    public required int PriorityEventCount { get; init; }
+
+    public required int TotalEventCount { get; init; }
+
     public required IReadOnlyList<string> EventPool { get; init; }
 
     public required IReadOnlyList<string> MonsterPool { get; init; }
@@ -46,6 +50,10 @@ public sealed class Sts2ActPoolPreview
 public sealed class Sts2RelicPoolPreviewGroup
 {
     public required string Rarity { get; init; }
+
+    public required int PriorityCount { get; init; }
+
+    public required int TotalCount { get; init; }
 
     public required IReadOnlyList<string> Relics { get; init; }
 }
