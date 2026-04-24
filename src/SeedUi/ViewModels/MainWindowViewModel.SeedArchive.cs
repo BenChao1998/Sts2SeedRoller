@@ -901,9 +901,11 @@ internal sealed partial class MainWindowViewModel
                     RunSeed = workItem.SeedValue,
                     SeedText = workItem.SeedText,
                     Character = character,
+                    UnlockedCharacters = GetConfiguredUnlockedCharacters(),
                     PlayerCount = 1,
                     ScrollBoxesEligible = true,
                     AscensionLevel = job.Ascension,
+                    IncludeDarvSharedAncient = DefaultIncludeDarvSharedAncient,
                     IncludeAct2 = true,
                     IncludeAct3 = true
                 };
@@ -1217,6 +1219,8 @@ internal sealed partial class MainWindowViewModel
             character,
             characterName,
             run.Act1Options,
+            poolAnalysis: null,
+            poolFilter: null,
             run.Sts2Preview,
             requiresAct2: false,
             requiresAct3: false,

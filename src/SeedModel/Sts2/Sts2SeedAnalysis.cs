@@ -10,7 +10,11 @@ public sealed class Sts2SeedAnalysisRequest
 
     public CharacterId Character { get; init; } = CharacterId.Ironclad;
 
+    public IReadOnlyList<CharacterId>? UnlockedCharacters { get; init; }
+
     public int AscensionLevel { get; init; }
+
+    public bool IncludeDarvSharedAncient { get; init; } = true;
 }
 
 public sealed class Sts2SeedAnalysis

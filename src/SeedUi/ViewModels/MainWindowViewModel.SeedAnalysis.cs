@@ -29,6 +29,9 @@ internal sealed partial class MainWindowViewModel
     private IReadOnlyDictionary<string, string> _seedAnalysisActLocalization = EmptyLocalizationTable;
     private IReadOnlyDictionary<string, string> _seedAnalysisEventLocalization = EmptyLocalizationTable;
     private IReadOnlyDictionary<string, string> _seedAnalysisEncounterLocalization = EmptyLocalizationTable;
+    private static IReadOnlyDictionary<string, string> _staticSeedAnalysisActLocalization = EmptyLocalizationTable;
+    private static IReadOnlyDictionary<string, string> _staticSeedAnalysisEventLocalization = EmptyLocalizationTable;
+    private static IReadOnlyDictionary<string, string> _staticSeedAnalysisEncounterLocalization = EmptyLocalizationTable;
 
     public ObservableCollection<SeedAnalysisActViewModel> SeedAnalysisActs { get; } = new();
 
@@ -82,7 +85,9 @@ internal sealed partial class MainWindowViewModel
                 SeedText = normalizedSeed,
                 SeedValue = seedValue,
                 Character = SelectedCharacter,
-                AscensionLevel = SelectedAscensionLevel
+                UnlockedCharacters = GetConfiguredUnlockedCharacters(),
+                AscensionLevel = SelectedAscensionLevel,
+                IncludeDarvSharedAncient = DefaultIncludeDarvSharedAncient
             });
 
             var openingActs = BuildSeedAnalysisOpeningActs(normalizedSeed, seedValue);
@@ -164,6 +169,29 @@ internal sealed partial class MainWindowViewModel
         _seedAnalysisActLocalization = LoadSts2LocalizationTable(version, "acts.json", "章节");
         _seedAnalysisEventLocalization = LoadSts2LocalizationTable(version, "events.json", "事件");
         _seedAnalysisEncounterLocalization = LoadSts2LocalizationTable(version, "encounters.json", "遭遇");
+        _staticSeedAnalysisActLocalization = _seedAnalysisActLocalization;
+        _staticSeedAnalysisEventLocalization = _seedAnalysisEventLocalization;
+        _staticSeedAnalysisEncounterLocalization = _seedAnalysisEncounterLocalization;
+    }
+
+    internal static SeedAnalysisDisplayItemViewModel CreateSeedAnalysisEventDisplayItem(string eventId)
+    {
+        var preferredPage = GetPreferredEventPage(eventId, _staticSeedAnalysisEventLocalization);
+        return new SeedAnalysisDisplayItemViewModel(
+            FormatEventId(eventId, _staticSeedAnalysisEventLocalization),
+            GetEventDescription(eventId, preferredPage, _staticSeedAnalysisEventLocalization),
+            GetEventOptions(eventId, preferredPage, _staticSeedAnalysisEventLocalization));
+    }
+
+    internal static string GetSeedAnalysisEncounterDisplayName(string encounterId)
+    {
+        return TryGetLocalizedTitle(_staticSeedAnalysisEncounterLocalization, encounterId, out var localized)
+            ? localized
+            : FormatGenericId(encounterId
+                .Replace("Normal", string.Empty, StringComparison.Ordinal)
+                .Replace("Weak", " 前置", StringComparison.Ordinal)
+                .Replace("Elite", " 精英", StringComparison.Ordinal)
+                .Replace("Boss", " Boss", StringComparison.Ordinal));
     }
 
     private static string FormatRarity(string rarity)
@@ -197,8 +225,10 @@ internal sealed partial class MainWindowViewModel
             SeedValue = seedValue,
             SeedText = seedText,
             Character = SelectedCharacter,
+            UnlockedCharacters = GetConfiguredUnlockedCharacters(),
             AscensionLevel = SelectedAscensionLevel,
             PlayerCount = 1,
+            IncludeDarvSharedAncient = DefaultIncludeDarvSharedAncient,
             IncludeAct2 = true,
             IncludeAct3 = true
         });
@@ -326,37 +356,33 @@ internal sealed partial class MainWindowViewModel
 
     private string FormatActName(string actName)
     {
-        return TryGetLocalizedTitle(_seedAnalysisActLocalization, actName, out var localized)
-            ? localized
-            : FormatGenericId(actName);
+        return FormatActName(actName, _seedAnalysisActLocalization);
     }
 
     private string FormatEventId(string eventId)
     {
-        return TryGetLocalizedTitle(_seedAnalysisEventLocalization, eventId, out var localized)
-            ? localized
-            : FormatGenericId(eventId);
+        return FormatEventId(eventId, _seedAnalysisEventLocalization);
     }
 
     private SeedAnalysisDisplayItemViewModel CreateEventDisplayItem(string eventId)
     {
-        var preferredPage = GetPreferredEventPage(eventId);
+        var preferredPage = GetPreferredEventPage(eventId, _seedAnalysisEventLocalization);
 
         return new SeedAnalysisDisplayItemViewModel(
-            FormatEventId(eventId),
-            GetEventDescription(eventId, preferredPage),
-            GetEventOptions(eventId, preferredPage));
+            FormatEventId(eventId, _seedAnalysisEventLocalization),
+            GetEventDescription(eventId, preferredPage, _seedAnalysisEventLocalization),
+            GetEventOptions(eventId, preferredPage, _seedAnalysisEventLocalization));
     }
 
-    private string GetPreferredEventPage(string eventId)
+    private static string GetPreferredEventPage(string eventId, IReadOnlyDictionary<string, string> localizationTable)
     {
-        if (_seedAnalysisEventLocalization.Count == 0)
+        if (localizationTable.Count == 0)
         {
             return string.Empty;
         }
 
         var tokenPrefix = $"{ToLocalizationToken(eventId)}.";
-        return _seedAnalysisEventLocalization.Keys
+        return localizationTable.Keys
             .Where(key => key.StartsWith(tokenPrefix, StringComparison.OrdinalIgnoreCase))
             .Where(key => key.EndsWith(".description", StringComparison.OrdinalIgnoreCase))
             .OrderBy(GetEventDescriptionPriority)
@@ -365,9 +391,12 @@ internal sealed partial class MainWindowViewModel
             ?? string.Empty;
     }
 
-    private string GetEventDescription(string eventId, string preferredPage)
+    private static string GetEventDescription(
+        string eventId,
+        string preferredPage,
+        IReadOnlyDictionary<string, string> localizationTable)
     {
-        if (_seedAnalysisEventLocalization.Count == 0)
+        if (localizationTable.Count == 0)
         {
             return string.Empty;
         }
@@ -375,7 +404,7 @@ internal sealed partial class MainWindowViewModel
         foreach (var page in GetCandidateEventPages(preferredPage))
         {
             var key = $"{ToLocalizationToken(eventId)}.pages.{page}.description";
-            if (_seedAnalysisEventLocalization.TryGetValue(key, out var description) &&
+            if (localizationTable.TryGetValue(key, out var description) &&
                 !string.IsNullOrWhiteSpace(description))
             {
                 return SanitizeLocalizationText(description);
@@ -383,14 +412,14 @@ internal sealed partial class MainWindowViewModel
         }
 
         var tokenPrefix = $"{ToLocalizationToken(eventId)}.";
-        var bestKey = _seedAnalysisEventLocalization.Keys
+        var bestKey = localizationTable.Keys
             .Where(key => key.StartsWith(tokenPrefix, StringComparison.OrdinalIgnoreCase))
             .Where(key => key.EndsWith(".description", StringComparison.OrdinalIgnoreCase))
             .OrderBy(GetEventDescriptionPriority)
             .FirstOrDefault();
 
         if (string.IsNullOrWhiteSpace(bestKey) ||
-            !_seedAnalysisEventLocalization.TryGetValue(bestKey, out var fallbackDescription) ||
+            !localizationTable.TryGetValue(bestKey, out var fallbackDescription) ||
             string.IsNullOrWhiteSpace(fallbackDescription))
         {
             return string.Empty;
@@ -399,9 +428,12 @@ internal sealed partial class MainWindowViewModel
         return SanitizeLocalizationText(fallbackDescription);
     }
 
-    private IReadOnlyList<SeedAnalysisOptionDisplayItemViewModel> GetEventOptions(string eventId, string preferredPage)
+    private static IReadOnlyList<SeedAnalysisOptionDisplayItemViewModel> GetEventOptions(
+        string eventId,
+        string preferredPage,
+        IReadOnlyDictionary<string, string> localizationTable)
     {
-        if (_seedAnalysisEventLocalization.Count == 0)
+        if (localizationTable.Count == 0)
         {
             return Array.Empty<SeedAnalysisOptionDisplayItemViewModel>();
         }
@@ -410,11 +442,11 @@ internal sealed partial class MainWindowViewModel
         foreach (var page in GetCandidateEventPages(preferredPage))
         {
             var pagePrefix = $"{token}.pages.{page}.options.";
-            var options = _seedAnalysisEventLocalization.Keys
+            var options = localizationTable.Keys
                 .Where(key => key.StartsWith(pagePrefix, StringComparison.OrdinalIgnoreCase))
                 .Where(key => key.EndsWith(".title", StringComparison.OrdinalIgnoreCase))
                 .OrderBy(key => key, StringComparer.OrdinalIgnoreCase)
-                .Select(titleKey => CreateEventOptionDisplayItem(titleKey))
+                .Select(titleKey => CreateEventOptionDisplayItem(titleKey, localizationTable))
                 .Where(option => option is not null)
                 .Cast<SeedAnalysisOptionDisplayItemViewModel>()
                 .ToList();
@@ -428,16 +460,18 @@ internal sealed partial class MainWindowViewModel
         return Array.Empty<SeedAnalysisOptionDisplayItemViewModel>();
     }
 
-    private SeedAnalysisOptionDisplayItemViewModel? CreateEventOptionDisplayItem(string titleKey)
+    private static SeedAnalysisOptionDisplayItemViewModel? CreateEventOptionDisplayItem(
+        string titleKey,
+        IReadOnlyDictionary<string, string> localizationTable)
     {
-        if (!_seedAnalysisEventLocalization.TryGetValue(titleKey, out var title) ||
+        if (!localizationTable.TryGetValue(titleKey, out var title) ||
             string.IsNullOrWhiteSpace(title))
         {
             return null;
         }
 
         var descriptionKey = titleKey[..^".title".Length] + ".description";
-        _seedAnalysisEventLocalization.TryGetValue(descriptionKey, out var description);
+        localizationTable.TryGetValue(descriptionKey, out var description);
 
         return new SeedAnalysisOptionDisplayItemViewModel(
             SanitizeLocalizationText(title),
@@ -510,13 +544,21 @@ internal sealed partial class MainWindowViewModel
 
     private string FormatEncounterId(string encounterId)
     {
-        return TryGetLocalizedTitle(_seedAnalysisEncounterLocalization, encounterId, out var localized)
+        return GetSeedAnalysisEncounterDisplayName(encounterId);
+    }
+
+    private static string FormatActName(string actName, IReadOnlyDictionary<string, string> localizationTable)
+    {
+        return TryGetLocalizedTitle(localizationTable, actName, out var localized)
             ? localized
-            : FormatGenericId(encounterId
-                .Replace("Normal", string.Empty, StringComparison.Ordinal)
-                .Replace("Weak", " 前置", StringComparison.Ordinal)
-                .Replace("Elite", " 精英", StringComparison.Ordinal)
-                .Replace("Boss", " Boss", StringComparison.Ordinal));
+            : FormatGenericId(actName);
+    }
+
+    private static string FormatEventId(string eventId, IReadOnlyDictionary<string, string> localizationTable)
+    {
+        return TryGetLocalizedTitle(localizationTable, eventId, out var localized)
+            ? localized
+            : FormatGenericId(eventId);
     }
 
     private static bool TryGetLocalizedTitle(IReadOnlyDictionary<string, string> table, string rawId, out string title)

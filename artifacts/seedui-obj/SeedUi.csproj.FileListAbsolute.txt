@@ -1,0 +1,13 @@
+E:\github project\Sts2SeedRoller\artifacts\seedui-obj\SeedUi.csproj.AssemblyReference.cache
+E:\github project\Sts2SeedRoller\artifacts\seedui-obj\Views\SeedAnalysisPage.baml
+E:\github project\Sts2SeedRoller\artifacts\seedui-obj\Views\SeedArchivePage.baml
+E:\github project\Sts2SeedRoller\artifacts\seedui-obj\Views\SeedViewerPage.baml
+E:\github project\Sts2SeedRoller\artifacts\seedui-obj\App.baml
+E:\github project\Sts2SeedRoller\artifacts\seedui-obj\MainWindow.g.cs
+E:\github project\Sts2SeedRoller\artifacts\seedui-obj\Views\SeedAnalysisPage.g.cs
+E:\github project\Sts2SeedRoller\artifacts\seedui-obj\Views\SeedArchivePage.g.cs
+E:\github project\Sts2SeedRoller\artifacts\seedui-obj\Views\SeedViewerPage.g.cs
+E:\github project\Sts2SeedRoller\artifacts\seedui-obj\App.g.cs
+E:\github project\Sts2SeedRoller\artifacts\seedui-obj\GeneratedInternalTypeHelper.g.cs
+E:\github project\Sts2SeedRoller\artifacts\seedui-obj\Sts2SeedRollerUi_MarkupCompile.cache
+E:\github project\Sts2SeedRoller\artifacts\seedui-obj\Sts2SeedRollerUi_MarkupCompile.lref

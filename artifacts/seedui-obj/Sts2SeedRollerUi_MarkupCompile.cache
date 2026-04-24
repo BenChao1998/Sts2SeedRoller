@@ -1,0 +1,20 @@
+﻿Sts2SeedRollerUi
+
+
+winexe
+C#
+.cs
+E:\github project\Sts2SeedRoller\artifacts\seedui-obj\
+SeedUi
+none
+false
+TRACE;DEBUG;NET;NET9_0;NETCOREAPP;WINDOWS;WINDOWS7_0;NET5_0_OR_GREATER;NET6_0_OR_GREATER;NET7_0_OR_GREATER;NET8_0_OR_GREATER;NET9_0_OR_GREATER;NETCOREAPP3_0_OR_GREATER;NETCOREAPP3_1_OR_GREATER;WINDOWS7_0_OR_GREATER
+E:\github project\Sts2SeedRoller\src\SeedUi\App.xaml
+5734076279
+
+21-582566581
+206-637393461
+DesignResources.xaml;MainWindow.xaml;Views\SeedAnalysisPage.xaml;Views\SeedArchivePage.xaml;Views\SeedViewerPage.xaml;
+
+True
+

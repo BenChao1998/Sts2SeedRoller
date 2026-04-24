@@ -10,6 +10,8 @@ public sealed record SeedRunEvaluationContext
 
     public required CharacterId Character { get; init; }
 
+    public IReadOnlyList<CharacterId>? UnlockedCharacters { get; init; }
+
     public int PlayerCount { get; init; } = 1;
 
     public bool ScrollBoxesEligible { get; init; }
@@ -17,6 +19,8 @@ public sealed record SeedRunEvaluationContext
     public bool HasRunModifiers { get; init; }
 
     public int AscensionLevel { get; init; }
+
+    public bool IncludeDarvSharedAncient { get; init; } = true;
 
     public bool IncludeAct2 { get; init; }
 

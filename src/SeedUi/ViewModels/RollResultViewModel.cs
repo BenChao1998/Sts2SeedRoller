@@ -16,6 +16,8 @@ internal sealed class RollResultViewModel
         CharacterId character,
         string characterName,
         IEnumerable<NeowOptionResult> act1Options,
+        Sts2SeedAnalysis? poolAnalysis,
+        Sts2PoolFilter? poolFilter,
         Sts2RunPreview? ancientPreview,
         bool requiresAct2,
         bool requiresAct3,
@@ -33,6 +35,20 @@ internal sealed class RollResultViewModel
         var optionList = act1Options.ToList();
         RawOptions = optionList;
         Options = optionList.Select(o => new OptionDisplayViewModel(o)).ToList();
+        var act1EventIds = ToIdSet(poolFilter?.Act1EventIds);
+        var act2EventIds = ToIdSet(poolFilter?.Act2EventIds);
+        var act3EventIds = ToIdSet(poolFilter?.Act3EventIds);
+        var sharedRelicIds = ToIdSet(poolFilter?.SharedRelicIds);
+        var playerRelicIds = ToIdSet(poolFilter?.PlayerRelicIds);
+        PoolActs = poolAnalysis == null
+            ? Array.Empty<PoolActViewModel>()
+            : poolAnalysis.Acts.Select(act => new PoolActViewModel(act, GetRequiredEventIds(act.ActNumber, act1EventIds, act2EventIds, act3EventIds))).ToList();
+        SharedRelicPools = poolAnalysis == null
+            ? Array.Empty<PoolRelicGroupViewModel>()
+            : poolAnalysis.SharedRelicPools.Select(group => new PoolRelicGroupViewModel(group, sharedRelicIds)).ToList();
+        PlayerRelicPools = poolAnalysis == null
+            ? Array.Empty<PoolRelicGroupViewModel>()
+            : poolAnalysis.PlayerRelicPools.Select(group => new PoolRelicGroupViewModel(group, playerRelicIds)).ToList();
         AncientActs = ancientPreview == null
             ? Array.Empty<AncientActViewModel>()
             : ancientPreview.Acts.Select(act => new AncientActViewModel(act)).ToList();
@@ -73,6 +89,14 @@ internal sealed class RollResultViewModel
 
     public string SeedText => SeedString;
 
+    public IReadOnlyList<PoolActViewModel> PoolActs { get; }
+
+    public IReadOnlyList<PoolRelicGroupViewModel> SharedRelicPools { get; }
+
+    public IReadOnlyList<PoolRelicGroupViewModel> PlayerRelicPools { get; }
+
+    public bool HasPoolAnalysis => PoolActs.Count > 0 || SharedRelicPools.Count > 0 || PlayerRelicPools.Count > 0;
+
     public IReadOnlyList<AncientActViewModel> AncientActs { get; }
 
     public bool HasAncientActs => AncientActs.Count > 0;
@@ -104,6 +128,80 @@ internal sealed class RollResultViewModel
     public IReadOnlyList<ShopItemViewModel> ShopColorlessEntries { get; }
     public IReadOnlyList<ShopItemViewModel> ShopRelicEntries { get; }
     public IReadOnlyList<ShopItemViewModel> ShopPotionEntries { get; }
+
+    internal sealed class PoolActViewModel
+    {
+        public PoolActViewModel(Sts2ActPoolPreview act, HashSet<string> requiredIds)
+        {
+            Title = $"第{act.ActNumber}幕事件池";
+            Events = act.EventPool
+                .Select(eventId => new PoolEventItemViewModel(
+                    MainWindowViewModel.CreateSeedAnalysisEventDisplayItem(eventId),
+                    requiredIds.Contains(eventId)))
+                .ToList();
+        }
+
+        public string Title { get; }
+
+        public IReadOnlyList<PoolEventItemViewModel> Events { get; }
+    }
+
+    internal sealed class PoolRelicGroupViewModel
+    {
+        public PoolRelicGroupViewModel(Sts2RelicPoolPreviewGroup group, HashSet<string> requiredIds)
+        {
+            Title = $"{FormatRarity(group.Rarity)} ({group.Relics.Count})";
+            Relics = group.Relics
+                .Select(relicId => new PoolRelicItemViewModel(
+                    MainWindowViewModel.GetRelicDisplayName(relicId),
+                    requiredIds.Contains(relicId)))
+                .ToList();
+        }
+
+        public string Title { get; }
+
+        public IReadOnlyList<PoolRelicItemViewModel> Relics { get; }
+    }
+
+    internal sealed class PoolEventItemViewModel
+    {
+        public PoolEventItemViewModel(MainWindowViewModel.SeedAnalysisDisplayItemViewModel item, bool isMatched)
+        {
+            Title = item.Title;
+            Description = item.Description;
+            Options = item.Options;
+            IsMatched = isMatched;
+        }
+
+        public string Title { get; }
+
+        public string Description { get; }
+
+        public IReadOnlyList<MainWindowViewModel.SeedAnalysisOptionDisplayItemViewModel> Options { get; }
+
+        public bool IsMatched { get; }
+
+        public bool HasDescription => !string.IsNullOrWhiteSpace(Description);
+
+        public bool HasOptions => Options.Count > 0;
+
+        public bool HasTooltipContent => HasDescription || HasOptions;
+
+        public bool HasDescriptionAndOptions => HasDescription && HasOptions;
+    }
+
+    internal sealed class PoolRelicItemViewModel
+    {
+        public PoolRelicItemViewModel(string displayName, bool isMatched)
+        {
+            DisplayName = displayName;
+            IsMatched = isMatched;
+        }
+
+        public string DisplayName { get; }
+
+        public bool IsMatched { get; }
+    }
 
     internal sealed class AncientActViewModel
     {
@@ -189,5 +287,41 @@ internal sealed class RollResultViewModel
         public string DisplayName { get; }
         public string PriceDisplay => Price.ToString();
         public string DiscountLabel => IsDiscounted ? " (折)" : string.Empty;
+    }
+
+    private static HashSet<string> ToIdSet(IReadOnlyList<string>? values)
+    {
+        return values == null
+            ? new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            : values
+                .Where(value => !string.IsNullOrWhiteSpace(value))
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+    }
+
+    private static HashSet<string> GetRequiredEventIds(
+        int actNumber,
+        HashSet<string> act1EventIds,
+        HashSet<string> act2EventIds,
+        HashSet<string> act3EventIds)
+    {
+        return actNumber switch
+        {
+            1 => act1EventIds,
+            2 => act2EventIds,
+            3 => act3EventIds,
+            _ => new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        };
+    }
+
+    private static string FormatRarity(string rarity)
+    {
+        return rarity switch
+        {
+            "Common" => "普通",
+            "Uncommon" => "非凡",
+            "Rare" => "稀有",
+            "Shop" => "商店",
+            _ => rarity
+        };
     }
 }

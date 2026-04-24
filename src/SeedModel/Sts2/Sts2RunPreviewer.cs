@@ -91,14 +91,18 @@ public sealed class Sts2RunPreviewer
 
         var upFrontRng = new GameRng(request.SeedValue, "up_front");
         _primer.Prime(upFrontRng, request.Character, request.PlayerCount);
+        var unlockedCharacters = ResolveUnlockedCharacters(request.Character, request.UnlockedCharacters);
 
         var generationContext = new AncientGenerationContext(
             request.SeedValue,
             request.Character,
             ActIndex: 0,
-            DefaultUnlockedCharacters);
+            unlockedCharacters);
 
-        var actResults = _simulator.Simulate(upFrontRng, request.SeedValue);
+        var actResults = _simulator.Simulate(
+            upFrontRng,
+            request.SeedValue,
+            request.IncludeDarvSharedAncient);
         foreach (var result in actResults)
         {
             var shouldInclude = (result.ActNumber == 2 && request.IncludeAct2) ||
@@ -154,7 +158,10 @@ public sealed class Sts2RunPreviewer
 
         var upFrontRng = new GameRng(request.SeedValue, "up_front");
         var relicPools = _primer.PrimeAndCapture(upFrontRng, request.Character, playerCount: 1);
-        var actPools = _simulator.Analyze(upFrontRng, request.SeedValue);
+        var actPools = _simulator.Analyze(
+            upFrontRng,
+            request.SeedValue,
+            request.IncludeDarvSharedAncient);
 
         return new Sts2SeedAnalysis
         {
@@ -196,5 +203,31 @@ public sealed class Sts2RunPreviewer
     internal FirstShopRouteInfo? GetFirstShopRouteInfo(SeedRunEvaluationContext context)
     {
         return Sts2StandardShopPreviewer.GetFirstShopRouteInfo(_world, context);
+    }
+
+    private static IReadOnlyList<CharacterId> ResolveUnlockedCharacters(
+        CharacterId selectedCharacter,
+        IReadOnlyList<CharacterId>? configuredCharacters)
+    {
+        var source = configuredCharacters == null || configuredCharacters.Count == 0
+            ? DefaultUnlockedCharacters
+            : configuredCharacters;
+
+        var unlocked = source
+            .Where(id => Enum.IsDefined(typeof(CharacterId), id))
+            .Distinct()
+            .ToList();
+
+        if (!unlocked.Contains(CharacterId.Ironclad))
+        {
+            unlocked.Insert(0, CharacterId.Ironclad);
+        }
+
+        if (!unlocked.Contains(selectedCharacter))
+        {
+            unlocked.Add(selectedCharacter);
+        }
+
+        return unlocked;
     }
 }

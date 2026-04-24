@@ -67,6 +67,9 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         get => _isRolling;
         private set => SetProperty(ref _isRolling, value);
     }
+
+    private const bool DefaultIncludeDarvSharedAncient = false;
+
     private string _datasetSummary = "尚未加载数据";
     private string _relicCatalogFilter = string.Empty;
     private string _cardCatalogFilter = string.Empty;
@@ -215,6 +218,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         UpdateAct2RelicOptions();
         UpdateAct3RelicOptions();
         UpdateAncientFilterSummary();
+        InitializePoolFilter();
         InitializeSeedArchive();
     }
     public bool TryAutoLoadOnStartup => true;
@@ -813,7 +817,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         set => SetProperty(ref _selectedTabIndex, Math.Max(0, value));
     }
 
-    /// <summary>Raised when the View should navigate to a specific tab page (0=Config, 1=Result, 2=Logs).</summary>
+    /// <summary>Raised when the View should navigate to a specific tab page.</summary>
     public event Action<int>? NavigationRequested;
 
     private void RaiseNavigation(int pageIndex)
@@ -912,6 +916,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
     {
         _relicLocalizationTable = LoadSts2LocalizationTable(SelectedGameVersion.Id, "relics.json", "遗物");
         _staticRelicLocalizationTable = _relicLocalizationTable;
+        RefreshPoolRelicCatalog();
     }
 
     private IReadOnlyDictionary<string, string> LoadSts2LocalizationTable(string version, string fileName, string categoryName)
@@ -971,6 +976,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         ApplyShopCardFilter();
         ApplyShopRelicFilter();
         ApplyShopPotionFilter();
+        RefreshPoolRelicCatalog();
 
         _staticCardCatalog = _cardCatalog;
         _staticRelicCatalog = _relicCatalog;
@@ -983,6 +989,8 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         SelectedShopCardCatalogItem = null;
         SelectedShopRelicCatalogItem = null;
         SelectedShopPotionCatalogItem = null;
+        SelectedSharedRelicPoolCatalogItem = null;
+        SelectedPlayerRelicPoolCatalogItem = null;
     }
 
     private static string BuildSearchKey(params string?[] fragments)
@@ -1285,6 +1293,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
             _ancientPreviewer = InitializeAncientPreviewer();
             ReloadRelicLocalization();
             ReloadSeedAnalysisLocalization();
+            RefreshPoolEventCatalog();
             UpdateAct2RelicOptions();
             UpdateAct3RelicOptions();
             UpdateAncientFilterSummary();
@@ -1441,8 +1450,8 @@ internal sealed partial class MainWindowViewModel : ObservableObject
 
             if (Results.Count > 0)
             {
-                SelectedTabIndex = 1;
-                RaiseNavigation(1);
+                SelectedTabIndex = 2;
+                RaiseNavigation(2);
             }
         }
         catch (OperationCanceledException)
@@ -1705,6 +1714,8 @@ internal sealed partial class MainWindowViewModel : ObservableObject
                 filter,
                 config.Character,
                 config.CharacterName,
+                GetConfiguredUnlockedCharacters(),
+                DefaultIncludeDarvSharedAncient,
                 includeAct2,
                 includeAct3,
                 SelectedAscensionLevel,
@@ -1776,6 +1787,11 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         if (filter.ShopFilter.HasCriteria)
         {
             return 25;
+        }
+
+        if (filter.PoolFilter.HasCriteria)
+        {
+            return 100;
         }
 
         if (filter.AncientFilter.HasCriteria)
@@ -1987,11 +2003,23 @@ internal sealed partial class MainWindowViewModel : ObservableObject
             }
             : Sts2ShopFilter.Empty;
 
+        var poolFilter = IncludePoolFilter
+            ? new Sts2PoolFilter
+            {
+                Act1EventIds = Act1EventPoolFilterChips.Select(chip => chip.Value).ToList(),
+                Act2EventIds = Act2EventPoolFilterChips.Select(chip => chip.Value).ToList(),
+                Act3EventIds = Act3EventPoolFilterChips.Select(chip => chip.Value).ToList(),
+                SharedRelicIds = SharedRelicPoolFilterChips.Select(chip => chip.Value).ToList(),
+                PlayerRelicIds = PlayerRelicPoolFilterChips.Select(chip => chip.Value).ToList()
+            }
+            : Sts2PoolFilter.Empty;
+
         return new SeedRunFilter
         {
             NeowFilter = neowFilter,
             AncientFilter = ancientFilter,
-            ShopFilter = shopFilter
+            ShopFilter = shopFilter,
+            PoolFilter = poolFilter
         };
     }
 
@@ -2331,17 +2359,28 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         ResetSeedAnalysis();
         IncludeAct2 = false;
         IncludeAct3 = false;
+        IncludePoolFilter = false;
         IncludeShop = false;
         ShopMaxFirstRow = string.Empty;
         Act2AncientFilter = string.Empty;
         Act3AncientFilter = string.Empty;
         Act2OptionFilterChips.Clear();
         Act3OptionFilterChips.Clear();
+        Act1EventPoolFilterChips.Clear();
+        Act2EventPoolFilterChips.Clear();
+        Act3EventPoolFilterChips.Clear();
+        SharedRelicPoolFilterChips.Clear();
+        PlayerRelicPoolFilterChips.Clear();
         ShopCardFilterChips.Clear();
         ShopRelicFilterChips.Clear();
         ShopPotionFilterChips.Clear();
         SelectedAct2RelicOption = null;
         SelectedAct3RelicOption = null;
+        SelectedAct1EventPoolCatalogItem = null;
+        SelectedAct2EventPoolCatalogItem = null;
+        SelectedAct3EventPoolCatalogItem = null;
+        SelectedSharedRelicPoolCatalogItem = null;
+        SelectedPlayerRelicPoolCatalogItem = null;
         StatusMessage = "配置已重置为默认值。";
         LogInfo(StatusMessage);
     }
@@ -2391,6 +2430,9 @@ internal sealed partial class MainWindowViewModel : ObservableObject
             // Temporarily bypass async reload by directly setting field
             _selectedGameVersion = versionOption;
             RaisePropertyChanged(nameof(SelectedGameVersion));
+            ReloadRelicLocalization();
+            ReloadSeedAnalysisLocalization();
+            RefreshPoolEventCatalog();
         }
 
         if (!string.IsNullOrWhiteSpace(config.EventId) &&
@@ -2422,16 +2464,22 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         if (!string.IsNullOrWhiteSpace(config.Character) &&
             Enum.TryParse(config.Character, ignoreCase: true, out CharacterId character))
         {
-        SelectedCharacter = character;
-    }
+            SelectedCharacter = character;
+        }
 
-    SelectedAscensionLevel = Math.Clamp(config.Ascension, 0, AscensionOptions[^1]);
+        SelectedAscensionLevel = Math.Clamp(config.Ascension, 0, AscensionOptions[^1]);
         Act2AncientFilter = config.Act2AncientId ?? string.Empty;
         Act3AncientFilter = config.Act3AncientId ?? string.Empty;
         ResetValueChips(Act2OptionFilterChips, config.Act2OptionIds);
         ResetValueChips(Act3OptionFilterChips, config.Act3OptionIds);
         IncludeAct2 = config.IncludeAct2;
         IncludeAct3 = config.IncludeAct3;
+        IncludePoolFilter = config.IncludePoolFilter;
+        ResetChips(Act1EventPoolFilterChips, config.Act1EventIds, _poolEventCatalog);
+        ResetChips(Act2EventPoolFilterChips, config.Act2EventIds, _poolEventCatalog);
+        ResetChips(Act3EventPoolFilterChips, config.Act3EventIds, _poolEventCatalog);
+        ResetChips(SharedRelicPoolFilterChips, config.SharedRelicIds, _poolRelicCatalog);
+        ResetChips(PlayerRelicPoolFilterChips, config.PlayerRelicIds, _poolRelicCatalog);
         IncludeShop = config.IncludeShop;
         ShopMaxFirstRow = config.ShopMaxFirstRow?.ToString(CultureInfo.InvariantCulture) ?? string.Empty;
         ResetChips(ShopCardFilterChips, config.ShopCardIds, _cardCatalog);
@@ -2506,6 +2554,12 @@ internal sealed partial class MainWindowViewModel : ObservableObject
                 Ascension = SelectedAscensionLevel,
                 IncludeAct2 = IncludeAct2,
                 IncludeAct3 = IncludeAct3,
+                IncludePoolFilter = IncludePoolFilter,
+                Act1EventIds = Act1EventPoolFilterChips.Select(chip => chip.Value).ToList(),
+                Act2EventIds = Act2EventPoolFilterChips.Select(chip => chip.Value).ToList(),
+                Act3EventIds = Act3EventPoolFilterChips.Select(chip => chip.Value).ToList(),
+                SharedRelicIds = SharedRelicPoolFilterChips.Select(chip => chip.Value).ToList(),
+                PlayerRelicIds = PlayerRelicPoolFilterChips.Select(chip => chip.Value).ToList(),
                 IncludeShop = IncludeShop,
                 ShopMaxFirstRow = ParsePositiveIntOrNull(ShopMaxFirstRow),
                 ShopCardIds = ShopCardFilterChips.Select(chip => chip.Value).ToList(),
@@ -2538,6 +2592,21 @@ internal sealed partial class MainWindowViewModel : ObservableObject
             StatusMessage = $"保存配置失败：{ex.Message}";
             LogError(StatusMessage);
         }
+    }
+
+    private IReadOnlyList<CharacterId> GetConfiguredUnlockedCharacters()
+    {
+        return new[]
+        {
+            CharacterId.Ironclad,
+            CharacterId.Silent,
+            CharacterId.Defect,
+            CharacterId.Necrobinder,
+            CharacterId.Regent,
+            SelectedCharacter
+        }
+            .Distinct()
+            .ToList();
     }
 
     private static int ParseIntOrDefault(string text, int fallback)
@@ -2731,6 +2800,8 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         private readonly SeedRunFilter _filter;
         private readonly CharacterId _character;
         private readonly string _characterName;
+        private readonly IReadOnlyList<CharacterId> _unlockedCharacters;
+        private readonly bool _includeDarvSharedAncient;
         private readonly bool _includeAct2;
         private readonly bool _includeAct3;
         private readonly int _ascensionLevel;
@@ -2743,6 +2814,8 @@ internal sealed partial class MainWindowViewModel : ObservableObject
             SeedRunFilter filter,
             CharacterId character,
             string characterName,
+            IReadOnlyList<CharacterId> unlockedCharacters,
+            bool includeDarvSharedAncient,
             bool includeAct2,
             bool includeAct3,
             int ascensionLevel,
@@ -2753,6 +2826,8 @@ internal sealed partial class MainWindowViewModel : ObservableObject
             _filter = filter;
             _character = character;
             _characterName = characterName;
+            _unlockedCharacters = unlockedCharacters;
+            _includeDarvSharedAncient = includeDarvSharedAncient;
             _includeAct2 = includeAct2;
             _includeAct3 = includeAct3;
             _ascensionLevel = ascensionLevel;
@@ -2767,9 +2842,11 @@ internal sealed partial class MainWindowViewModel : ObservableObject
                 RunSeed = workItem.SeedValue,
                 SeedText = workItem.SeedText,
                 Character = _character,
+                UnlockedCharacters = _unlockedCharacters,
                 PlayerCount = 1,
                 ScrollBoxesEligible = true,
                 AscensionLevel = _ascensionLevel,
+                IncludeDarvSharedAncient = _includeDarvSharedAncient,
                 IncludeAct2 = _includeAct2,
                 IncludeAct3 = _includeAct3
             };
@@ -2788,6 +2865,8 @@ internal sealed partial class MainWindowViewModel : ObservableObject
                 _character,
                 _characterName,
                 displayNeow,
+                match.PoolAnalysis,
+                _filter.PoolFilter,
                 match.Sts2Preview,
                 _requireAct2Match,
                 _requireAct3Match,
@@ -2966,6 +3045,8 @@ internal sealed partial class MainWindowViewModel : ObservableObject
 
         public bool IncludeAct3 { get; init; }
 
+        public bool IncludePoolFilter { get; init; }
+
         public string? Act2AncientId { get; init; }
 
         public string? Act3AncientId { get; init; }
@@ -2973,6 +3054,16 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         public List<string>? Act2OptionIds { get; init; }
 
         public List<string>? Act3OptionIds { get; init; }
+
+        public List<string>? Act1EventIds { get; init; }
+
+        public List<string>? Act2EventIds { get; init; }
+
+        public List<string>? Act3EventIds { get; init; }
+
+        public List<string>? SharedRelicIds { get; init; }
+
+        public List<string>? PlayerRelicIds { get; init; }
 
         public bool IncludeShop { get; init; }
 

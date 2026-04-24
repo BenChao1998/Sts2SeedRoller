@@ -56,8 +56,10 @@ public sealed class SeedRunEvaluator
                 SeedValue = context.RunSeed,
                 SeedText = context.SeedText,
                 Character = context.Character,
+                UnlockedCharacters = context.UnlockedCharacters,
                 PlayerCount = context.PlayerCount,
                 AscensionLevel = context.AscensionLevel,
+                IncludeDarvSharedAncient = context.IncludeDarvSharedAncient,
                 IncludeAct2 = context.IncludeAct2,
                 IncludeAct3 = context.IncludeAct3
             };
@@ -68,6 +70,29 @@ public sealed class SeedRunEvaluator
         if (filter.AncientFilter.HasCriteria)
         {
             ancientMatched = filter.AncientFilter.Matches(actPreview);
+        }
+
+        var poolMatched = true;
+        Sts2SeedAnalysis? poolAnalysis = null;
+        if (filter.PoolFilter.HasCriteria)
+        {
+            if (_ancientPreviewer == null)
+            {
+                poolMatched = false;
+            }
+            else
+            {
+                poolAnalysis = _ancientPreviewer.AnalyzePools(new Sts2SeedAnalysisRequest
+                {
+                    SeedText = context.SeedText,
+                    SeedValue = context.RunSeed,
+                    Character = context.Character,
+                    UnlockedCharacters = context.UnlockedCharacters,
+                    AscensionLevel = context.AscensionLevel,
+                    IncludeDarvSharedAncient = context.IncludeDarvSharedAncient
+                });
+                poolMatched = filter.PoolFilter.Matches(poolAnalysis);
+            }
         }
 
         var shopMatched = true;
@@ -126,10 +151,12 @@ public sealed class SeedRunEvaluator
             NeowMatches = neowMatches,
             NeowFilterMatched = neowMatched,
             AncientFilterMatched = ancientMatched,
-            IsFinalMatch = neowMatched && ancientMatched && shopMatched,
+            IsFinalMatch = neowMatched && ancientMatched && poolMatched && shopMatched,
             Sts2Preview = actPreview,
             ShopFilterMatched = shopMatched,
-            ShopPreview = shopPreview
+            ShopPreview = shopPreview,
+            PoolFilterMatched = poolMatched,
+            PoolAnalysis = poolAnalysis
         };
     }
 }

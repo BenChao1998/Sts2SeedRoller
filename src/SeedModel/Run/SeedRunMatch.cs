@@ -20,4 +20,8 @@ public sealed record SeedRunMatch
     public bool ShopFilterMatched { get; init; }
 
     public ShopPreview? ShopPreview { get; init; }
+
+    public bool PoolFilterMatched { get; init; }
+
+    public Sts2SeedAnalysis? PoolAnalysis { get; init; }
 }

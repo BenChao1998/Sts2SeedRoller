@@ -92,6 +92,31 @@
             <Setter Property="Padding" Value="8 4"/>
             <Setter Property="Margin" Value="0 4 8 4"/>
         </Style>
+
+        <Style x:Key="PoolResultEventNameStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#444"/>
+            <Setter Property="Margin" Value="0 2 0 2"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="TextDecorations" Value="{x:Null}"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Foreground" Value="#8A5A00"/>
+                    <Setter Property="TextDecorations" Value="Underline"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="PoolResultTooltipStyle" TargetType="ToolTip">
+            <Setter Property="Background" Value="#F6E6A9"/>
+            <Setter Property="BorderBrush" Value="#B28B2E"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Foreground" Value="#3E2B00"/>
+            <Setter Property="Padding" Value="12"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Placement" Value="Mouse"/>
+            <Setter Property="HasDropShadow" Value="True"/>
+        </Style>
     </hc:Window.Resources>
 
     <Grid>
@@ -358,6 +383,203 @@
                                             </DataTemplate>
                                         </ItemsControl.ItemTemplate>
                                     </ItemsControl>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- 种子分析筛选 -->
+                            <Border Style="{StaticResource CardStyle}" Margin="0 0 0 16">
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0 0 0 16">
+                                        <TextBlock Text="种子分析筛选" FontSize="16" FontWeight="SemiBold" Foreground="#333"/>
+                                        <CheckBox IsChecked="{Binding IncludePoolFilter}" Content="启用" Margin="16 0 0 0" VerticalAlignment="Center"/>
+                                        <TextBlock Text="基于种子分析中的事件池与遗物池进行命中筛选" FontSize="11" Foreground="#888" Margin="8 0 0 0" VerticalAlignment="Center" TextWrapping="Wrap" MaxWidth="300"/>
+                                    </StackPanel>
+
+                                    <TextBlock Text="{Binding PoolFilterSummary}" Foreground="#666" TextWrapping="Wrap" Margin="0 0 0 16"/>
+
+                                    <StackPanel IsEnabled="{Binding IncludePoolFilter}">
+                                        <TextBlock Text="事件池" FontSize="13" Foreground="#666" Margin="0 0 0 8"/>
+                                        <Grid Margin="0 0 0 16">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <StackPanel Grid.Column="0" Margin="0 0 8 0">
+                                                <TextBlock Text="第一幕事件" FontSize="12" Foreground="#666" Margin="0 0 0 6"/>
+                                                <TextBox Text="{Binding Act1EventPoolCatalogFilter, UpdateSourceTrigger=PropertyChanged}"
+                                                         hc:InfoElement.Placeholder="输入文字过滤事件列表..." Margin="0 0 0 6" Height="30"/>
+                                                <Grid Margin="0 0 0 6">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <ComboBox Grid.Column="0" ItemsSource="{Binding Act1EventPoolCatalogView}" DisplayMemberPath="Display"
+                                                              SelectedItem="{Binding SelectedAct1EventPoolCatalogItem}" Margin="0 0 8 0" MinHeight="25" VerticalContentAlignment="Center"/>
+                                                    <Button Grid.Column="1" Content="添加" Command="{Binding AddAct1EventPoolFilterCommand}" Style="{StaticResource ButtonDefault}"/>
+                                                </Grid>
+                                                <ItemsControl ItemsSource="{Binding Act1EventPoolFilterChips}">
+                                                    <ItemsControl.ItemsPanel>
+                                                        <ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate>
+                                                    </ItemsControl.ItemsPanel>
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <Border Style="{StaticResource FilterTagStyle}">
+                                                                <StackPanel Orientation="Horizontal">
+                                                                    <TextBlock Text="{Binding Label}" Foreground="#1976D2" FontSize="12"/>
+                                                                    <Button Content="&#xE711;" FontFamily="Segoe MDL2 Assets" FontSize="10"
+                                                                            Command="{Binding DataContext.RemoveAct1EventPoolFilterCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                                            CommandParameter="{Binding Id}" Margin="6 0 0 0" Padding="2"
+                                                                            Style="{StaticResource GhostButtonStyle}"/>
+                                                                </StackPanel>
+                                                            </Border>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </StackPanel>
+
+                                            <StackPanel Grid.Column="1" Margin="8 0">
+                                                <TextBlock Text="第二幕事件" FontSize="12" Foreground="#666" Margin="0 0 0 6"/>
+                                                <TextBox Text="{Binding Act2EventPoolCatalogFilter, UpdateSourceTrigger=PropertyChanged}"
+                                                         hc:InfoElement.Placeholder="输入文字过滤事件列表..." Margin="0 0 0 6" Height="30"/>
+                                                <Grid Margin="0 0 0 6">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <ComboBox Grid.Column="0" ItemsSource="{Binding Act2EventPoolCatalogView}" DisplayMemberPath="Display"
+                                                              SelectedItem="{Binding SelectedAct2EventPoolCatalogItem}" Margin="0 0 8 0" MinHeight="25" VerticalContentAlignment="Center"/>
+                                                    <Button Grid.Column="1" Content="添加" Command="{Binding AddAct2EventPoolFilterCommand}" Style="{StaticResource ButtonDefault}"/>
+                                                </Grid>
+                                                <ItemsControl ItemsSource="{Binding Act2EventPoolFilterChips}">
+                                                    <ItemsControl.ItemsPanel>
+                                                        <ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate>
+                                                    </ItemsControl.ItemsPanel>
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <Border Style="{StaticResource FilterTagStyle}">
+                                                                <StackPanel Orientation="Horizontal">
+                                                                    <TextBlock Text="{Binding Label}" Foreground="#1976D2" FontSize="12"/>
+                                                                    <Button Content="&#xE711;" FontFamily="Segoe MDL2 Assets" FontSize="10"
+                                                                            Command="{Binding DataContext.RemoveAct2EventPoolFilterCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                                            CommandParameter="{Binding Id}" Margin="6 0 0 0" Padding="2"
+                                                                            Style="{StaticResource GhostButtonStyle}"/>
+                                                                </StackPanel>
+                                                            </Border>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </StackPanel>
+
+                                            <StackPanel Grid.Column="2" Margin="8 0 0 0">
+                                                <TextBlock Text="第三幕事件" FontSize="12" Foreground="#666" Margin="0 0 0 6"/>
+                                                <TextBox Text="{Binding Act3EventPoolCatalogFilter, UpdateSourceTrigger=PropertyChanged}"
+                                                         hc:InfoElement.Placeholder="输入文字过滤事件列表..." Margin="0 0 0 6" Height="30"/>
+                                                <Grid Margin="0 0 0 6">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <ComboBox Grid.Column="0" ItemsSource="{Binding Act3EventPoolCatalogView}" DisplayMemberPath="Display"
+                                                              SelectedItem="{Binding SelectedAct3EventPoolCatalogItem}" Margin="0 0 8 0" MinHeight="25" VerticalContentAlignment="Center"/>
+                                                    <Button Grid.Column="1" Content="添加" Command="{Binding AddAct3EventPoolFilterCommand}" Style="{StaticResource ButtonDefault}"/>
+                                                </Grid>
+                                                <ItemsControl ItemsSource="{Binding Act3EventPoolFilterChips}">
+                                                    <ItemsControl.ItemsPanel>
+                                                        <ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate>
+                                                    </ItemsControl.ItemsPanel>
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <Border Style="{StaticResource FilterTagStyle}">
+                                                                <StackPanel Orientation="Horizontal">
+                                                                    <TextBlock Text="{Binding Label}" Foreground="#1976D2" FontSize="12"/>
+                                                                    <Button Content="&#xE711;" FontFamily="Segoe MDL2 Assets" FontSize="10"
+                                                                            Command="{Binding DataContext.RemoveAct3EventPoolFilterCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                                            CommandParameter="{Binding Id}" Margin="6 0 0 0" Padding="2"
+                                                                            Style="{StaticResource GhostButtonStyle}"/>
+                                                                </StackPanel>
+                                                            </Border>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </StackPanel>
+                                        </Grid>
+
+                                        <TextBlock Text="遗物池" FontSize="13" Foreground="#666" Margin="0 0 0 8"/>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <StackPanel Grid.Column="0" Margin="0 0 8 0">
+                                                <TextBlock Text="共享遗物池" FontSize="12" Foreground="#666" Margin="0 0 0 6"/>
+                                                <TextBox Text="{Binding SharedRelicPoolCatalogFilter, UpdateSourceTrigger=PropertyChanged}"
+                                                         hc:InfoElement.Placeholder="输入文字过滤遗物列表..." Margin="0 0 0 6" Height="30"/>
+                                                <Grid Margin="0 0 0 6">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <ComboBox Grid.Column="0" ItemsSource="{Binding SharedRelicPoolCatalogView}" DisplayMemberPath="Display"
+                                                              SelectedItem="{Binding SelectedSharedRelicPoolCatalogItem}" Margin="0 0 8 0" MinHeight="25" VerticalContentAlignment="Center"/>
+                                                    <Button Grid.Column="1" Content="添加" Command="{Binding AddSharedRelicPoolFilterCommand}" Style="{StaticResource ButtonDefault}"/>
+                                                </Grid>
+                                                <ItemsControl ItemsSource="{Binding SharedRelicPoolFilterChips}">
+                                                    <ItemsControl.ItemsPanel>
+                                                        <ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate>
+                                                    </ItemsControl.ItemsPanel>
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <Border Style="{StaticResource FilterTagStyle}">
+                                                                <StackPanel Orientation="Horizontal">
+                                                                    <TextBlock Text="{Binding Label}" Foreground="#1976D2" FontSize="12"/>
+                                                                    <Button Content="&#xE711;" FontFamily="Segoe MDL2 Assets" FontSize="10"
+                                                                            Command="{Binding DataContext.RemoveSharedRelicPoolFilterCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                                            CommandParameter="{Binding Id}" Margin="6 0 0 0" Padding="2"
+                                                                            Style="{StaticResource GhostButtonStyle}"/>
+                                                                </StackPanel>
+                                                            </Border>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </StackPanel>
+
+                                            <StackPanel Grid.Column="1" Margin="8 0 0 0">
+                                                <TextBlock Text="当前角色遗物池" FontSize="12" Foreground="#666" Margin="0 0 0 6"/>
+                                                <TextBox Text="{Binding PlayerRelicPoolCatalogFilter, UpdateSourceTrigger=PropertyChanged}"
+                                                         hc:InfoElement.Placeholder="输入文字过滤遗物列表..." Margin="0 0 0 6" Height="30"/>
+                                                <Grid Margin="0 0 0 6">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <ComboBox Grid.Column="0" ItemsSource="{Binding PlayerRelicPoolCatalogView}" DisplayMemberPath="Display"
+                                                              SelectedItem="{Binding SelectedPlayerRelicPoolCatalogItem}" Margin="0 0 8 0" MinHeight="25" VerticalContentAlignment="Center"/>
+                                                    <Button Grid.Column="1" Content="添加" Command="{Binding AddPlayerRelicPoolFilterCommand}" Style="{StaticResource ButtonDefault}"/>
+                                                </Grid>
+                                                <ItemsControl ItemsSource="{Binding PlayerRelicPoolFilterChips}">
+                                                    <ItemsControl.ItemsPanel>
+                                                        <ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate>
+                                                    </ItemsControl.ItemsPanel>
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <Border Style="{StaticResource FilterTagStyle}">
+                                                                <StackPanel Orientation="Horizontal">
+                                                                    <TextBlock Text="{Binding Label}" Foreground="#1976D2" FontSize="12"/>
+                                                                    <Button Content="&#xE711;" FontFamily="Segoe MDL2 Assets" FontSize="10"
+                                                                            Command="{Binding DataContext.RemovePlayerRelicPoolFilterCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                                            CommandParameter="{Binding Id}" Margin="6 0 0 0" Padding="2"
+                                                                            Style="{StaticResource GhostButtonStyle}"/>
+                                                                </StackPanel>
+                                                            </Border>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </StackPanel>
+                                        </Grid>
+                                    </StackPanel>
                                 </StackPanel>
                             </Border>
                         </StackPanel>
@@ -919,6 +1141,190 @@
                                                         </ItemsControl>
 
                                                         <!-- 商店信息 -->
+                                                        <Border Visibility="{Binding HasPoolAnalysis, Converter={StaticResource BooleanVisibilityConverter}}"
+                                                                Background="#F3E5F5" BorderBrush="#E1BEE7" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0 0 0 8">
+                                                            <StackPanel>
+                                                                <StackPanel Orientation="Horizontal" Margin="0 0 0 8">
+                                                                    <TextBlock Text="&#xE8B7;" FontFamily="Segoe MDL2 Assets" FontSize="14" Foreground="#7B1FA2" Margin="0 0 6 0"/>
+                                                                    <TextBlock Text="种子分析命中" FontWeight="SemiBold" FontSize="13" Foreground="#7B1FA2"/>
+                                                                </StackPanel>
+                                                                <ItemsControl ItemsSource="{Binding PoolActs}">
+                                                                    <ItemsControl.ItemTemplate>
+                                                                        <DataTemplate>
+                                                                            <Expander Header="{Binding Title}" Margin="0 0 0 8">
+                                                                                <ItemsControl ItemsSource="{Binding Events}" Margin="0 6 0 0">
+                                                                                    <ItemsControl.ItemTemplate>
+                                                                                        <DataTemplate>
+                                                                                            <Border Margin="0 2 0 2" Padding="8 4" CornerRadius="4" BorderThickness="1">
+                                                                                                <Border.Style>
+                                                                                                    <Style TargetType="Border">
+                                                                                                        <Setter Property="Background" Value="Transparent"/>
+                                                                                                        <Setter Property="BorderBrush" Value="Transparent"/>
+                                                                                                        <Style.Triggers>
+                                                                                                            <DataTrigger Binding="{Binding IsMatched}" Value="True">
+                                                                                                                <Setter Property="Background" Value="#FFF8E1"/>
+                                                                                                                <Setter Property="BorderBrush" Value="#FFCC80"/>
+                                                                                                            </DataTrigger>
+                                                                                                        </Style.Triggers>
+                                                                                                    </Style>
+                                                                                                </Border.Style>
+                                                                                                <TextBlock Text="{Binding Title}">
+                                                                                                    <TextBlock.Style>
+                                                                                                        <Style TargetType="TextBlock" BasedOn="{StaticResource PoolResultEventNameStyle}">
+                                                                                                            <Style.Triggers>
+                                                                                                                <DataTrigger Binding="{Binding IsMatched}" Value="True">
+                                                                                                                    <Setter Property="Foreground" Value="#C77800"/>
+                                                                                                                    <Setter Property="FontWeight" Value="SemiBold"/>
+                                                                                                                </DataTrigger>
+                                                                                                            </Style.Triggers>
+                                                                                                        </Style>
+                                                                                                    </TextBlock.Style>
+                                                                                                    <TextBlock.ToolTip>
+                                                                                                        <ToolTip Style="{StaticResource PoolResultTooltipStyle}"
+                                                                                                                 Visibility="{Binding HasTooltipContent, Converter={StaticResource BooleanVisibilityConverter}}">
+                                                                                                            <StackPanel MaxWidth="420">
+                                                                                                                <TextBlock Text="{Binding Description}"
+                                                                                                                           TextWrapping="Wrap"
+                                                                                                                           Foreground="#3E2B00"
+                                                                                                                           Visibility="{Binding HasDescription, Converter={StaticResource BooleanVisibilityConverter}}"/>
+                                                                                                                <Border Height="1"
+                                                                                                                        Margin="0 8 0 8"
+                                                                                                                        Background="#C8A24A"
+                                                                                                                        Visibility="{Binding HasDescriptionAndOptions, Converter={StaticResource BooleanVisibilityConverter}}"/>
+                                                                                                                <StackPanel Visibility="{Binding HasOptions, Converter={StaticResource BooleanVisibilityConverter}}">
+                                                                                                                    <TextBlock Text="可选项"
+                                                                                                                               FontWeight="SemiBold"
+                                                                                                                               Margin="0 0 0 6"
+                                                                                                                               Foreground="#6D4900"/>
+                                                                                                                    <ItemsControl ItemsSource="{Binding Options}">
+                                                                                                                        <ItemsControl.ItemTemplate>
+                                                                                                                            <DataTemplate>
+                                                                                                                                <Border Padding="0 0 0 8">
+                                                                                                                                    <StackPanel>
+                                                                                                                                        <TextBlock Text="{Binding Title}"
+                                                                                                                                                   FontWeight="SemiBold"
+                                                                                                                                                   Foreground="#3E2B00"
+                                                                                                                                                   TextWrapping="Wrap"/>
+                                                                                                                                        <TextBlock Text="{Binding Description}"
+                                                                                                                                                   Margin="0 2 0 0"
+                                                                                                                                                   TextWrapping="Wrap"
+                                                                                                                                                   Foreground="#3E2B00"
+                                                                                                                                                   Visibility="{Binding HasDescription, Converter={StaticResource BooleanVisibilityConverter}}"/>
+                                                                                                                                    </StackPanel>
+                                                                                                                                </Border>
+                                                                                                                            </DataTemplate>
+                                                                                                                        </ItemsControl.ItemTemplate>
+                                                                                                                    </ItemsControl>
+                                                                                                                </StackPanel>
+                                                                                                            </StackPanel>
+                                                                                                        </ToolTip>
+                                                                                                    </TextBlock.ToolTip>
+                                                                                                </TextBlock>
+                                                                                            </Border>
+                                                                                        </DataTemplate>
+                                                                                    </ItemsControl.ItemTemplate>
+                                                                                </ItemsControl>
+                                                                            </Expander>
+                                                                        </DataTemplate>
+                                                                    </ItemsControl.ItemTemplate>
+                                                                </ItemsControl>
+                                                                <Grid Margin="0 4 0 0">
+                                                                    <Grid.ColumnDefinitions>
+                                                                        <ColumnDefinition Width="*"/>
+                                                                        <ColumnDefinition Width="*"/>
+                                                                    </Grid.ColumnDefinitions>
+                                                                    <StackPanel Grid.Column="0" Margin="0 0 8 0">
+                                                                        <TextBlock Text="共享遗物池" FontSize="12" FontWeight="SemiBold" Foreground="#666" Margin="0 0 0 6"/>
+                                                                        <ItemsControl ItemsSource="{Binding SharedRelicPools}">
+                                                                            <ItemsControl.ItemTemplate>
+                                                                                <DataTemplate>
+                                                                                    <Expander Header="{Binding Title}" Margin="0 0 0 8">
+                                                                                        <ItemsControl ItemsSource="{Binding Relics}" Margin="0 6 0 0">
+                                                                                            <ItemsControl.ItemTemplate>
+                                                                                                <DataTemplate>
+                                                                                                    <Border Margin="0 2 0 2" Padding="8 4" CornerRadius="4" BorderThickness="1">
+                                                                                                        <Border.Style>
+                                                                                                            <Style TargetType="Border">
+                                                                                                                <Setter Property="Background" Value="Transparent"/>
+                                                                                                                <Setter Property="BorderBrush" Value="Transparent"/>
+                                                                                                                <Style.Triggers>
+                                                                                                                    <DataTrigger Binding="{Binding IsMatched}" Value="True">
+                                                                                                                        <Setter Property="Background" Value="#FFF8E1"/>
+                                                                                                                        <Setter Property="BorderBrush" Value="#FFCC80"/>
+                                                                                                                    </DataTrigger>
+                                                                                                                </Style.Triggers>
+                                                                                                            </Style>
+                                                                                                        </Border.Style>
+                                                                                                        <TextBlock Text="{Binding DisplayName}" FontSize="12" TextWrapping="Wrap">
+                                                                                                            <TextBlock.Style>
+                                                                                                                <Style TargetType="TextBlock">
+                                                                                                                    <Setter Property="Foreground" Value="#333"/>
+                                                                                                                    <Style.Triggers>
+                                                                                                                        <DataTrigger Binding="{Binding IsMatched}" Value="True">
+                                                                                                                            <Setter Property="Foreground" Value="#C77800"/>
+                                                                                                                            <Setter Property="FontWeight" Value="SemiBold"/>
+                                                                                                                        </DataTrigger>
+                                                                                                                    </Style.Triggers>
+                                                                                                                </Style>
+                                                                                                            </TextBlock.Style>
+                                                                                                        </TextBlock>
+                                                                                                    </Border>
+                                                                                                </DataTemplate>
+                                                                                            </ItemsControl.ItemTemplate>
+                                                                                        </ItemsControl>
+                                                                                    </Expander>
+                                                                                </DataTemplate>
+                                                                            </ItemsControl.ItemTemplate>
+                                                                        </ItemsControl>
+                                                                    </StackPanel>
+                                                                    <StackPanel Grid.Column="1" Margin="8 0 0 0">
+                                                                        <TextBlock Text="当前角色遗物池" FontSize="12" FontWeight="SemiBold" Foreground="#666" Margin="0 0 0 6"/>
+                                                                        <ItemsControl ItemsSource="{Binding PlayerRelicPools}">
+                                                                            <ItemsControl.ItemTemplate>
+                                                                                <DataTemplate>
+                                                                                    <Expander Header="{Binding Title}" Margin="0 0 0 8">
+                                                                                        <ItemsControl ItemsSource="{Binding Relics}" Margin="0 6 0 0">
+                                                                                            <ItemsControl.ItemTemplate>
+                                                                                                <DataTemplate>
+                                                                                                    <Border Margin="0 2 0 2" Padding="8 4" CornerRadius="4" BorderThickness="1">
+                                                                                                        <Border.Style>
+                                                                                                            <Style TargetType="Border">
+                                                                                                                <Setter Property="Background" Value="Transparent"/>
+                                                                                                                <Setter Property="BorderBrush" Value="Transparent"/>
+                                                                                                                <Style.Triggers>
+                                                                                                                    <DataTrigger Binding="{Binding IsMatched}" Value="True">
+                                                                                                                        <Setter Property="Background" Value="#FFF8E1"/>
+                                                                                                                        <Setter Property="BorderBrush" Value="#FFCC80"/>
+                                                                                                                    </DataTrigger>
+                                                                                                                </Style.Triggers>
+                                                                                                            </Style>
+                                                                                                        </Border.Style>
+                                                                                                        <TextBlock Text="{Binding DisplayName}" FontSize="12" TextWrapping="Wrap">
+                                                                                                            <TextBlock.Style>
+                                                                                                                <Style TargetType="TextBlock">
+                                                                                                                    <Setter Property="Foreground" Value="#333"/>
+                                                                                                                    <Style.Triggers>
+                                                                                                                        <DataTrigger Binding="{Binding IsMatched}" Value="True">
+                                                                                                                            <Setter Property="Foreground" Value="#C77800"/>
+                                                                                                                            <Setter Property="FontWeight" Value="SemiBold"/>
+                                                                                                                        </DataTrigger>
+                                                                                                                    </Style.Triggers>
+                                                                                                                </Style>
+                                                                                                            </TextBlock.Style>
+                                                                                                        </TextBlock>
+                                                                                                    </Border>
+                                                                                                </DataTemplate>
+                                                                                            </ItemsControl.ItemTemplate>
+                                                                                        </ItemsControl>
+                                                                                    </Expander>
+                                                                                </DataTemplate>
+                                                                            </ItemsControl.ItemTemplate>
+                                                                        </ItemsControl>
+                                                                    </StackPanel>
+                                                                </Grid>
+                                                            </StackPanel>
+                                                        </Border>
+
                                                         <Border Visibility="{Binding HasShopPreview, Converter={StaticResource BooleanVisibilityConverter}}"
                                                                 Background="#E8F5E9" BorderBrush="#C8E6C9" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0 8 0 0">
                                                             <StackPanel>

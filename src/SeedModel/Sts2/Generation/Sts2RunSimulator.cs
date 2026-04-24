@@ -23,9 +23,12 @@ internal sealed class Sts2RunSimulator
         return Simulate(rng, InferRunSeed(rng));
     }
 
-    public IReadOnlyList<ActAncientResult> Simulate(GameRng rng, uint runSeed)
+    public IReadOnlyList<ActAncientResult> Simulate(
+        GameRng rng,
+        uint runSeed,
+        bool includeDarvSharedAncient = true)
     {
-        return Analyze(rng, runSeed)
+        return Analyze(rng, runSeed, includeDarvSharedAncient)
             .Select(result => new ActAncientResult(result.ActIndex, result.ActNumber, result.AncientId))
             .ToList();
     }
@@ -35,7 +38,10 @@ internal sealed class Sts2RunSimulator
         return Analyze(rng, InferRunSeed(rng));
     }
 
-    public IReadOnlyList<ActPoolResult> Analyze(GameRng rng, uint runSeed)
+    public IReadOnlyList<ActPoolResult> Analyze(
+        GameRng rng,
+        uint runSeed,
+        bool includeDarvSharedAncient = true)
     {
         if (rng is null)
         {
@@ -43,7 +49,7 @@ internal sealed class Sts2RunSimulator
         }
 
         var acts = _world.ResolveActs(runSeed);
-        var sharedAssignments = AssignSharedAncients(rng, acts);
+        var sharedAssignments = AssignSharedAncients(rng, acts, includeDarvSharedAncient);
         var results = new List<ActPoolResult>(acts.Count);
 
         for (var i = 0; i < acts.Count; i++)
@@ -152,15 +158,22 @@ internal sealed class Sts2RunSimulator
         return rng.NextItem(available) ?? available[0];
     }
 
-    private Dictionary<int, List<string>> AssignSharedAncients(GameRng rng, IReadOnlyList<Sts2ActBlueprint> acts)
+    private Dictionary<int, List<string>> AssignSharedAncients(
+        GameRng rng,
+        IReadOnlyList<Sts2ActBlueprint> acts,
+        bool includeDarvSharedAncient)
     {
         var assignments = new Dictionary<int, List<string>>();
-        if (_world.SharedAncients.Count == 0)
+        var pool = includeDarvSharedAncient
+            ? _world.SharedAncients.ToList()
+            : _world.SharedAncients
+                .Where(id => !string.Equals(id, "DARV", StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+        if (pool.Count == 0)
         {
             return assignments;
         }
-
-        var pool = _world.SharedAncients.ToList();
         rng.Shuffle(pool);
 
         for (var i = 1; i < acts.Count; i++)
