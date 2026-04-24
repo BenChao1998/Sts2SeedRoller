@@ -20,44 +20,59 @@ internal sealed class Sts2RunSimulator
 
     public IReadOnlyList<ActAncientResult> Simulate(GameRng rng)
     {
+        return Analyze(rng)
+            .Select(result => new ActAncientResult(result.ActIndex, result.ActNumber, result.AncientId))
+            .ToList();
+    }
+
+    public IReadOnlyList<ActPoolResult> Analyze(GameRng rng)
+    {
         if (rng is null)
         {
             throw new ArgumentNullException(nameof(rng));
         }
 
         var sharedAssignments = AssignSharedAncients(rng);
-        var results = new List<ActAncientResult>(_world.Acts.Count);
+        var results = new List<ActPoolResult>(_world.Acts.Count);
 
         for (var i = 0; i < _world.Acts.Count; i++)
         {
             var act = _world.Acts[i];
             sharedAssignments.TryGetValue(i, out var shared);
             var sharedAncients = (IReadOnlyList<string>? )shared ?? Array.Empty<string>();
-            var chosenAncient = ConsumeAct(act, rng, sharedAncients);
-            results.Add(new ActAncientResult(act.Index, act.ActNumber, chosenAncient));
+            results.Add(ConsumeAct(act, rng, sharedAncients));
         }
 
         return results;
     }
 
-    private string ConsumeAct(Sts2ActBlueprint act, GameRng rng, IReadOnlyList<string> sharedAncients)
+    private ActPoolResult ConsumeAct(Sts2ActBlueprint act, GameRng rng, IReadOnlyList<string> sharedAncients)
     {
-        ShuffleEvents(act, rng);
-        GenerateNormalEncounters(act, rng);
-        GenerateEliteEncounters(act, rng);
+        var events = ShuffleEvents(act, rng);
+        var normalEncounters = GenerateNormalEncounters(act, rng);
+        var eliteEncounters = GenerateEliteEncounters(act, rng);
         SelectBoss(act, rng);
-        return SelectAncient(act, rng, sharedAncients);
+        var chosenAncient = SelectAncient(act, rng, sharedAncients);
+        return new ActPoolResult(
+            act.Index,
+            act.ActNumber,
+            act.Name,
+            events,
+            normalEncounters.Select(encounter => encounter.Id).ToList(),
+            eliteEncounters.Select(encounter => encounter.Id).ToList(),
+            chosenAncient);
     }
 
-    private void ShuffleEvents(Sts2ActBlueprint act, GameRng rng)
+    private IReadOnlyList<string> ShuffleEvents(Sts2ActBlueprint act, GameRng rng)
     {
         var events = new List<string>(act.Events.Count + _world.SharedEvents.Count);
         events.AddRange(act.Events);
         events.AddRange(_world.SharedEvents);
         rng.Shuffle(events);
+        return events;
     }
 
-    private static void GenerateNormalEncounters(Sts2ActBlueprint act, GameRng rng)
+    private static IReadOnlyList<EncounterMetadata> GenerateNormalEncounters(Sts2ActBlueprint act, GameRng rng)
     {
         var normalEncounters = new List<EncounterMetadata>(act.BaseRooms);
         var weakBag = BuildBag(act.WeakEncounters);
@@ -82,13 +97,15 @@ internal sealed class Sts2RunSimulator
 
             AddWithoutRepeatingTags(normalEncounters, regularBag, rng);
         }
+
+        return normalEncounters;
     }
 
-    private static void GenerateEliteEncounters(Sts2ActBlueprint act, GameRng rng)
+    private static IReadOnlyList<EncounterMetadata> GenerateEliteEncounters(Sts2ActBlueprint act, GameRng rng)
     {
         if (act.EliteEncounters.Count == 0)
         {
-            return;
+            return Array.Empty<EncounterMetadata>();
         }
 
         var eliteList = new List<EncounterMetadata>(EliteShelfSize);
@@ -102,6 +119,8 @@ internal sealed class Sts2RunSimulator
 
             AddWithoutRepeatingTags(eliteList, eliteBag, rng);
         }
+
+        return eliteList;
     }
 
     private static void SelectBoss(Sts2ActBlueprint act, GameRng rng)
@@ -202,4 +221,13 @@ internal sealed class Sts2RunSimulator
     }
 
     internal sealed record ActAncientResult(int ActIndex, int ActNumber, string AncientId);
+
+    internal sealed record ActPoolResult(
+        int ActIndex,
+        int ActNumber,
+        string ActName,
+        IReadOnlyList<string> Events,
+        IReadOnlyList<string> NormalEncounters,
+        IReadOnlyList<string> EliteEncounters,
+        string AncientId);
 }

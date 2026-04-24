@@ -1,6 +1,0 @@
-<Project>
-  <PropertyGroup>
-    <MSBuildEnableWorkloadResolver>false</MSBuildEnableWorkloadResolver>
-    <RestoreUseStaticGraphEvaluation>false</RestoreUseStaticGraphEvaluation>
-  </PropertyGroup>
-</Project>

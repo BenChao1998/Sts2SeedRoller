@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
 
 namespace SeedUi.Commands;
@@ -21,8 +22,18 @@ internal sealed class AsyncRelayCommand : ICommand
 
     public async void Execute(object? parameter)
     {
-        await _executeAsync().ConfigureAwait(false);
+        await _executeAsync();
     }
 
-    public void RaiseCanExecuteChanged() => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
+    public void RaiseCanExecuteChanged()
+    {
+        var dispatcher = Application.Current?.Dispatcher;
+        if (dispatcher == null || dispatcher.CheckAccess())
+        {
+            CanExecuteChanged?.Invoke(this, EventArgs.Empty);
+            return;
+        }
+
+        dispatcher.Invoke(() => CanExecuteChanged?.Invoke(this, EventArgs.Empty));
+    }
 }

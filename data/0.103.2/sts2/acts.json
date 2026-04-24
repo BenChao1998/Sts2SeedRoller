@@ -6,45 +6,40 @@
       ],
       "baseRooms": 15,
       "encounters": [
-        "BygoneEffigyElite",
-        "ByrdonisElite",
-        "CeremonialBeastBoss",
-        "CubexConstructNormal",
-        "FlyconidNormal",
-        "FogmogNormal",
-        "FuzzyWurmCrawlerWeak",
-        "InkletsNormal",
-        "MawlerNormal",
-        "NibbitsNormal",
-        "NibbitsWeak",
-        "OvergrowthCrawlers",
-        "PhrogParasiteElite",
-        "RubyRaidersNormal",
-        "ShrinkerBeetleWeak",
-        "SlimesNormal",
-        "SlimesWeak",
-        "SlitheringStranglerNormal",
-        "SnappingJaxfruitNormal",
-        "TheKinBoss",
-        "VantomBoss",
-        "VineShamblerNormal"
+        "CorpseSlugsNormal",
+        "CorpseSlugsWeak",
+        "CultistsNormal",
+        "LivingFogNormal",
+        "FossilStalkerNormal",
+        "GremlinMercNormal",
+        "HauntedShipNormal",
+        "LagavulinMatriarchBoss",
+        "SkulkingColonyElite",
+        "PhantasmalGardenersElite",
+        "PunchConstructNormal",
+        "SeapunkWeak",
+        "SewerClamNormal",
+        "SludgeSpinnerWeak",
+        "SoulFyshBoss",
+        "TerrorEelElite",
+        "ToadpolesNormal",
+        "ToadpolesWeak",
+        "TwoTailedRatsNormal",
+        "WaterfallGiantBoss"
       ],
       "events": [
-        "AromaOfChaos",
-        "ByrdonisNest",
-        "DenseVegetation",
-        "JungleMazeAdventure",
-        "LuminousChoir",
-        "MorphicGrove",
-        "SapphireSeed",
+        "AbyssalBaths",
+        "DrowningBeacon",
+        "EndlessConveyor",
+        "PunchOff",
+        "SpiralingWhirlpool",
         "SunkenStatue",
-        "TabletOfTruth",
-        "UnrestSite",
-        "Wellspring",
-        "WhisperingHollow",
-        "WoodCarvings"
+        "SunkenTreasury",
+        "DoorsOfLightAndDark",
+        "TrashHeap",
+        "WaterloggedScriptorium"
       ],
-      "name": "Overgrowth",
+      "name": "Underdocks",
       "number": 1,
       "weakRooms": 3
     },
@@ -75,6 +70,7 @@
         "TheInsatiableBoss",
         "TheObscuraNormal",
         "ThievingHopperWeak",
+        "TunnelerNormal",
         "TunnelerWeak"
       ],
       "events": [
@@ -154,21 +150,6 @@
         "Workers"
       ]
     },
-    "BygoneEffigyElite": {
-      "isWeak": false,
-      "roomType": "Elite",
-      "tags": []
-    },
-    "ByrdonisElite": {
-      "isWeak": false,
-      "roomType": "Elite",
-      "tags": []
-    },
-    "CeremonialBeastBoss": {
-      "isWeak": false,
-      "roomType": "Boss",
-      "tags": []
-    },
     "ChompersNormal": {
       "isWeak": false,
       "roomType": "Monster",
@@ -181,7 +162,21 @@
       "roomType": "Monster",
       "tags": []
     },
-    "CubexConstructNormal": {
+    "CorpseSlugsNormal": {
+      "isWeak": false,
+      "roomType": "Monster",
+      "tags": [
+        "Slugs"
+      ]
+    },
+    "CorpseSlugsWeak": {
+      "isWeak": true,
+      "roomType": "Monster",
+      "tags": [
+        "Slugs"
+      ]
+    },
+    "CultistsNormal": {
       "isWeak": false,
       "roomType": "Monster",
       "tags": []
@@ -225,15 +220,7 @@
       "roomType": "Monster",
       "tags": []
     },
-    "FlyconidNormal": {
-      "isWeak": false,
-      "roomType": "Monster",
-      "tags": [
-        "Mushroom",
-        "Slimes"
-      ]
-    },
-    "FogmogNormal": {
+    "FossilStalkerNormal": {
       "isWeak": false,
       "roomType": "Monster",
       "tags": []
@@ -243,14 +230,17 @@
       "roomType": "Monster",
       "tags": []
     },
-    "FuzzyWurmCrawlerWeak": {
-      "isWeak": true,
-      "roomType": "Monster",
-      "tags": [
-        "Crawler"
-      ]
-    },
     "GlobeHeadNormal": {
+      "isWeak": false,
+      "roomType": "Monster",
+      "tags": []
+    },
+    "GremlinMercNormal": {
+      "isWeak": false,
+      "roomType": "Monster",
+      "tags": []
+    },
+    "HauntedShipNormal": {
       "isWeak": false,
       "roomType": "Monster",
       "tags": []
@@ -263,11 +253,6 @@
     "InfestedPrismsElite": {
       "isWeak": false,
       "roomType": "Elite",
-      "tags": []
-    },
-    "InkletsNormal": {
-      "isWeak": false,
-      "roomType": "Monster",
       "tags": []
     },
     "KaiserCrabBoss": {
@@ -287,12 +272,17 @@
       "roomType": "Boss",
       "tags": []
     },
-    "LouseProgenitorNormal": {
+    "LagavulinMatriarchBoss": {
+      "isWeak": false,
+      "roomType": "Boss",
+      "tags": []
+    },
+    "LivingFogNormal": {
       "isWeak": false,
       "roomType": "Monster",
       "tags": []
     },
-    "MawlerNormal": {
+    "LouseProgenitorNormal": {
       "isWeak": false,
       "roomType": "Monster",
       "tags": []
@@ -307,26 +297,6 @@
       "roomType": "Monster",
       "tags": []
     },
-    "NibbitsNormal": {
-      "isWeak": false,
-      "roomType": "Monster",
-      "tags": []
-    },
-    "NibbitsWeak": {
-      "isWeak": true,
-      "roomType": "Monster",
-      "tags": [
-        "Nibbit"
-      ]
-    },
-    "OvergrowthCrawlers": {
-      "isWeak": false,
-      "roomType": "Monster",
-      "tags": [
-        "Crawler",
-        "Shrinker"
-      ]
-    },
     "OvicopterNormal": {
       "isWeak": false,
       "roomType": "Monster",
@@ -337,19 +307,19 @@
       "roomType": "Monster",
       "tags": []
     },
-    "PhrogParasiteElite": {
+    "PhantasmalGardenersElite": {
       "isWeak": false,
       "roomType": "Elite",
+      "tags": []
+    },
+    "PunchConstructNormal": {
+      "isWeak": false,
+      "roomType": "Monster",
       "tags": []
     },
     "QueenBoss": {
       "isWeak": false,
       "roomType": "Boss",
-      "tags": []
-    },
-    "RubyRaidersNormal": {
-      "isWeak": false,
-      "roomType": "Monster",
       "tags": []
     },
     "ScrollsOfBitingNormal": {
@@ -366,34 +336,30 @@
         "Scrolls"
       ]
     },
-    "ShrinkerBeetleWeak": {
+    "SeapunkWeak": {
       "isWeak": true,
       "roomType": "Monster",
       "tags": [
-        "Shrinker"
+        "Seapunk"
       ]
+    },
+    "SewerClamNormal": {
+      "isWeak": false,
+      "roomType": "Monster",
+      "tags": []
+    },
+    "SkulkingColonyElite": {
+      "isWeak": false,
+      "roomType": "Elite",
+      "tags": []
     },
     "SlimedBerserkerNormal": {
       "isWeak": false,
       "roomType": "Monster",
       "tags": []
     },
-    "SlimesNormal": {
-      "isWeak": false,
-      "roomType": "Monster",
-      "tags": [
-        "Slimes"
-      ]
-    },
-    "SlimesWeak": {
+    "SludgeSpinnerWeak": {
       "isWeak": true,
-      "roomType": "Monster",
-      "tags": [
-        "Slimes"
-      ]
-    },
-    "SlitheringStranglerNormal": {
-      "isWeak": false,
       "roomType": "Monster",
       "tags": []
     },
@@ -404,12 +370,10 @@
         "Workers"
       ]
     },
-    "SnappingJaxfruitNormal": {
+    "SoulFyshBoss": {
       "isWeak": false,
-      "roomType": "Monster",
-      "tags": [
-        "Mushroom"
-      ]
+      "roomType": "Boss",
+      "tags": []
     },
     "SoulNexusElite": {
       "isWeak": false,
@@ -421,17 +385,17 @@
       "roomType": "Monster",
       "tags": []
     },
+    "TerrorEelElite": {
+      "isWeak": false,
+      "roomType": "Elite",
+      "tags": []
+    },
     "TestSubjectBoss": {
       "isWeak": false,
       "roomType": "Boss",
       "tags": []
     },
     "TheInsatiableBoss": {
-      "isWeak": false,
-      "roomType": "Boss",
-      "tags": []
-    },
-    "TheKinBoss": {
       "isWeak": false,
       "roomType": "Boss",
       "tags": []
@@ -453,6 +417,24 @@
         "Thieves"
       ]
     },
+    "ToadpolesNormal": {
+      "isWeak": false,
+      "roomType": "Monster",
+      "tags": []
+    },
+    "ToadpolesWeak": {
+      "isWeak": true,
+      "roomType": "Monster",
+      "tags": []
+    },
+    "TunnelerNormal": {
+      "isWeak": false,
+      "roomType": "Monster",
+      "tags": [
+        "Burrower",
+        "Workers"
+      ]
+    },
     "TunnelerWeak": {
       "isWeak": true,
       "roomType": "Monster",
@@ -465,14 +447,14 @@
       "roomType": "Monster",
       "tags": []
     },
-    "VantomBoss": {
-      "isWeak": false,
-      "roomType": "Boss",
-      "tags": []
-    },
-    "VineShamblerNormal": {
+    "TwoTailedRatsNormal": {
       "isWeak": false,
       "roomType": "Monster",
+      "tags": []
+    },
+    "WaterfallGiantBoss": {
+      "isWeak": false,
+      "roomType": "Boss",
       "tags": []
     }
   },
@@ -538,11 +520,11 @@
       "ARCHAIC_TOOTH": "Ancient",
       "ART_OF_WAR": "Rare",
       "ASTROLABE": "Ancient",
-      "BAG_OF_MARBLES": "Common",
+      "BAG_OF_MARBLES": "Uncommon",
       "BAG_OF_PREPARATION": "Common",
       "BEATING_REMNANT": "Rare",
       "BEAUTIFUL_BRACELET": "Ancient",
-      "BELLOWS": "Rare",
+      "BELLOWS": "Uncommon",
       "BELT_BUCKLE": "Shop",
       "BIG_HAT": "Rare",
       "BIG_MUSHROOM": "Event",
@@ -640,7 +622,6 @@
       "GREMLIN_HORN": "Uncommon",
       "HAND_DRILL": "Event",
       "HAPPY_FLOWER": "Common",
-      "HEFTY_TABLET": "Ancient",
       "HELICAL_DART": "Rare",
       "HISTORY_COURSE": "Event",
       "HORN_CLEAT": "Uncommon",
@@ -658,7 +639,7 @@
       "KUSARIGAMA": "Uncommon",
       "LANTERN": "Common",
       "LARGE_CAPSULE": "Ancient",
-      "LASTING_CANDY": "Uncommon",
+      "LASTING_CANDY": "Rare",
       "LAVA_LAMP": "Shop",
       "LAVA_ROCK": "Ancient",
       "LEAD_PAPERWEIGHT": "Ancient",
@@ -689,8 +670,6 @@
       "MUMMIFIED_HAND": "Rare",
       "MUSIC_BOX": "Ancient",
       "MYSTIC_LIGHTER": "Shop",
-      "NEOWS_BONES": "Ancient",
-      "NEOWS_TALISMAN": "Ancient",
       "NEOWS_TORMENT": "Ancient",
       "NEW_LEAF": "Ancient",
       "NINJA_SCROLL": "Shop",
@@ -721,9 +700,8 @@
       "PEAR": "Uncommon",
       "PENDULUM": "Common",
       "PEN_NIB": "Uncommon",
-      "PERMAFROST": "Uncommon",
+      "PERMAFROST": "Common",
       "PETRIFIED_TOAD": "Uncommon",
-      "PHIAL_HOLSTER": "Ancient",
       "PHILOSOPHERS_STONE": "Ancient",
       "PHYLACTERY_UNBOUND": "Starter",
       "PLANISPHERE": "Uncommon",
@@ -742,7 +720,7 @@
       "RADIANT_PEARL": "Ancient",
       "RAINBOW_RING": "Rare",
       "RAZOR_TOOTH": "Rare",
-      "RED_MASK": "Common",
+      "RED_MASK": "Uncommon",
       "RED_SKULL": "Common",
       "REGALITE": "Uncommon",
       "REGAL_PILLOW": "Common",
@@ -792,7 +770,7 @@
       "THE_COURIER": "Rare",
       "THROWING_AXE": "Ancient",
       "TINGSHA": "Uncommon",
-      "TINY_MAILBOX": "Uncommon",
+      "TINY_MAILBOX": "Common",
       "TOASTY_MITTENS": "Ancient",
       "TOOLBOX": "Shop",
       "TOUCH_OF_OROBAS": "Ancient",
@@ -819,7 +797,6 @@
       "WHISPERING_EARRING": "Ancient",
       "WHITE_BEAST_STATUE": "Rare",
       "WHITE_STAR": "Rare",
-      "WINGED_BOOTS": "Ancient",
       "WING_CHARM": "Shop",
       "WONGOS_MYSTERY_TICKET": "Event",
       "WONGO_CUSTOMER_APPRECIATION_BADGE": "Event",

@@ -119,6 +119,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
     private IReadOnlyList<CatalogItem> _filteredShopCards = Array.Empty<CatalogItem>();
     private IReadOnlyList<CatalogItem> _filteredShopRelics = Array.Empty<CatalogItem>();
     private IReadOnlyList<CatalogItem> _filteredShopPotions = Array.Empty<CatalogItem>();
+    private IReadOnlyDictionary<string, string> _relicLocalizationTable = EmptyLocalizationTable;
 
     private RollResultViewModel? _selectedResult;
     private int _selectedTabIndex;
@@ -209,9 +210,12 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         ClearLogsCommand = new RelayCommand(ClearLogs);
 
         _ancientPreviewer = InitializeAncientPreviewer();
+        ReloadRelicLocalization();
+        ReloadSeedAnalysisLocalization();
         UpdateAct2RelicOptions();
         UpdateAct3RelicOptions();
         UpdateAncientFilterSummary();
+        InitializeSeedArchive();
     }
     public bool TryAutoLoadOnStartup => true;
 
@@ -886,6 +890,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         finally
         {
             _rollCommand.RaiseCanExecuteChanged();
+            RefreshArchiveCommandStates();
         }
     }
 
@@ -903,12 +908,39 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         return NeowOptionDataLoader.Load(embedded);
     }
 
+    private void ReloadRelicLocalization()
+    {
+        _relicLocalizationTable = LoadSts2LocalizationTable(SelectedGameVersion.Id, "relics.json", "遗物");
+        _staticRelicLocalizationTable = _relicLocalizationTable;
+    }
+
+    private IReadOnlyDictionary<string, string> LoadSts2LocalizationTable(string version, string fileName, string categoryName)
+    {
+        var path = Path.Combine(AppContext.BaseDirectory, "data", version, "sts2", "localization", "zhs", fileName);
+        if (!File.Exists(path))
+        {
+            return EmptyLocalizationTable;
+        }
+
+        try
+        {
+            using var stream = File.OpenRead(path);
+            return JsonSerializer.Deserialize<Dictionary<string, string>>(stream) ?? EmptyLocalizationTable;
+        }
+        catch (Exception ex)
+        {
+            LogWarn($"加载{categoryName}中文数据失败：{fileName} - {ex.Message}");
+            return EmptyLocalizationTable;
+        }
+    }
+
     private void BuildCatalogs(NeowOptionDataset dataset)
     {
         _relicCatalog = dataset.Options
             .Select(option =>
             {
-                var title = string.IsNullOrWhiteSpace(option.Title) ? option.RelicId : option.Title!;
+                var title = GetLocalizedRelicTitle(option.RelicId) ??
+                            (string.IsNullOrWhiteSpace(option.Title) ? option.RelicId : option.Title!);
                 var display = $"{title} ({option.RelicId})";
                 return new CatalogItem(option.RelicId, display, BuildSearchKey(display, option.RelicId, option.Description, option.Note));
             })
@@ -943,6 +975,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         _staticCardCatalog = _cardCatalog;
         _staticRelicCatalog = _relicCatalog;
         _staticPotionCatalog = _potionCatalog;
+        RefreshViewerFilterOptions();
 
         SelectedRelicCatalogItem = null;
         SelectedCardCatalogItem = null;
@@ -1250,9 +1283,13 @@ internal sealed partial class MainWindowViewModel : ObservableObject
 
             // Reload ancient previewer and catalog for new version
             _ancientPreviewer = InitializeAncientPreviewer();
+            ReloadRelicLocalization();
+            ReloadSeedAnalysisLocalization();
             UpdateAct2RelicOptions();
             UpdateAct3RelicOptions();
             UpdateAncientFilterSummary();
+            RefreshViewerFilterOptions();
+            RefreshArchiveCommandStates();
         }
     }
 
@@ -1278,6 +1315,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         _dataset = null;
         DatasetSummary = "尚未加载数据";
         _rollCommand?.RaiseCanExecuteChanged();
+        RefreshArchiveCommandStates();
         _relicCatalog = Array.Empty<CatalogItem>();
         _cardCatalog = Array.Empty<CatalogItem>();
         _potionCatalog = Array.Empty<CatalogItem>();
@@ -1299,6 +1337,8 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         ShopCardFilterChips.Clear();
         ShopRelicFilterChips.Clear();
         ShopPotionFilterChips.Clear();
+        ResetSeedAnalysis();
+        RefreshViewerFilterOptions();
         RaiseSelectedEventComputedProperties();
     }
 
@@ -2288,6 +2328,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         RelicFilterChips.Clear();
         CardFilterChips.Clear();
         PotionFilterChips.Clear();
+        ResetSeedAnalysis();
         IncludeAct2 = false;
         IncludeAct3 = false;
         IncludeShop = false;
@@ -2558,6 +2599,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
     private static IReadOnlyList<CatalogItem> _staticCardCatalog = Array.Empty<CatalogItem>();
     private static IReadOnlyList<CatalogItem> _staticRelicCatalog = Array.Empty<CatalogItem>();
     private static IReadOnlyList<CatalogItem> _staticPotionCatalog = Array.Empty<CatalogItem>();
+    private static IReadOnlyDictionary<string, string> _staticRelicLocalizationTable = EmptyLocalizationTable;
 
     internal static IReadOnlyList<CatalogItem> StaticCardCatalog => _staticCardCatalog;
     internal static IReadOnlyList<CatalogItem> StaticRelicCatalog => _staticRelicCatalog;
@@ -2576,6 +2618,11 @@ internal sealed partial class MainWindowViewModel : ObservableObject
 
     internal static string GetRelicDisplayName(string relicId)
     {
+        if (TryGetLocalizedTitle(_staticRelicLocalizationTable, relicId, out var localizedTitle))
+        {
+            return localizedTitle;
+        }
+
         var catalog = _staticRelicCatalog;
         for (int i = 0; i < catalog.Count; i++)
         {
@@ -2583,6 +2630,13 @@ internal sealed partial class MainWindowViewModel : ObservableObject
                 return catalog[i].Display;
         }
         return relicId;
+    }
+
+    private string? GetLocalizedRelicTitle(string relicId)
+    {
+        return TryGetLocalizedTitle(_relicLocalizationTable, relicId, out var localizedTitle)
+            ? localizedTitle
+            : null;
     }
 
     internal static string GetPotionDisplayName(string potionId)

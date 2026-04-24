@@ -1,0 +1,366 @@
+{
+  "generatedAt": "2026-04-11T08:14:24.074624+00:00",
+  "locale": "eng",
+  "options": [
+    {
+      "id": "ALCHEMICAL_COFFER",
+      "title": "Alchemical Coffer",
+      "description": "Gain [blue]{PotionSlots}[/blue] potion {PotionSlots:plural:slot|slots} filled with {PotionSlots:plural:a random potion|random potions}."
+    },
+    {
+      "id": "ARCHAIC_TOOTH",
+      "title": "Archaic Tooth",
+      "description": "[gold]Transform[/gold] {StarterCard.StringValue:cond:[gold]{StarterCard}[/gold] into [gold]{AncientCard}[/gold]|a starter card with an ancient version}."
+    },
+    {
+      "id": "ASTROLABE",
+      "title": "Astrolabe",
+      "description": "[gold]Transform[/gold] [blue]{Cards}[/blue] {Cards:plural:card|cards}, then [gold]Upgrade[/gold] them."
+    },
+    {
+      "id": "BEAUTIFUL_BRACELET",
+      "title": "Beautiful Bracelet",
+      "description": "Choose [blue]{Cards}[/blue] {Cards:plural:card|cards} in your [gold]Deck[/gold]. [gold]Enchant[/gold] them with [purple]Swift {Swift}[/purple]."
+    },
+    {
+      "id": "BIIIG_HUG",
+      "title": "Biiig Hug",
+      "description": "Remove [blue]{Cards}[/blue] cards from your [gold]Deck[/gold]. Whenever you shuffle your [gold]Draw Pile[/gold], add a [gold]Soot[/gold] into your [gold]Draw Pile[/gold]."
+    },
+    {
+      "id": "BLACK_STAR",
+      "title": "Black Star",
+      "description": "[gold]Elites[/gold] drop an additional Relic when defeated."
+    },
+    {
+      "id": "BLESSED_ANTLER",
+      "title": "Blessed Antler",
+      "description": "Gain {Energy:energyIcons()} at the start of each turn. At the start of each combat, shuffle [blue]{Cards}[/blue] [gold]Dazed[/gold] into your [gold]Draw Pile[/gold]."
+    },
+    {
+      "id": "BLOOD_SOAKED_ROSE",
+      "title": "Blood-Soaked Rose",
+      "description": "Add [blue]1[/blue] [red]Enthralled[/red] to your [gold]Deck[/gold]. Gain {Energy:energyIcons()} at the start of each turn."
+    },
+    {
+      "id": "BRILLIANT_SCARF",
+      "title": "Brilliant Scarf",
+      "description": "The [blue]5th[/blue] card you play each turn is free."
+    },
+    {
+      "id": "CALLING_BELL",
+      "title": "Calling Bell",
+      "description": "Obtain a unique [red]Curse[/red] and [blue]{Relics}[/blue] [gold]Relics[/gold]."
+    },
+    {
+      "id": "CHOICES_PARADOX",
+      "title": "Choices Paradox",
+      "description": "At the start of each combat, add [blue]1[/blue] of [blue]{Cards}[/blue] random cards into your [gold]Hand[/gold]. Add [gold]Retain[/gold] to the chosen card."
+    },
+    {
+      "id": "CLAWS",
+      "title": "Claws",
+      "description": "[gold]Transform[/gold] up to [blue]{Cards}[/blue] {Cards:plural:card|cards} into [gold]Maul[/gold]."
+    },
+    {
+      "id": "CROSSBOW",
+      "title": "Crossbow",
+      "description": "At the start of your turn, add a random [gold]Attack[/gold] into your [gold]Hand[/gold]. It costs [blue]0[/blue]{energyPrefix:energyIcons(1)} this turn."
+    },
+    {
+      "id": "DELICATE_FROND",
+      "title": "Delicate Frond",
+      "description": "At the start of each combat, fill all empty potion slots with random potions."
+    },
+    {
+      "id": "DIAMOND_DIADEM",
+      "title": "Diamond Diadem",
+      "description": "Whenever you play [blue]{CardThreshold}[/blue] or fewer cards in a turn, take half damage from enemies."
+    },
+    {
+      "id": "DISTINGUISHED_CAPE",
+      "title": "Distinguished Cape",
+      "description": "Lose [red]9[/red] Max HP. Add [blue]{Cards}[/blue] [gold]{Cards:plural:Apparition|Apparitions}[/gold] to your [gold]Deck[/gold]."
+    },
+    {
+      "id": "DRIFTWOOD",
+      "title": "Driftwood",
+      "description": "You may reroll each card reward once."
+    },
+    {
+      "id": "DUSTY_TOME",
+      "title": "Dusty Tome",
+      "description": "Obtain {AncientCard.StringValue:cond:[gold]{}+[/gold]|an [gold]Ancient Card[/gold]}."
+    },
+    {
+      "id": "ECTOPLASM",
+      "title": "Ectoplasm",
+      "description": "You can no longer gain [gold]Gold[/gold]. Gain {Energy:energyIcons()} at the start of each turn."
+    },
+    {
+      "id": "ELECTRIC_SHRYMP",
+      "title": "Electric Shrymp",
+      "description": "[gold]Enchant[/gold] a Skill with [purple]Imbued[/purple]."
+    },
+    {
+      "id": "EMPTY_CAGE",
+      "title": "Empty Cage",
+      "description": "Remove [blue]{Cards}[/blue] {Cards:plural:card|cards} from your [gold]Deck[/gold]."
+    },
+    {
+      "id": "FIDDLE",
+      "title": "Fiddle",
+      "description": "At the start of each turn, draw [blue]{Cards}[/blue] additional {Cards:plural:card|cards}. You may not draw cards during your turn."
+    },
+    {
+      "id": "FUR_COAT",
+      "title": "Fur Coat",
+      "description": "Mark [blue]{Combats}[/blue] random combats. Enemies in those rooms have [blue]1[/blue] HP."
+    },
+    {
+      "id": "GLASS_EYE",
+      "title": "Glass Eye",
+      "description": "Upon pickup, obtain [blue]2[/blue] [gold]Common[/gold] cards, [blue]2[/blue] [gold]Uncommon[/gold] cards, and [blue]1[/blue] [gold]Rare[/gold] card."
+    },
+    {
+      "id": "GLITTER",
+      "title": "Glitter",
+      "description": "[gold]Enchant[/gold] all card rewards with [purple]Glam[/purple]."
+    },
+    {
+      "id": "GOLDEN_COMPASS",
+      "title": "Golden Compass",
+      "description": "Replace the [gold]Act[/gold] [blue]2[/blue] Map with a single special path."
+    },
+    {
+      "id": "IRON_CLUB",
+      "title": "Iron Club",
+      "description": "Every [blue]{Cards}[/blue] {Cards:plural:card|cards} you play, draw [blue]1[/blue] card."
+    },
+    {
+      "id": "JEWELED_MASK",
+      "title": "Jeweled Mask",
+      "description": "At the start of combat put a random Power from your [gold]Draw Pile[/gold] into your [gold]Hand[/gold], it's free to play."
+    },
+    {
+      "id": "JEWELRY_BOX",
+      "title": "Jewelry Box",
+      "description": "Add [blue]1[/blue] [gold]Apotheosis[/gold] to your [gold]Deck[/gold]."
+    },
+    {
+      "id": "LOOMING_FRUIT",
+      "title": "Looming Fruit",
+      "description": "Raise your Max HP by [blue]{MaxHp}[/blue]."
+    },
+    {
+      "id": "LORDS_PARASOL",
+      "title": "Lord's Parasol",
+      "description": "When you encounter the [gold]Merchant[/gold], immediately obtain EVERYTHING he sells."
+    },
+    {
+      "id": "MEAT_CLEAVER",
+      "title": "Meat Cleaver",
+      "description": "You may [gold]Cook[/gold] at Rest Sites."
+    },
+    {
+      "id": "MUSIC_BOX",
+      "title": "Music Box",
+      "description": "Create an [gold]Ethereal[/gold] copy of the first Attack you play each turn."
+    },
+    {
+      "id": "NUTRITIOUS_SOUP",
+      "title": "Nutritious Soup",
+      "description": "[gold]Enchant[/gold] all [gold]Strikes[/gold] in your [gold]Deck[/gold] with [purple]Tezcatara's Ember[/purple]."
+    },
+    {
+      "id": "PAELS_BLOOD",
+      "title": "Pael's Blood",
+      "description": "At the start of your turn, draw [blue]{Cards}[/blue] additional {Cards:plural:card|cards}."
+    },
+    {
+      "id": "PAELS_CLAW",
+      "title": "Pael's Claw",
+      "description": "[gold]Enchant[/gold] all [gold]Defends[/gold] with [purple]{EnchantmentName}[/purple]."
+    },
+    {
+      "id": "PAELS_EYE",
+      "title": "Pael's Eye",
+      "description": "The first time each combat you end your turn without playing cards, [gold]Exhaust[/gold] your [gold]Hand[/gold], and take an extra turn."
+    },
+    {
+      "id": "PAELS_FLESH",
+      "title": "Pael's Flesh",
+      "description": "Gain an additional {Energy:energyIcons()} at the start of your [blue]3rd[/blue] turn, and every turn after that."
+    },
+    {
+      "id": "PAELS_GROWTH",
+      "title": "Pael's Growth",
+      "description": "[gold]Enchant[/gold] a card with [purple]{EnchantmentName}[/purple]."
+    },
+    {
+      "id": "PAELS_HORN",
+      "title": "Pael's Horn",
+      "description": "Add [blue]2[/blue] [gold]Relax[/gold] to your [gold]Deck[/gold]."
+    },
+    {
+      "id": "PAELS_LEGION",
+      "title": "Pael's Legion",
+      "description": "Doubles [gold]Block[/gold] gained from a card, then goes to sleep for [blue]{Turns}[/blue] {Turns:plural:turn|turns}."
+    },
+    {
+      "id": "PAELS_TEARS",
+      "title": "Pael's Tears",
+      "description": "If you end your turn with unspent {energyPrefix:energyIcons(1)}, gain an additional {Energy:energyIcons()} next turn."
+    },
+    {
+      "id": "PAELS_TOOTH",
+      "title": "Pael's Tooth",
+      "description": "Remove [blue]{Cards}[/blue] {Cards:plural:card|cards} from your [gold]Deck[/gold]. After each combat, randomly add [blue]1[/blue] back [gold]Upgraded[/gold].{CardTitles.StringValue:cond:\n\nCards in the Pot:\n{}|}"
+    },
+    {
+      "id": "PAELS_WING",
+      "title": "Pael's Wing",
+      "description": "You may sacrifice card rewards to Pael. Every {Sacrifices:plural:sacrifice|[blue]{}[/blue] sacrifices}, obtain a [gold]Relic[/gold]."
+    },
+    {
+      "id": "PANDORAS_BOX",
+      "title": "Pandora's Box",
+      "description": "[gold]Transform[/gold] ALL [gold]Strikes[/gold] and [gold]Defends[/gold]."
+    },
+    {
+      "id": "PHILOSOPHERS_STONE",
+      "title": "Philosopher's Stone",
+      "description": "Gain {Energy:energyIcons()} at the start of each turn. ALL enemies start combat with [blue]{StrengthPower}[/blue] [gold]Strength[/gold]."
+    },
+    {
+      "id": "PRESERVED_FOG",
+      "title": "Preserved Fog",
+      "description": "Remove [blue]{Cards}[/blue] {Cards:plural:card|cards} from your [gold]Deck[/gold]. Add [red]Folly[/red] to your Deck."
+    },
+    {
+      "id": "PRISMATIC_GEM",
+      "title": "Prismatic Gem",
+      "description": "Gain {Energy:energyIcons()} at the start of each turn. Card rewards now contain cards from other colors."
+    },
+    {
+      "id": "PUMPKIN_CANDLE",
+      "title": "Pumpkin Candle",
+      "description": "Gain {Energy:energyIcons()} at the start of each turn. Extinguishes at the start of [gold]Act[/gold] [blue]3[/blue]."
+    },
+    {
+      "id": "RADIANT_PEARL",
+      "title": "Radiant Pearl",
+      "description": "At the start of each combat, add [blue]{Cards}[/blue] [gold]{Cards:plural:Luminesce|Luminesces}[/gold] into your [gold]Hand[/gold]."
+    },
+    {
+      "id": "RUNIC_PYRAMID",
+      "title": "Runic Pyramid",
+      "description": "At the end of your turn, you no longer discard your [gold]Hand[/gold]."
+    },
+    {
+      "id": "SAI",
+      "title": "Sai",
+      "description": "At the start of your turn, gain [blue]{Block}[/blue] [gold]Block[/gold]."
+    },
+    {
+      "id": "SAND_CASTLE",
+      "title": "Sand Castle",
+      "description": "Upon pickup, [gold]Upgrade[/gold] [blue]{Cards}[/blue] random {Cards:plural:card|cards}."
+    },
+    {
+      "id": "SEAL_OF_GOLD",
+      "title": "Seal of Gold",
+      "description": "At the start of your turn, spend [blue]{Gold}[/blue] [gold]Gold[/gold] to gain {Energy:energyIcons()}."
+    },
+    {
+      "id": "SEA_GLASS",
+      "title": "Sea Glass",
+      "description": "See [blue]{Cards}[/blue] cards from {Character.StringValue:cond:[gold]{}[/gold]|another character}. Choose any number of them to add to your [gold]Deck[/gold]."
+    },
+    {
+      "id": "SERE_TALON",
+      "title": "Sere Talon",
+      "description": "Add [blue]{Curses}[/blue] random [red]Curses[/red] and [blue]{Wishes}[/blue] [purple]Wishes[/purple] to your [gold]Deck[/gold]."
+    },
+    {
+      "id": "SIGNET_RING",
+      "title": "Signet Ring",
+      "description": "Upon pickup, gain [blue]{Gold}[/blue] [gold]Gold[/gold]."
+    },
+    {
+      "id": "SNECKO_EYE",
+      "title": "Snecko Eye",
+      "description": "At the start of your turn, draw [blue]{Cards}[/blue] additional {Cards:plural:card|cards}. Start each combat [red]Confused[/red]."
+    },
+    {
+      "id": "SOZU",
+      "title": "Sozu",
+      "description": "Gain {Energy:energyIcons()} at the start of each turn. You can no longer obtain potions."
+    },
+    {
+      "id": "SPIKED_GAUNTLETS",
+      "title": "Spiked Gauntlets",
+      "description": "Gain {Energy:energyIcons()} at the start of each turn. Powers cost [blue]1[/blue] more {energyPrefix:energyIcons(1)}."
+    },
+    {
+      "id": "STORYBOOK",
+      "title": "Storybook",
+      "description": "Add [blue]1[/blue] [gold]Brightest Flame[/gold] to your [gold]Deck[/gold]."
+    },
+    {
+      "id": "TANXS_WHISTLE",
+      "title": "Tanx's Whistle",
+      "description": "Add [blue]1[/blue] [gold]Whistle[/gold] to your [gold]Deck[/gold]."
+    },
+    {
+      "id": "THROWING_AXE",
+      "title": "Throwing Axe",
+      "description": "The first card you play each combat is played an extra time."
+    },
+    {
+      "id": "TOASTY_MITTENS",
+      "title": "Toasty Mittens",
+      "description": "At the start of your turn, [gold]Exhaust[/gold] the top card of your [gold]Draw Pile[/gold] and gain [blue]{StrengthPower}[/blue] [gold]Strength[/gold]."
+    },
+    {
+      "id": "TOUCH_OF_OROBAS",
+      "title": "Touch of Orobas",
+      "description": "Replace {StarterRelic.StringValue:cond:[gold]{StarterRelic}[/gold] with [gold]{UpgradedRelic}[/gold]|your starter [gold]Relic[/gold] with an [gold]Ancient[/gold] version}."
+    },
+    {
+      "id": "TOY_BOX",
+      "title": "Toy Box",
+      "description": "Obtain [blue]{Relics}[/blue] [gold]Wax {Relics:plural:Relic|Relics}[/gold]. Every [blue]{Combats}[/blue] {Combats:plural:combat|combats}, your left-most [gold]Wax Relic[/gold] will melt away."
+    },
+    {
+      "id": "TRI_BOOMERANG",
+      "title": "Tri-Boomerang",
+      "description": "Choose [blue]{Cards}[/blue] {Cards:plural:Attack|Attacks} in your [gold]Deck[/gold]. [gold]Enchant[/gold] them with [purple]Instinct[/purple]."
+    },
+    {
+      "id": "VELVET_CHOKER",
+      "title": "Velvet Choker",
+      "description": "Gain {Energy:energyIcons()} at the start of each turn. You cannot play more than [blue]{Cards}[/blue] {Cards:plural:card|cards} per turn."
+    },
+    {
+      "id": "VERY_HOT_COCOA",
+      "title": "Very Hot Cocoa",
+      "description": "Start each combat with an additional [blue]{Energy:energyIcons()}[/blue]."
+    },
+    {
+      "id": "WAR_HAMMER",
+      "title": "War Hammer",
+      "description": "Whenever you kill an [gold]Elite[/gold], [gold]Upgrade[/gold] [blue]{Cards}[/blue] random {Cards:plural:card|cards}."
+    },
+    {
+      "id": "WHISPERING_EARRING",
+      "title": "Whispering Earring",
+      "description": "Gain {Energy:energyIcons()} at the start of each turn. [red]Vakuu plays your first turn for you.[/red]"
+    },
+    {
+      "id": "YUMMY_COOKIE",
+      "title": "Yummy Cookie",
+      "description": "[gold]Upgrade[/gold] [blue]{Cards}[/blue] {Cards:plural:card|cards}."
+    }
+  ]
+}

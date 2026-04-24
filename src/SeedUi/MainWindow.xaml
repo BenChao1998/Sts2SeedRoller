@@ -4,6 +4,7 @@
            xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
            xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
            xmlns:vm="clr-namespace:SeedUi.ViewModels"
+           xmlns:views="clr-namespace:SeedUi.Views"
            xmlns:hc="https://handyorg.github.io/handycontrol"
            mc:Ignorable="d"
            Title="开局种子筛选器"
@@ -126,12 +127,21 @@
                     <RadioButton x:Name="NavConfig" Style="{StaticResource NavButtonStyle}"
                                  Content="配置" Tag="&#xE713;" IsChecked="True"
                                  Checked="NavConfig_Checked"/>
+                    <RadioButton x:Name="NavSeedAnalysis" Style="{StaticResource NavButtonStyle}"
+                                 Content="种子分析" Tag="&#xE8B7;"
+                                 Checked="NavSeedAnalysis_Checked"/>
                     <RadioButton x:Name="NavResult" Style="{StaticResource NavButtonStyle}"
                                  Content="运行结果" Tag="&#xE9D2;"
                                  Checked="NavResult_Checked"/>
                     <RadioButton x:Name="NavLogs" Style="{StaticResource NavButtonStyle}"
                                  Content="运行日志" Tag="&#xE7BA;"
                                  Checked="NavLogs_Checked"/>
+                    <RadioButton x:Name="NavArchive" Style="{StaticResource NavButtonStyle}"
+                                 Content="铺种" Tag="&#xE7C3;"
+                                 Checked="NavArchive_Checked"/>
+                    <RadioButton x:Name="NavViewer" Style="{StaticResource NavButtonStyle}"
+                                 Content="查看器" Tag="&#xE8A5;"
+                                 Checked="NavViewer_Checked"/>
                 </StackPanel>
 
                 <!-- 底部数据状态 -->
@@ -746,6 +756,10 @@
                 </ScrollViewer>
 
                 <!-- ========== 运行结果页面 ========== -->
+                <ScrollViewer x:Name="PageSeedAnalysisScroll" Grid.Row="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="24" Visibility="Collapsed">
+                    <views:SeedAnalysisPage x:Name="PageSeedAnalysis"/>
+                </ScrollViewer>
+
                 <ScrollViewer x:Name="PageResultScroll" Grid.Row="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="24">
                     <Grid x:Name="PageResult" Visibility="Collapsed">
                         <Grid.RowDefinitions>
@@ -1007,6 +1021,12 @@
                             </Grid>
                         </Border>
                     </Grid>
+                </ScrollViewer>
+                <ScrollViewer x:Name="PageArchiveScroll" Grid.Row="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="24" Visibility="Collapsed">
+                    <views:SeedArchivePage x:Name="PageArchive"/>
+                </ScrollViewer>
+                <ScrollViewer x:Name="PageViewerScroll" Grid.Row="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="24" Visibility="Collapsed">
+                    <views:SeedViewerPage x:Name="PageViewer"/>
                 </ScrollViewer>
             </Grid>
         </Grid>

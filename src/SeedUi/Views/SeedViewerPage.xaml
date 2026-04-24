@@ -1,0 +1,371 @@
+<UserControl x:Class="SeedUi.Views.SeedViewerPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d">
+    <UserControl.Resources>
+        <Style x:Key="CardStyle" TargetType="Border">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#E8E8E8"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="20"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect ShadowDepth="1" BlurRadius="4" Opacity="0.1" Color="#000"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="LocalFilterTagStyle" TargetType="Border">
+            <Setter Property="Background" Value="#E3F2FD"/>
+            <Setter Property="BorderBrush" Value="#BBDEFB"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Padding" Value="8 4"/>
+            <Setter Property="Margin" Value="0 4 8 4"/>
+        </Style>
+    </UserControl.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0" Style="{StaticResource CardStyle}" Margin="0 0 0 16">
+            <StackPanel>
+                <TextBlock Text="查看器筛选" FontSize="16" FontWeight="SemiBold" Foreground="#333" Margin="0 0 0 16"/>
+
+                <Grid Margin="0 0 0 12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" Margin="0 0 8 0">
+                        <TextBlock Text="角色" FontSize="12" Foreground="#666" Margin="0 0 0 6"/>
+                        <ComboBox ItemsSource="{Binding CharacterOptions}" DisplayMemberPath="DisplayName"
+                                  SelectedItem="{Binding SelectedViewerCharacter}" MinHeight="25"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Margin="8 0">
+                        <TextBlock Text="进阶" FontSize="12" Foreground="#666" Margin="0 0 0 6"/>
+                        <ComboBox ItemsSource="{Binding AscensionOptions}" SelectedItem="{Binding ViewerAscension}" MinHeight="25"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="2" Margin="8 0">
+                        <TextBlock Text="种子起点" FontSize="12" Foreground="#666" Margin="0 0 0 6"/>
+                        <TextBox Text="{Binding ViewerSeedFrom}" Height="30"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="3" Margin="8 0 0 0">
+                        <TextBlock Text="种子终点" FontSize="12" Foreground="#666" Margin="0 0 0 6"/>
+                        <TextBox Text="{Binding ViewerSeedTo}" Height="30"/>
+                    </StackPanel>
+                </Grid>
+
+                <Grid Margin="0 0 0 12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" Margin="0 0 8 0">
+                        <TextBlock Text="第一幕遗物" FontSize="12" Foreground="#666" Margin="0 0 0 6"/>
+                        <TextBox Text="{Binding ViewerAct1RelicCatalogFilter, UpdateSourceTrigger=PropertyChanged}" Height="30" Margin="0 0 0 6"/>
+                        <Grid Margin="0 0 0 6">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <ComboBox Grid.Column="0" ItemsSource="{Binding ViewerAct1RelicOptions}" DisplayMemberPath="Display"
+                                      SelectedValuePath="Value" SelectedValue="{Binding ViewerAct1RelicId}" Margin="0 0 8 0" MinHeight="25"/>
+                            <Button Grid.Column="1" Content="添加" Command="{Binding AddViewerAct1RelicFilterCommand}" Style="{StaticResource ButtonDefault}"/>
+                        </Grid>
+                        <ItemsControl ItemsSource="{Binding ViewerAct1RelicFilterChips}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Style="{StaticResource LocalFilterTagStyle}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{Binding Label}" Foreground="#1976D2" FontSize="12"/>
+                                            <Button Content="&#xE711;" FontFamily="Segoe MDL2 Assets" FontSize="10"
+                                                    Command="{Binding DataContext.RemoveViewerAct1RelicFilterCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                    CommandParameter="{Binding Id}" Margin="6 0 0 0" Padding="2"
+                                                    Style="{StaticResource GhostButtonStyle}"/>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1" Margin="8 0">
+                        <TextBlock Text="第一幕卡牌" FontSize="12" Foreground="#666" Margin="0 0 0 6"/>
+                        <TextBox Text="{Binding ViewerAct1CardCatalogFilter, UpdateSourceTrigger=PropertyChanged}" Height="30" Margin="0 0 0 6"/>
+                        <Grid Margin="0 0 0 6">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <ComboBox Grid.Column="0" ItemsSource="{Binding ViewerAct1CardOptions}" DisplayMemberPath="Display"
+                                      SelectedValuePath="Value" SelectedValue="{Binding ViewerAct1CardId}" Margin="0 0 8 0" MinHeight="25"/>
+                            <Button Grid.Column="1" Content="添加" Command="{Binding AddViewerAct1CardFilterCommand}" Style="{StaticResource ButtonDefault}"/>
+                        </Grid>
+                        <ItemsControl ItemsSource="{Binding ViewerAct1CardFilterChips}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Style="{StaticResource LocalFilterTagStyle}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{Binding Label}" Foreground="#1976D2" FontSize="12"/>
+                                            <Button Content="&#xE711;" FontFamily="Segoe MDL2 Assets" FontSize="10"
+                                                    Command="{Binding DataContext.RemoveViewerAct1CardFilterCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                    CommandParameter="{Binding Id}" Margin="6 0 0 0" Padding="2"
+                                                    Style="{StaticResource GhostButtonStyle}"/>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="2" Margin="8 0">
+                        <TextBlock Text="第一幕药水" FontSize="12" Foreground="#666" Margin="0 0 0 6"/>
+                        <TextBox Text="{Binding ViewerAct1PotionCatalogFilter, UpdateSourceTrigger=PropertyChanged}" Height="30" Margin="0 0 0 6"/>
+                        <Grid Margin="0 0 0 6">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <ComboBox Grid.Column="0" ItemsSource="{Binding ViewerAct1PotionOptions}" DisplayMemberPath="Display"
+                                      SelectedValuePath="Value" SelectedValue="{Binding ViewerAct1PotionId}" Margin="0 0 8 0" MinHeight="25"/>
+                            <Button Grid.Column="1" Content="添加" Command="{Binding AddViewerAct1PotionFilterCommand}" Style="{StaticResource ButtonDefault}"/>
+                        </Grid>
+                        <ItemsControl ItemsSource="{Binding ViewerAct1PotionFilterChips}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Style="{StaticResource LocalFilterTagStyle}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{Binding Label}" Foreground="#1976D2" FontSize="12"/>
+                                            <Button Content="&#xE711;" FontFamily="Segoe MDL2 Assets" FontSize="10"
+                                                    Command="{Binding DataContext.RemoveViewerAct1PotionFilterCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                    CommandParameter="{Binding Id}" Margin="6 0 0 0" Padding="2"
+                                                    Style="{StaticResource GhostButtonStyle}"/>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="3" Margin="8 0 0 0">
+                        <TextBlock Text="第二幕 Ancient" FontSize="12" Foreground="#666" Margin="0 0 0 6"/>
+                        <TextBox Text="{Binding ViewerAct2AncientCatalogFilter, UpdateSourceTrigger=PropertyChanged}" Height="30" Margin="0 0 0 6"/>
+                        <ComboBox ItemsSource="{Binding ViewerAct2AncientOptions}" DisplayMemberPath="Display"
+                                  SelectedValuePath="Value" SelectedValue="{Binding ViewerAct2AncientId}" MinHeight="25"/>
+                    </StackPanel>
+                </Grid>
+
+                <Grid Margin="0 0 0 12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" Margin="0 0 8 0">
+                        <TextBlock Text="第二幕选项" FontSize="12" Foreground="#666" Margin="0 0 0 6"/>
+                        <TextBox Text="{Binding ViewerAct2OptionCatalogFilter, UpdateSourceTrigger=PropertyChanged}" Height="30" Margin="0 0 0 6"/>
+                        <Grid Margin="0 0 0 6">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <ComboBox Grid.Column="0" ItemsSource="{Binding ViewerAct2OptionOptions}" DisplayMemberPath="Display"
+                                      SelectedValuePath="Value" SelectedValue="{Binding ViewerAct2OptionId}" Margin="0 0 8 0" MinHeight="25"/>
+                            <Button Grid.Column="1" Content="添加" Command="{Binding AddViewerAct2OptionFilterCommand}" Style="{StaticResource ButtonDefault}"/>
+                        </Grid>
+                        <ItemsControl ItemsSource="{Binding ViewerAct2OptionFilterChips}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Style="{StaticResource LocalFilterTagStyle}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{Binding Label}" Foreground="#1976D2" FontSize="12"/>
+                                            <Button Content="&#xE711;" FontFamily="Segoe MDL2 Assets" FontSize="10"
+                                                    Command="{Binding DataContext.RemoveViewerAct2OptionFilterCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                    CommandParameter="{Binding Id}" Margin="6 0 0 0" Padding="2"
+                                                    Style="{StaticResource GhostButtonStyle}"/>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1" Margin="8 0">
+                        <TextBlock Text="第三幕 Ancient" FontSize="12" Foreground="#666" Margin="0 0 0 6"/>
+                        <TextBox Text="{Binding ViewerAct3AncientCatalogFilter, UpdateSourceTrigger=PropertyChanged}" Height="30" Margin="0 0 0 6"/>
+                        <ComboBox ItemsSource="{Binding ViewerAct3AncientOptions}" DisplayMemberPath="Display"
+                                  SelectedValuePath="Value" SelectedValue="{Binding ViewerAct3AncientId}" MinHeight="25"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="2" Margin="8 0 0 0">
+                        <TextBlock Text="第三幕选项" FontSize="12" Foreground="#666" Margin="0 0 0 6"/>
+                        <TextBox Text="{Binding ViewerAct3OptionCatalogFilter, UpdateSourceTrigger=PropertyChanged}" Height="30" Margin="0 0 0 6"/>
+                        <Grid Margin="0 0 0 6">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <ComboBox Grid.Column="0" ItemsSource="{Binding ViewerAct3OptionOptions}" DisplayMemberPath="Display"
+                                      SelectedValuePath="Value" SelectedValue="{Binding ViewerAct3OptionId}" Margin="0 0 8 0" MinHeight="25"/>
+                            <Button Grid.Column="1" Content="添加" Command="{Binding AddViewerAct3OptionFilterCommand}" Style="{StaticResource ButtonDefault}"/>
+                        </Grid>
+                        <ItemsControl ItemsSource="{Binding ViewerAct3OptionFilterChips}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Style="{StaticResource LocalFilterTagStyle}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{Binding Label}" Foreground="#1976D2" FontSize="12"/>
+                                            <Button Content="&#xE711;" FontFamily="Segoe MDL2 Assets" FontSize="10"
+                                                    Command="{Binding DataContext.RemoveViewerAct3OptionFilterCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                    CommandParameter="{Binding Id}" Margin="6 0 0 0" Padding="2"
+                                                    Style="{StaticResource GhostButtonStyle}"/>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Grid>
+
+                <WrapPanel>
+                    <Button Content="查询" Command="{Binding RunViewerSearchCommand}" Style="{StaticResource ButtonPrimary}" Margin="0 0 12 0"/>
+                    <Button Content="打开所选结果" Command="{Binding OpenViewerSelectedRunCommand}" Style="{StaticResource ButtonDefault}"/>
+                    <TextBlock Text="{Binding ViewerSummaryText}" Foreground="#666" VerticalAlignment="Center" Margin="16 0 0 0"/>
+                </WrapPanel>
+            </StackPanel>
+        </Border>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="0.9*"/>
+                <ColumnDefinition Width="1.1*"/>
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0" Style="{StaticResource CardStyle}" Margin="0 0 12 0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Text="结果列表" FontSize="16" FontWeight="SemiBold" Foreground="#333" Margin="0 0 0 12"/>
+                    <Border Grid.Row="1" Background="#FAFAFA" CornerRadius="4" Padding="12">
+                        <ListBox ItemsSource="{Binding ViewerRuns}" SelectedItem="{Binding SelectedViewerRunSummary}" BorderThickness="0" Background="Transparent">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="White" BorderBrush="#E8E8E8" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0 0 0 8">
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding SeedText}" FontWeight="Bold" Foreground="#1976D2"/>
+                                            <TextBlock Text="{Binding Character}" Foreground="#333" Margin="0 4 0 0"/>
+                                            <TextBlock Text="{Binding Act2Ancient}" Foreground="#666" FontSize="12" Margin="0 2 0 0"/>
+                                            <TextBlock Text="{Binding Act3Ancient}" Foreground="#666" FontSize="12" Margin="0 2 0 0"/>
+                                            <TextBlock Text="{Binding CreatedAt}" Foreground="#999" FontSize="11" Margin="0 2 0 0"/>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <Border Grid.Column="1" Style="{StaticResource CardStyle}" Margin="12 0 0 0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Text="结果详情" FontSize="16" FontWeight="SemiBold" Foreground="#333" Margin="0 0 0 12"/>
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                        <StackPanel>
+                            <Border Background="#F5F5F5" CornerRadius="6" Padding="12" Margin="0 0 0 12">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding SelectedViewerRun.SeedText}" FontSize="18" FontWeight="Bold" Foreground="#1976D2"/>
+                                    <TextBlock Text="{Binding SelectedViewerRun.CharacterName}" Foreground="#333" Margin="0 4 0 0"/>
+                                </StackPanel>
+                            </Border>
+
+                            <ItemsControl ItemsSource="{Binding SelectedViewerRun.Options}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Background="#E3F2FD" BorderBrush="#BBDEFB" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0 0 0 8">
+                                            <StackPanel>
+                                                <TextBlock Text="{Binding Title}" FontWeight="SemiBold" Foreground="#1976D2"/>
+                                                <TextBlock Text="{Binding Description}" Foreground="#666" FontSize="12" TextWrapping="Wrap" Margin="0 4 0 0"/>
+                                                <ItemsControl ItemsSource="{Binding Details}" Margin="0 6 0 0">
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <TextBlock Text="{Binding}" FontSize="12" Foreground="#333" Margin="0 2 0 0"/>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <ItemsControl ItemsSource="{Binding SelectedViewerRun.AncientActs}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Background="#FFF3E0" BorderBrush="#FFE0B2" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0 0 0 8">
+                                            <StackPanel>
+                                                <TextBlock Text="{Binding ActTitle}" FontWeight="SemiBold" Foreground="#F57C00"/>
+                                                <TextBlock Text="{Binding AncientDisplay}" Foreground="#333" Margin="0 4 0 0"/>
+                                                <ItemsControl ItemsSource="{Binding Options}" Margin="0 6 0 0">
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <StackPanel Margin="0 0 0 6">
+                                                                <TextBlock Text="{Binding Title}" FontWeight="SemiBold" Foreground="#333"/>
+                                                                <TextBlock Text="{Binding Description}" Foreground="#666" FontSize="12" TextWrapping="Wrap"/>
+                                                            </StackPanel>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

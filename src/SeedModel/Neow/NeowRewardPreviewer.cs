@@ -126,29 +126,6 @@ internal sealed class NeowRewardPreviewer
             .ToDictionary(group => group.Key, group => group.First().Title!, StringComparer.OrdinalIgnoreCase);
     }
 
-    public static NeowDetailHint GetDetailHint(string relicId)
-    {
-        return relicId.ToUpperInvariant() switch
-        {
-            NeowOptionIds.NeowsTorment => NeowDetailHint.Card,
-            NeowOptionIds.CursedPearl => NeowDetailHint.Card,
-            NeowOptionIds.HeftyTablet => NeowDetailHint.Card,
-            NeowOptionIds.LargeCapsule => NeowDetailHint.Card | NeowDetailHint.Relic,
-            NeowOptionIds.ArcaneScroll => NeowDetailHint.Card,
-            NeowOptionIds.LeadPaperweight => NeowDetailHint.Card,
-            NeowOptionIds.MassiveScroll => NeowDetailHint.Card,
-            NeowOptionIds.LostCoffer => NeowDetailHint.Card | NeowDetailHint.Potion,
-            NeowOptionIds.ScrollBoxes => NeowDetailHint.Card,
-            NeowOptionIds.PhialHolster => NeowDetailHint.Potion | NeowDetailHint.Text,
-            NeowOptionIds.NeowsTalisman => NeowDetailHint.Card,
-            NeowOptionIds.Pomander => NeowDetailHint.Text,
-            NeowOptionIds.SmallCapsule => NeowDetailHint.Relic,
-            NeowOptionIds.NeowsBones => NeowDetailHint.Card | NeowDetailHint.Potion | NeowDetailHint.Relic | NeowDetailHint.Text,
-            NeowOptionIds.LeafyPoultice => NeowDetailHint.Card,
-            _ => NeowDetailHint.None
-        };
-    }
-
     public IReadOnlyList<RewardDetail> Build(string relicId, NeowGenerationContext context)
     {
         if (string.IsNullOrWhiteSpace(relicId))
@@ -897,15 +874,20 @@ internal sealed class NeowRewardPreviewer
             return Array.Empty<string>();
         }
 
-        var activeCount = candidates.Count;
-        var resultCount = Math.Min(count, activeCount);
-        var results = new List<string>(resultCount);
+        var results = new List<string>();
+        var used = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-        for (var i = 0; i < resultCount && activeCount > 0; i++)
+        for (var i = 0; i < count; i++)
         {
+            var available = candidates.Where(candidate => !used.Contains(candidate.Id)).ToList();
+            if (available.Count == 0)
+            {
+                break;
+            }
+
             var pick = oddsType == CardRarityOddsType.Uniform
-                ? PickUniformCard(rng, candidates, activeCount)
-                : PickWeightedCard(rng, candidates, activeCount, oddsType, scarcityActive);
+                ? PickUniformCard(rng, available)
+                : PickWeightedCard(rng, available, oddsType, scarcityActive);
 
             if (pick == null)
             {
@@ -913,8 +895,7 @@ internal sealed class NeowRewardPreviewer
             }
 
             results.Add(pick.Id);
-            activeCount--;
-            candidates[pick.Index] = candidates[activeCount];
+            used.Add(pick.Id);
 
             if (simulateUpgradeRoll)
             {
@@ -925,121 +906,62 @@ internal sealed class NeowRewardPreviewer
         return results;
     }
 
-    private PickedCard? PickUniformCard(GameRng rng, List<CardCandidate> candidates, int activeCount)
+    private CardCandidate? PickUniformCard(GameRng rng, List<CardCandidate> candidates)
     {
-        var eligibleCount = 0;
-        for (var i = 0; i < activeCount; i++)
+        var filtered = candidates
+            .Where(candidate => candidate.Metadata.ParsedRarity != CardRarity.Basic && candidate.Metadata.ParsedRarity != CardRarity.Ancient)
+            .ToList();
+        if (filtered.Count == 0)
         {
-            var rarity = candidates[i].Metadata.ParsedRarity;
-            if (rarity != CardRarity.Basic && rarity != CardRarity.Ancient)
-            {
-                eligibleCount++;
-            }
+            filtered = candidates;
         }
 
-        if (eligibleCount > 0)
-        {
-            var target = rng.NextInt(eligibleCount);
-            for (var i = 0; i < activeCount; i++)
-            {
-                var rarity = candidates[i].Metadata.ParsedRarity;
-                if (rarity == CardRarity.Basic || rarity == CardRarity.Ancient)
-                {
-                    continue;
-                }
-
-                if (target-- == 0)
-                {
-                    return new PickedCard(i, candidates[i]);
-                }
-            }
-        }
-
-        if (activeCount == 0)
+        if (filtered.Count == 0)
         {
             return null;
         }
 
-        var fallbackIndex = rng.NextInt(activeCount);
-        return new PickedCard(fallbackIndex, candidates[fallbackIndex]);
+        return filtered[rng.NextInt(filtered.Count)];
     }
 
-    private PickedCard? PickWeightedCard(
-        GameRng rng,
-        List<CardCandidate> candidates,
-        int activeCount,
-        CardRarityOddsType oddsType,
-        bool scarcityActive)
+    private CardCandidate? PickWeightedCard(GameRng rng, List<CardCandidate> candidates, CardRarityOddsType oddsType, bool scarcityActive)
     {
-        var hasCommon = false;
-        var hasUncommon = false;
-        var hasRare = false;
-        for (var i = 0; i < activeCount; i++)
-        {
-            switch (candidates[i].Metadata.ParsedRarity)
-            {
-                case CardRarity.Common:
-                    hasCommon = true;
-                    break;
-                case CardRarity.Uncommon:
-                    hasUncommon = true;
-                    break;
-                case CardRarity.Rare:
-                    hasRare = true;
-                    break;
-            }
-        }
+        var allowed = candidates
+            .Select(candidate => candidate.Metadata.ParsedRarity)
+            .Where(rarity => rarity == CardRarity.Common || rarity == CardRarity.Uncommon || rarity == CardRarity.Rare)
+            .Distinct()
+            .OrderBy(GetRarityRank)
+            .ToList();
 
-        if (!hasCommon && !hasUncommon && !hasRare)
+        if (allowed.Count == 0)
         {
-            return PickUniformCard(rng, candidates, activeCount);
+            return PickUniformCard(rng, candidates);
         }
 
         var rarity = RollCardRarity(rng, oddsType, scarcityActive);
         var guard = 0;
-        while (!HasRarity(rarity, hasCommon, hasUncommon, hasRare) && rarity != CardRarity.None && guard++ < 3)
+        while (!allowed.Contains(rarity) && rarity != CardRarity.None && guard++ < 3)
         {
             rarity = GetNextHighestRarity(rarity);
         }
 
         if (rarity == CardRarity.None)
         {
-            rarity = hasCommon
-                ? CardRarity.Common
-                : hasUncommon
-                    ? CardRarity.Uncommon
-                    : CardRarity.Rare;
+            rarity = allowed.First();
         }
 
-        var rarityCount = 0;
-        for (var i = 0; i < activeCount; i++)
+        var pool = candidates.Where(candidate => candidate.Metadata.ParsedRarity == rarity).ToList();
+        if (pool.Count == 0)
         {
-            if (candidates[i].Metadata.ParsedRarity == rarity)
-            {
-                rarityCount++;
-            }
+            pool = candidates;
         }
 
-        if (rarityCount == 0)
+        if (pool.Count == 0)
         {
-            return PickUniformCard(rng, candidates, activeCount);
+            return null;
         }
 
-        var target = rng.NextInt(rarityCount);
-        for (var i = 0; i < activeCount; i++)
-        {
-            if (candidates[i].Metadata.ParsedRarity != rarity)
-            {
-                continue;
-            }
-
-            if (target-- == 0)
-            {
-                return new PickedCard(i, candidates[i]);
-            }
-        }
-
-        return null;
+        return pool[rng.NextInt(pool.Count)];
     }
 
     internal static CardRarity RollCardRarity(GameRng rng, CardRarityOddsType oddsType, bool scarcityActive)
@@ -1107,6 +1029,15 @@ internal sealed class NeowRewardPreviewer
             CardRarity.Common => CardRarity.Uncommon,
             CardRarity.Uncommon => CardRarity.Rare,
             _ => CardRarity.None
+        };
+
+    private static int GetRarityRank(CardRarity rarity) =>
+        rarity switch
+        {
+            CardRarity.Common => 0,
+            CardRarity.Uncommon => 1,
+            CardRarity.Rare => 2,
+            _ => 3
         };
 
     private Dictionary<RelicRarity, List<string>> BuildRelicBuckets(IEnumerable<string> relicIds)
@@ -1358,23 +1289,7 @@ internal sealed class NeowRewardPreviewer
         return bundles;
     }
 
-    private static bool HasRarity(CardRarity rarity, bool hasCommon, bool hasUncommon, bool hasRare) =>
-        rarity switch
-        {
-            CardRarity.Common => hasCommon,
-            CardRarity.Uncommon => hasUncommon,
-            CardRarity.Rare => hasRare,
-            _ => false
-        };
-
     private sealed record CardCandidate(string Id, NeowCardMetadata Metadata);
-
-    private sealed record PickedCard(int Index, CardCandidate Candidate)
-    {
-        public string Id => Candidate.Id;
-
-        public NeowCardMetadata Metadata => Candidate.Metadata;
-    }
 
     private sealed record PotionCandidate(string Id, NeowPotionMetadata Metadata);
 }

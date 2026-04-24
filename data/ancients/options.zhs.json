@@ -1,0 +1,366 @@
+{
+  "generatedAt": "2026-04-11T11:58:14.174515+00:00",
+  "locale": "zhs",
+  "options": [
+    {
+      "id": "ALCHEMICAL_COFFER",
+      "title": "炼金箱",
+      "description": "获得[blue]{PotionSlots}[/blue]个放有随机药水的药水栏位。"
+    },
+    {
+      "id": "ARCHAIC_TOOTH",
+      "title": "古老牙齿",
+      "description": "将{StarterCard.StringValue:cond:[gold]{StarterCard}[/gold][gold]变化[/gold]为[gold]{AncientCard}[/gold]|一张初始卡牌[gold]变化[/gold]为先古版本}。"
+    },
+    {
+      "id": "ASTROLABE",
+      "title": "星盘",
+      "description": "选择[blue]{Cards}[/blue]张牌进行[gold]变化[/gold]，然后将这些牌[gold]升级[/gold]。"
+    },
+    {
+      "id": "BEAUTIFUL_BRACELET",
+      "title": "华美手镯",
+      "description": "从你的[gold]牌组[/gold]中选择[blue]{Cards}[/blue]张牌，[gold]附魔[/gold]：[purple]迅捷{Swift}[/purple]。"
+    },
+    {
+      "id": "BIIIG_HUG",
+      "title": "大～抱抱",
+      "description": "从你的[gold]牌组[/gold]中移除[blue]{Cards}[/blue]张牌。每当你的[gold]抽牌堆[/gold]打乱洗牌时，将一张[gold]煤灰[/gold]加入你的[gold]抽牌堆[/gold]。"
+    },
+    {
+      "id": "BLACK_STAR",
+      "title": "黑星",
+      "description": "[gold]精英[/gold]敌人在被打败时多掉落一件遗物。"
+    },
+    {
+      "id": "BLESSED_ANTLER",
+      "title": "赐福鹿角",
+      "description": "在每回合开始时获得{Energy:energyIcons()}。在战斗开始时，将[blue]{Cards}[/blue]张[gold]晕眩[/gold]放入你的[gold]抽牌堆[/gold]。"
+    },
+    {
+      "id": "BLOOD_SOAKED_ROSE",
+      "title": "血染玫瑰",
+      "description": "将[blue]1[/blue]张[red]执迷[/red]加入你的[gold]牌组[/gold]。在回合开始时获得{Energy:energyIcons()}。"
+    },
+    {
+      "id": "BRILLIANT_SCARF",
+      "title": "艳丽围巾",
+      "description": "你每回合打出的第[blue]5[/blue]张牌可以被免费打出。"
+    },
+    {
+      "id": "CALLING_BELL",
+      "title": "召唤铃铛",
+      "description": "获得一个独特的[red]诅咒[/red]和[blue]{Relics}[/blue]件[gold]遗物[/gold]。"
+    },
+    {
+      "id": "CHOICES_PARADOX",
+      "title": "选择悖论",
+      "description": "在每场战斗开始时，从[blue]{Cards}[/blue]张随机牌中选择[blue]1[/blue]张放入你的[gold]手牌[/gold]。被选中的牌获得[gold]保留[/gold]。"
+    },
+    {
+      "id": "CLAWS",
+      "title": "利爪",
+      "description": "将至多[blue]{Cards}[/blue]张牌[gold]变化[/gold]为[gold]撕咬[/gold]"
+    },
+    {
+      "id": "CROSSBOW",
+      "title": "十字弓",
+      "description": "在你的回合开始时，将一张随机[gold]攻击牌[/gold]加入你的[gold]手牌[/gold]。这张牌在本回合耗能为[blue]0[/blue]{energyPrefix:energyIcons(1)}。"
+    },
+    {
+      "id": "DELICATE_FROND",
+      "title": "娇嫩蕨草",
+      "description": "在每场战斗开始时，用随机药水将你的空药水栏位填满。"
+    },
+    {
+      "id": "DIAMOND_DIADEM",
+      "title": "钻石头冠",
+      "description": "如果你在本回合打出的牌少于等于[blue]{CardThreshold}[/blue]张，则受到敌人的伤害减半。"
+    },
+    {
+      "id": "DISTINGUISHED_CAPE",
+      "title": "卓越斗篷",
+      "description": "失去[red]9[/red]点最大生命值。将[blue]{Cards}[/blue]张[gold]灵体[/gold]加入你的[gold]牌组[/gold]。"
+    },
+    {
+      "id": "DRIFTWOOD",
+      "title": "浮木",
+      "description": "你可以在每一个卡牌奖励中重掷一次。"
+    },
+    {
+      "id": "DUSTY_TOME",
+      "title": "尘封魔典",
+      "description": "获得{AncientCard.StringValue:cond:[gold]{}+[/gold]|一张[gold]先古牌[/gold]}。"
+    },
+    {
+      "id": "ECTOPLASM",
+      "title": "灵体外质",
+      "description": "你不能再获得任何[gold]金币[/gold]。在回合开始时获得{Energy:energyIcons()}"
+    },
+    {
+      "id": "ELECTRIC_SHRYMP",
+      "title": "放电异虾",
+      "description": "选择一张技能牌为它[gold]附魔[/gold]：[purple]注能[/purple]。"
+    },
+    {
+      "id": "EMPTY_CAGE",
+      "title": "空鸟笼",
+      "description": "移除[gold]牌组[/gold]中的[blue]{Cards}[/blue]张牌。"
+    },
+    {
+      "id": "FIDDLE",
+      "title": "小提琴",
+      "description": "在每个回合开始时，额外抽[blue]{Cards}[/blue]张牌。你在回合进行中不再能抽任何牌。"
+    },
+    {
+      "id": "FUR_COAT",
+      "title": "皮草大衣",
+      "description": "随机标记[blue]{Combats}[/blue]处战斗。这些战斗中的敌人将只有[blue]1[/blue]点生命。"
+    },
+    {
+      "id": "GLASS_EYE",
+      "title": "玻璃眼珠",
+      "description": "拾起时，获得[blue]2[/blue]组[gold]普通[/gold]、[blue]2[/blue]组[gold]罕见[/gold]、和[blue]1[/blue]组[gold]稀有[/gold]卡牌奖励。"
+    },
+    {
+      "id": "GLITTER",
+      "title": "亮片",
+      "description": "为之后的所有卡牌奖励[gold]附魔[/gold]：[purple]华彩[/purple]。"
+    },
+    {
+      "id": "GOLDEN_COMPASS",
+      "title": "黄金罗盘",
+      "description": "将第[blue]2[/blue][gold]阶段[/gold]的地图替换为一条特殊的直道。"
+    },
+    {
+      "id": "IRON_CLUB",
+      "title": "铁棒",
+      "description": "你每打出[blue]{Cards}[/blue]张牌，就抽[blue]1[/blue]张牌。"
+    },
+    {
+      "id": "JEWELED_MASK",
+      "title": "宝石面具",
+      "description": "在每场战斗开始时，将一张随机能力牌从你的[gold]抽牌堆[/gold]放入你的[gold]手牌[/gold]，这张牌可以免费打出。"
+    },
+    {
+      "id": "JEWELRY_BOX",
+      "title": "珠宝盒",
+      "description": "将[blue]1[/blue]张[gold]神化[/gold]加入你的[gold]牌组[/gold]。"
+    },
+    {
+      "id": "LOOMING_FRUIT",
+      "title": "布质果实",
+      "description": "获得[blue]{MaxHp}[/blue]点最大生命值。"
+    },
+    {
+      "id": "LORDS_PARASOL",
+      "title": "领主阳伞",
+      "description": "当你遇见[gold]商人[/gold]时，立刻获得他所出售的[red]所有[/red]物品。"
+    },
+    {
+      "id": "MEAT_CLEAVER",
+      "title": "切肉刀",
+      "description": "你可以在休息处进行[gold]烹饪[/gold]。"
+    },
+    {
+      "id": "MUSIC_BOX",
+      "title": "音乐盒",
+      "description": "将你每回合打出的第一张攻击牌的一张[gold]虚无[/gold]复制品加入你的手牌。"
+    },
+    {
+      "id": "NUTRITIOUS_SOUP",
+      "title": "营养汤",
+      "description": "为你[gold]牌组[/gold]中的所有“[gold]打击[/gold]”[gold]附魔[/gold]：[purple]特兹卡塔拉的余烬[/purple]"
+    },
+    {
+      "id": "PAELS_BLOOD",
+      "title": "佩尔之血",
+      "description": "在你的回合开始时，额外抽[blue]{Cards}[/blue]张牌"
+    },
+    {
+      "id": "PAELS_CLAW",
+      "title": "佩尔之爪",
+      "description": "为所有的“[gold]防御[/gold]”[gold]附魔[/gold]：[purple]{EnchantmentName}[/purple]。"
+    },
+    {
+      "id": "PAELS_EYE",
+      "title": "佩尔之眼",
+      "description": "你在每场战斗中第一次没有打出任何牌就结束回合时，[gold]消耗[/gold]所有[gold]手牌[/gold]然后进行一个额外回合。"
+    },
+    {
+      "id": "PAELS_FLESH",
+      "title": "佩尔之肉",
+      "description": "从你的第[blue]3[/blue]回合开始，在回合开始时额外获得{Energy:energyIcons()}。"
+    },
+    {
+      "id": "PAELS_GROWTH",
+      "title": "佩尔的增生组织",
+      "description": "从[gold]牌组[/gold]中选择一张牌，为其[gold]附魔[/gold]：[purple]{EnchantmentName}[/purple]。"
+    },
+    {
+      "id": "PAELS_HORN",
+      "title": "佩尔之角",
+      "description": "将[blue]2[/blue]张[gold]放松[/gold]加入你的[gold]牌组[/gold]。"
+    },
+    {
+      "id": "PAELS_LEGION",
+      "title": "佩尔的士兵",
+      "description": "将你从一张卡牌内获得的[gold]格挡[/gold]翻倍，然后休眠[blue]{Turns}[/blue]个回合。"
+    },
+    {
+      "id": "PAELS_TEARS",
+      "title": "佩尔之泪",
+      "description": "如果你在拥有未花费的{energyPrefix:energyIcons(1)}情况下结束回合，则下个回合额外获得{Energy:energyIcons()}。"
+    },
+    {
+      "id": "PAELS_TOOTH",
+      "title": "佩尔之牙",
+      "description": "从你的[gold]牌组[/gold]中选择[blue]{Cards}[/blue]张牌移除。在每场战斗结束时，将其中随机[blue]1[/blue]牌[gold]升级[/gold]然后返还。{CardTitles.StringValue:cond:\n\n在牙中的牌：\n{}|}"
+    },
+    {
+      "id": "PAELS_WING",
+      "title": "佩尔之翼",
+      "description": "你可以将你的卡牌奖励献祭给佩尔。每献祭[blue]{Sacrifices}[/blue]次，就能获得一件[gold]遗物[/gold]。"
+    },
+    {
+      "id": "PANDORAS_BOX",
+      "title": "潘多拉魔盒",
+      "description": "[gold]变化[/gold]所有“[gold]打击[/gold]”和“[gold]防御[/gold]”。"
+    },
+    {
+      "id": "PHILOSOPHERS_STONE",
+      "title": "贤者之石",
+      "description": "在每回合开始时获得{Energy:energyIcons()}。所有敌人初始获得[blue]{StrengthPower}[/blue]点[gold]力量[/gold]。"
+    },
+    {
+      "id": "PRESERVED_FOG",
+      "title": "腌制活雾",
+      "description": "从你的[gold]牌组[/gold]中移除[blue]{Cards}[/blue]张牌。将一张[red]愚行[/red]加入你的牌组。"
+    },
+    {
+      "id": "PRISMATIC_GEM",
+      "title": "棱彩宝石",
+      "description": "在每个回合开始时获得{Energy:energyIcons()}。卡牌奖励现在会包含其他颜色的卡牌。"
+    },
+    {
+      "id": "PUMPKIN_CANDLE",
+      "title": "南瓜蜡烛",
+      "description": "在每个回合开始时获得{Energy:energyIcons()}。这件遗物将在第[blue]3[/blue][gold]阶段[/gold]开始时熄灭。"
+    },
+    {
+      "id": "RADIANT_PEARL",
+      "title": "发光珍珠",
+      "description": "在每场战斗开始时，将[blue]{Cards}[/blue]张[gold]冷光[/gold]加入你的[gold]手牌[/gold]。"
+    },
+    {
+      "id": "RUNIC_PYRAMID",
+      "title": "符文金字塔",
+      "description": "你在回合结束时不再自动丢弃所有[gold]手牌[/gold]。"
+    },
+    {
+      "id": "SAI",
+      "title": "钗",
+      "description": "在你的回合开始时，获得[blue]{Block}[/blue]点[gold]格挡[/gold]。"
+    },
+    {
+      "id": "SAND_CASTLE",
+      "title": "沙堡",
+      "description": "拾起时，随机[gold]升级[/gold][blue]{Cards}[/blue]张牌。"
+    },
+    {
+      "id": "SEAL_OF_GOLD",
+      "title": "黄金印",
+      "description": "在你的回合开始时，花费[blue]{Gold}[/blue][gold]金币[/gold]来获得{Energy:energyIcons()}。"
+    },
+    {
+      "id": "SEA_GLASS",
+      "title": "海玻璃",
+      "description": "查看[blue]{Cards}[/blue]张来自{Character.StringValue:cond:[gold]{}[/gold]|其他角色}的牌。从中选择任意数量的卡牌加入你的[gold]牌组[/gold]。"
+    },
+    {
+      "id": "SERE_TALON",
+      "title": "原初之爪",
+      "description": "将[blue]{Curses}[/blue]张随机[red]诅咒[/red]牌，和[blue]{Wishes}[/blue]张[purple]许愿[/purple]加入你的[gold]牌组[/gold]。"
+    },
+    {
+      "id": "SIGNET_RING",
+      "title": "图章戒指",
+      "description": "拾起时，获得[blue]{Gold}[/blue][gold]金币[/gold]。"
+    },
+    {
+      "id": "SNECKO_EYE",
+      "title": "异蛇之眼",
+      "description": "每回合多抽[blue]{Cards}[/blue]张牌。每场战斗开始时获得[red]混乱[/red]效果。"
+    },
+    {
+      "id": "SOZU",
+      "title": "添水",
+      "description": "你无法再获得药水。在每回合开始时获得{Energy:energyIcons()}。"
+    },
+    {
+      "id": "SPIKED_GAUNTLETS",
+      "title": "带刺手甲",
+      "description": "在每回合开始时获得{Energy:energyIcons()}。能力牌的耗能增加[blue]1[/blue]{energyPrefix:energyIcons(1)}。"
+    },
+    {
+      "id": "STORYBOOK",
+      "title": "故事书",
+      "description": "将[blue]1[/blue]张[gold]至亮之焰[/gold]添加到你的[gold]牌组[/gold]中。"
+    },
+    {
+      "id": "TANXS_WHISTLE",
+      "title": "坦克斯的哨子",
+      "description": "将[blue]1[/blue]张[gold]吹哨[/gold]加入你的[gold]牌组[/gold]"
+    },
+    {
+      "id": "THROWING_AXE",
+      "title": "投斧",
+      "description": "你在每场战斗中打出的第一张牌会多打出一次。"
+    },
+    {
+      "id": "TOASTY_MITTENS",
+      "title": "烘焙手套",
+      "description": "在你的回合开始时，[gold]消耗[/gold]你[gold]抽牌堆[/gold]顶部的牌并获得[blue]{StrengthPower}[/blue]点[gold]力量[/gold]。"
+    },
+    {
+      "id": "TOUCH_OF_OROBAS",
+      "title": "欧洛巴斯之触",
+      "description": "将{StarterRelic.StringValue:cond:[gold]{StarterRelic}[/gold]替换为[gold]{UpgradedRelic}[/gold]|你的初始[gold]遗物[/gold]替换为[gold]先古[/gold]版本}。"
+    },
+    {
+      "id": "TOY_BOX",
+      "title": "玩具盒",
+      "description": "获得[blue]{Relics}[/blue]件[gold]蜡制遗物[/gold]。每经过[blue]{Combats}[/blue]场战斗，你最左侧的[gold]蜡制遗物[/gold]将会融化。"
+    },
+    {
+      "id": "TRI_BOOMERANG",
+      "title": "三刃回旋镖",
+      "description": "从你的[gold]牌组[/gold]中选择[blue]{Cards}[/blue]张攻击牌。为这些牌[gold]附魔[/gold]：[purple]本能[/purple]。"
+    },
+    {
+      "id": "VELVET_CHOKER",
+      "title": "天鹅绒颈圈",
+      "description": "在每回合开始时获得{Energy:energyIcons()}。你每回合不能打出超过[blue]{Cards}[/blue]张牌。"
+    },
+    {
+      "id": "VERY_HOT_COCOA",
+      "title": "烫嘴可可",
+      "description": "在每场战斗的第一回合额外获得[blue]{Energy:energyIcons()}[/blue]。"
+    },
+    {
+      "id": "WAR_HAMMER",
+      "title": "战锤",
+      "description": "每当你击败一名[gold]精英[/gold]敌人的时候，随机[gold]升级[/gold][blue]{Cards}[/blue]张牌。"
+    },
+    {
+      "id": "WHISPERING_EARRING",
+      "title": "低语耳环",
+      "description": "在每个回合开始时，获得{Energy:energyIcons()}。[red]瓦库将接管你的第一回合。[/red]"
+    },
+    {
+      "id": "YUMMY_COOKIE",
+      "title": "美味饼干",
+      "description": "[gold]升级[/gold][blue]{Cards}[/blue]张牌。"
+    }
+  ]
+}

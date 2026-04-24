@@ -145,6 +145,36 @@ public sealed class Sts2RunPreviewer
         return preview;
     }
 
+    public Sts2SeedAnalysis AnalyzePools(Sts2SeedAnalysisRequest request)
+    {
+        if (request is null)
+        {
+            throw new ArgumentNullException(nameof(request));
+        }
+
+        var upFrontRng = new GameRng(request.SeedValue, "up_front");
+        var relicPools = _primer.PrimeAndCapture(upFrontRng, request.Character, playerCount: 1);
+        var actPools = _simulator.Analyze(upFrontRng);
+
+        return new Sts2SeedAnalysis
+        {
+            SeedText = request.SeedText,
+            SeedValue = request.SeedValue,
+            SharedRelicPools = relicPools.SharedPools,
+            PlayerRelicPools = relicPools.PlayerPools,
+            Acts = actPools
+                .Select(act => new Sts2ActPoolPreview
+                {
+                    ActNumber = act.ActNumber,
+                    ActName = act.ActName,
+                    EventPool = act.Events,
+                    MonsterPool = act.NormalEncounters,
+                    ElitePool = act.EliteEncounters
+                })
+                .ToList()
+        };
+    }
+
     public ShopPreview PreviewFirstShop(
         NeowOptionDataset dataset,
         SeedRunEvaluationContext context,
