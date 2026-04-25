@@ -11,6 +11,16 @@ namespace SeedUi.ViewModels;
 
 internal sealed partial class MainWindowViewModel
 {
+    private static readonly IReadOnlyList<RelicVisibilitySourceFilterOption> _highProbabilityMostCommonSourceOptions =
+    [
+        new(string.Empty, "不限制"),
+        new(nameof(Sts2RelicVisibilitySource.Treasure), "宝箱"),
+        new(nameof(Sts2RelicVisibilitySource.Elite), "精英"),
+        new(nameof(Sts2RelicVisibilitySource.Shop), "商店"),
+        new(nameof(Sts2RelicVisibilitySource.AncientAct2), "第二幕古神"),
+        new(nameof(Sts2RelicVisibilitySource.AncientAct3), "第三幕古神")
+    ];
+
     private RelayCommand? _addAct1EventPoolFilterCommand;
     private RelayCommand? _removeAct1EventPoolFilterCommand;
     private RelayCommand? _addAct2EventPoolFilterCommand;
@@ -26,6 +36,11 @@ internal sealed partial class MainWindowViewModel
     private string _act3EventPoolCatalogFilter = string.Empty;
     private string _highProbabilityRelicCatalogFilter = string.Empty;
     private string _highProbabilitySeenThresholdPercentText = FormatThresholdPercent(Sts2PoolFilter.DefaultHighProbabilitySeenThreshold);
+    private string _highProbabilityNonShopThresholdPercentText = string.Empty;
+    private string _highProbabilityShopThresholdPercentText = string.Empty;
+    private string _highProbabilityEarlyThresholdPercentText = string.Empty;
+    private string _highProbabilityAverageFirstOpportunityMaxText = string.Empty;
+    private string _highProbabilityMostCommonSourceText = string.Empty;
     private CatalogItem? _selectedAct1EventPoolCatalogItem;
     private CatalogItem? _selectedAct2EventPoolCatalogItem;
     private CatalogItem? _selectedAct3EventPoolCatalogItem;
@@ -52,6 +67,8 @@ internal sealed partial class MainWindowViewModel
     public IEnumerable<CatalogItem> Act3EventPoolCatalogView => _filteredAct3EventPoolCatalog;
 
     public IEnumerable<CatalogItem> HighProbabilityRelicCatalogView => _filteredHighProbabilityRelicCatalog;
+
+    public IReadOnlyList<RelicVisibilitySourceFilterOption> HighProbabilityMostCommonSourceOptions => _highProbabilityMostCommonSourceOptions;
 
     public RelayCommand AddAct1EventPoolFilterCommand => _addAct1EventPoolFilterCommand ??= new RelayCommand(AddAct1EventPoolFilter);
 
@@ -172,8 +189,68 @@ internal sealed partial class MainWindowViewModel
         }
     }
 
+    public string HighProbabilityNonShopThresholdPercentText
+    {
+        get => _highProbabilityNonShopThresholdPercentText;
+        set
+        {
+            if (SetProperty(ref _highProbabilityNonShopThresholdPercentText, value ?? string.Empty))
+            {
+                UpdatePoolFilterSummary();
+            }
+        }
+    }
+
+    public string HighProbabilityShopThresholdPercentText
+    {
+        get => _highProbabilityShopThresholdPercentText;
+        set
+        {
+            if (SetProperty(ref _highProbabilityShopThresholdPercentText, value ?? string.Empty))
+            {
+                UpdatePoolFilterSummary();
+            }
+        }
+    }
+
+    public string HighProbabilityEarlyThresholdPercentText
+    {
+        get => _highProbabilityEarlyThresholdPercentText;
+        set
+        {
+            if (SetProperty(ref _highProbabilityEarlyThresholdPercentText, value ?? string.Empty))
+            {
+                UpdatePoolFilterSummary();
+            }
+        }
+    }
+
+    public string HighProbabilityAverageFirstOpportunityMaxText
+    {
+        get => _highProbabilityAverageFirstOpportunityMaxText;
+        set
+        {
+            if (SetProperty(ref _highProbabilityAverageFirstOpportunityMaxText, value ?? string.Empty))
+            {
+                UpdatePoolFilterSummary();
+            }
+        }
+    }
+
+    public string HighProbabilityMostCommonSourceText
+    {
+        get => _highProbabilityMostCommonSourceText;
+        set
+        {
+            if (SetProperty(ref _highProbabilityMostCommonSourceText, value ?? string.Empty))
+            {
+                UpdatePoolFilterSummary();
+            }
+        }
+    }
+
     public string HighProbabilitySeenThresholdDescription =>
-        $"命中规则：任一路线画像下，若遗物在流程中的出现概率达到高概率阈值（当前为 {FormatThresholdPercent(GetHighProbabilitySeenThreshold())}%），则视为命中。";
+        $"命中规则：任一路线画像下，所选遗物需满足“出现”阈值；下方其它条件留空表示不限制。当前出现阈值为 {FormatThresholdPercent(GetHighProbabilitySeenThreshold())}%。";
 
     private void InitializePoolFilter()
     {
@@ -360,6 +437,17 @@ internal sealed partial class MainWindowViewModel
 
         var parts = new List<string>();
         parts.Add($"高概率阈值：{FormatThresholdPercent(GetHighProbabilitySeenThreshold())}%");
+        AppendOptionalSummary(parts, "非商店≥", GetOptionalThresholdPercent(HighProbabilityNonShopThresholdPercentText), value => $"{FormatThresholdPercent(value)}%");
+        AppendOptionalSummary(parts, "商店≥", GetOptionalThresholdPercent(HighProbabilityShopThresholdPercentText), value => $"{FormatThresholdPercent(value)}%");
+        AppendOptionalSummary(parts, "前期≥", GetOptionalThresholdPercent(HighProbabilityEarlyThresholdPercentText), value => $"{FormatThresholdPercent(value)}%");
+        AppendOptionalSummary(parts, "平均首次机会≤", GetOptionalPositiveDouble(HighProbabilityAverageFirstOpportunityMaxText), value => value.ToString("0.##", CultureInfo.InvariantCulture));
+
+        var mostCommonSource = GetHighProbabilityMostCommonSource();
+        if (mostCommonSource.HasValue)
+        {
+            parts.Add($"最常来源：{GetRelicVisibilitySourceDisplayName(mostCommonSource.Value)}");
+        }
+
         AppendChipSummary(parts, "第一幕事件", Act1EventPoolFilterChips);
         AppendChipSummary(parts, "第二幕事件", Act2EventPoolFilterChips);
         AppendChipSummary(parts, "第三幕事件", Act3EventPoolFilterChips);
@@ -382,6 +470,19 @@ internal sealed partial class MainWindowViewModel
         }
     }
 
+    private static void AppendOptionalSummary<T>(
+        ICollection<string> parts,
+        string label,
+        T? value,
+        Func<T, string> formatter)
+        where T : struct
+    {
+        if (value.HasValue)
+        {
+            parts.Add($"{label}{formatter(value.Value)}");
+        }
+    }
+
     private void OnPoolFilterChipsChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
         UpdatePoolFilterSummary();
@@ -389,17 +490,8 @@ internal sealed partial class MainWindowViewModel
 
     private double GetHighProbabilitySeenThreshold()
     {
-        if (!double.TryParse(
-                HighProbabilitySeenThresholdPercentText,
-                NumberStyles.Float | NumberStyles.AllowThousands,
-                CultureInfo.InvariantCulture,
-                out var percent))
-        {
-            return Sts2PoolFilter.DefaultHighProbabilitySeenThreshold;
-        }
-
-        percent = Math.Clamp(percent, 0d, 100d);
-        return percent / 100d;
+        return GetOptionalThresholdPercent(HighProbabilitySeenThresholdPercentText)
+            ?? Sts2PoolFilter.DefaultHighProbabilitySeenThreshold;
     }
 
     private static string FormatThresholdPercent(double threshold)
@@ -407,4 +499,80 @@ internal sealed partial class MainWindowViewModel
         var percent = threshold * 100d;
         return percent.ToString("0.##", CultureInfo.InvariantCulture);
     }
+
+    private static string FormatOptionalPercentInput(double? percent)
+    {
+        return percent?.ToString("0.##", CultureInfo.InvariantCulture) ?? string.Empty;
+    }
+
+    private static string FormatOptionalNumberInput(double? value)
+    {
+        return value?.ToString("0.##", CultureInfo.InvariantCulture) ?? string.Empty;
+    }
+
+    private static double? GetOptionalThresholdPercent(string text)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return null;
+        }
+
+        if (!double.TryParse(
+                text,
+                NumberStyles.Float | NumberStyles.AllowThousands,
+                CultureInfo.InvariantCulture,
+                out var percent))
+        {
+            return null;
+        }
+
+        percent = Math.Clamp(percent, 0d, 100d);
+        return percent / 100d;
+    }
+
+    private static double? GetOptionalPositiveDouble(string text)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return null;
+        }
+
+        if (!double.TryParse(
+                text,
+                NumberStyles.Float | NumberStyles.AllowThousands,
+                CultureInfo.InvariantCulture,
+                out var value) ||
+            value <= 0d)
+        {
+            return null;
+        }
+
+        return value;
+    }
+
+    private Sts2RelicVisibilitySource? GetHighProbabilityMostCommonSource()
+    {
+        return string.IsNullOrWhiteSpace(HighProbabilityMostCommonSourceText) ||
+               !Enum.TryParse<Sts2RelicVisibilitySource>(
+                   HighProbabilityMostCommonSourceText,
+                   ignoreCase: true,
+                   out var source)
+            ? null
+            : source;
+    }
+
+    private static string GetRelicVisibilitySourceDisplayName(Sts2RelicVisibilitySource source)
+    {
+        return source switch
+        {
+            Sts2RelicVisibilitySource.Treasure => "宝箱",
+            Sts2RelicVisibilitySource.Elite => "精英",
+            Sts2RelicVisibilitySource.Shop => "商店",
+            Sts2RelicVisibilitySource.AncientAct2 => "第二幕古神",
+            Sts2RelicVisibilitySource.AncientAct3 => "第三幕古神",
+            _ => source.ToString()
+        };
+    }
+
+    public sealed record RelicVisibilitySourceFilterOption(string Value, string DisplayName);
 }

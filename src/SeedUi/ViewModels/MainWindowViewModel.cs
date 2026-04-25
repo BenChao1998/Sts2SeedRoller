@@ -2015,7 +2015,12 @@ internal sealed partial class MainWindowViewModel : ObservableObject
                 Act2EventIds = Act2EventPoolFilterChips.Select(chip => chip.Value).ToList(),
                 Act3EventIds = Act3EventPoolFilterChips.Select(chip => chip.Value).ToList(),
                 HighProbabilityRelicIds = HighProbabilityRelicFilterChips.Select(chip => chip.Value).ToList(),
-                HighProbabilitySeenThreshold = GetHighProbabilitySeenThreshold()
+                HighProbabilitySeenThreshold = GetHighProbabilitySeenThreshold(),
+                HighProbabilityNonShopThreshold = GetOptionalThresholdPercent(HighProbabilityNonShopThresholdPercentText),
+                HighProbabilityShopThreshold = GetOptionalThresholdPercent(HighProbabilityShopThresholdPercentText),
+                HighProbabilityEarlyThreshold = GetOptionalThresholdPercent(HighProbabilityEarlyThresholdPercentText),
+                HighProbabilityAverageFirstOpportunityMax = GetOptionalPositiveDouble(HighProbabilityAverageFirstOpportunityMaxText),
+                HighProbabilityMostCommonSource = GetHighProbabilityMostCommonSource()
             }
             : Sts2PoolFilter.Empty;
 
@@ -2376,6 +2381,11 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         Act3EventPoolFilterChips.Clear();
         HighProbabilitySeenThresholdPercentText = (Sts2PoolFilter.DefaultHighProbabilitySeenThreshold * 100d)
             .ToString("0.##", CultureInfo.InvariantCulture);
+        HighProbabilityNonShopThresholdPercentText = string.Empty;
+        HighProbabilityShopThresholdPercentText = string.Empty;
+        HighProbabilityEarlyThresholdPercentText = string.Empty;
+        HighProbabilityAverageFirstOpportunityMaxText = string.Empty;
+        HighProbabilityMostCommonSourceText = string.Empty;
         HighProbabilityRelicFilterChips.Clear();
         ShopCardFilterChips.Clear();
         ShopRelicFilterChips.Clear();
@@ -2490,6 +2500,11 @@ internal sealed partial class MainWindowViewModel : ObservableObject
                 .ToList();
         HighProbabilitySeenThresholdPercentText = config.HighProbabilitySeenThresholdPercent?.ToString("0.##", CultureInfo.InvariantCulture)
             ?? "50";
+        HighProbabilityNonShopThresholdPercentText = FormatOptionalPercentInput(config.HighProbabilityNonShopThresholdPercent);
+        HighProbabilityShopThresholdPercentText = FormatOptionalPercentInput(config.HighProbabilityShopThresholdPercent);
+        HighProbabilityEarlyThresholdPercentText = FormatOptionalPercentInput(config.HighProbabilityEarlyThresholdPercent);
+        HighProbabilityAverageFirstOpportunityMaxText = FormatOptionalNumberInput(config.HighProbabilityAverageFirstOpportunityMax);
+        HighProbabilityMostCommonSourceText = config.HighProbabilityMostCommonSource ?? string.Empty;
         ResetChips(HighProbabilityRelicFilterChips, highProbabilityRelicIds, _poolRelicCatalog);
         IncludeShop = config.IncludeShop;
         ShopMaxFirstRow = config.ShopMaxFirstRow?.ToString(CultureInfo.InvariantCulture) ?? string.Empty;
@@ -2570,6 +2585,11 @@ internal sealed partial class MainWindowViewModel : ObservableObject
                 Act2EventIds = Act2EventPoolFilterChips.Select(chip => chip.Value).ToList(),
                 Act3EventIds = Act3EventPoolFilterChips.Select(chip => chip.Value).ToList(),
                 HighProbabilitySeenThresholdPercent = GetHighProbabilitySeenThreshold() * 100d,
+                HighProbabilityNonShopThresholdPercent = GetOptionalThresholdPercent(HighProbabilityNonShopThresholdPercentText) * 100d,
+                HighProbabilityShopThresholdPercent = GetOptionalThresholdPercent(HighProbabilityShopThresholdPercentText) * 100d,
+                HighProbabilityEarlyThresholdPercent = GetOptionalThresholdPercent(HighProbabilityEarlyThresholdPercentText) * 100d,
+                HighProbabilityAverageFirstOpportunityMax = GetOptionalPositiveDouble(HighProbabilityAverageFirstOpportunityMaxText),
+                HighProbabilityMostCommonSource = GetHighProbabilityMostCommonSource()?.ToString(),
                 HighProbabilityRelicIds = HighProbabilityRelicFilterChips.Select(chip => chip.Value).ToList(),
                 IncludeShop = IncludeShop,
                 ShopMaxFirstRow = ParsePositiveIntOrNull(ShopMaxFirstRow),
@@ -3125,6 +3145,16 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         public List<string>? Act3EventIds { get; init; }
 
         public double? HighProbabilitySeenThresholdPercent { get; init; }
+
+        public double? HighProbabilityNonShopThresholdPercent { get; init; }
+
+        public double? HighProbabilityShopThresholdPercent { get; init; }
+
+        public double? HighProbabilityEarlyThresholdPercent { get; init; }
+
+        public double? HighProbabilityAverageFirstOpportunityMax { get; init; }
+
+        public string? HighProbabilityMostCommonSource { get; init; }
 
         public List<string>? HighProbabilityRelicIds { get; init; }
 

@@ -208,13 +208,13 @@ public sealed class Sts2RunPreviewer
     internal bool MatchesHighProbabilityRelics(
         NeowOptionDataset dataset,
         Sts2RelicVisibilityRequest request,
-        IReadOnlyList<string> requiredRelicIds,
-        double seenThreshold)
+        Sts2PoolFilter filter)
     {
         ArgumentNullException.ThrowIfNull(dataset);
         ArgumentNullException.ThrowIfNull(request);
-        ArgumentNullException.ThrowIfNull(requiredRelicIds);
+        ArgumentNullException.ThrowIfNull(filter);
 
+        var requiredRelicIds = filter.HighProbabilityRelicIds;
         var needsAncientPreview = requiredRelicIds.Any(relicId => _ancientOptionIds.Contains(relicId));
         var (ancientActs, rarityMap) = BuildRelicVisibilityInputs(dataset, request, includeAncientPreview: needsAncientPreview);
         return _relicVisibilityAnalyzer.MatchesHighProbabilityRelics(
@@ -222,8 +222,7 @@ public sealed class Sts2RunPreviewer
             request,
             ancientActs,
             rarityMap,
-            requiredRelicIds,
-            seenThreshold);
+            filter);
     }
 
     public ShopPreview PreviewFirstShop(

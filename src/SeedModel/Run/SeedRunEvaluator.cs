@@ -130,8 +130,7 @@ public sealed class SeedRunEvaluator
                             AncientAvailability = context.ResolveAncientAvailability(),
                             IncludeDarvSharedAncient = context.IncludeDarvSharedAncient
                         },
-                        filter.PoolFilter.HighProbabilityRelicIds,
-                        filter.PoolFilter.HighProbabilitySeenThreshold);
+                        filter.PoolFilter);
                 }
             }
 

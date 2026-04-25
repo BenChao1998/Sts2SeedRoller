@@ -20,6 +20,16 @@ public sealed record Sts2PoolFilter
 
     public double HighProbabilitySeenThreshold { get; init; } = DefaultHighProbabilitySeenThreshold;
 
+    public double? HighProbabilityNonShopThreshold { get; init; }
+
+    public double? HighProbabilityShopThreshold { get; init; }
+
+    public double? HighProbabilityEarlyThreshold { get; init; }
+
+    public double? HighProbabilityAverageFirstOpportunityMax { get; init; }
+
+    public Sts2RelicVisibilitySource? HighProbabilityMostCommonSource { get; init; }
+
     public bool HasCriteria =>
         Act1EventIds.Count > 0 ||
         Act2EventIds.Count > 0 ||
@@ -40,7 +50,7 @@ public sealed record Sts2PoolFilter
             return false;
         }
 
-        return MatchesHighProbabilityRelics(relicVisibility, HighProbabilityRelicIds, HighProbabilitySeenThreshold);
+        return MatchesHighProbabilityRelics(relicVisibility, this);
     }
 
     private static bool MatchesActEvents(
@@ -69,9 +79,9 @@ public sealed record Sts2PoolFilter
 
     private static bool MatchesHighProbabilityRelics(
         Sts2RelicVisibilityAnalysis? analysis,
-        IReadOnlyList<string> requiredRelicIds,
-        double seenThreshold)
+        Sts2PoolFilter filter)
     {
+        var requiredRelicIds = filter.HighProbabilityRelicIds;
         if (requiredRelicIds.Count == 0)
         {
             return true;
@@ -84,11 +94,53 @@ public sealed record Sts2PoolFilter
 
         var availableIds = analysis.Profiles
             .SelectMany(profile => profile.SeenRelics)
-            .Where(relic => relic.SeenProbability >= seenThreshold)
+            .Where(filter.MatchesHighProbabilityRelic)
             .Select(relic => relic.RelicId)
             .Distinct(StringComparer.OrdinalIgnoreCase);
 
         return MatchesIds(requiredRelicIds, availableIds);
+    }
+
+    internal bool MatchesHighProbabilityRelic(Sts2RelicVisibilityRankedRelic relic)
+    {
+        ArgumentNullException.ThrowIfNull(relic);
+
+        if (relic.SeenProbability < HighProbabilitySeenThreshold)
+        {
+            return false;
+        }
+
+        if (HighProbabilityNonShopThreshold.HasValue &&
+            relic.NonShopSeenProbability < HighProbabilityNonShopThreshold.Value)
+        {
+            return false;
+        }
+
+        if (HighProbabilityShopThreshold.HasValue &&
+            relic.ShopSeenProbability < HighProbabilityShopThreshold.Value)
+        {
+            return false;
+        }
+
+        if (HighProbabilityEarlyThreshold.HasValue &&
+            relic.EarlyProbability < HighProbabilityEarlyThreshold.Value)
+        {
+            return false;
+        }
+
+        if (HighProbabilityAverageFirstOpportunityMax.HasValue &&
+            relic.AverageFirstOpportunity > HighProbabilityAverageFirstOpportunityMax.Value)
+        {
+            return false;
+        }
+
+        if (HighProbabilityMostCommonSource.HasValue &&
+            relic.MostCommonSource != HighProbabilityMostCommonSource.Value)
+        {
+            return false;
+        }
+
+        return true;
     }
 
     private static bool MatchesIds(

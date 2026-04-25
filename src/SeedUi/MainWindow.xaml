@@ -513,7 +513,7 @@
                                                 <ColumnDefinition Width="90"/>
                                                 <ColumnDefinition Width="*"/>
                                             </Grid.ColumnDefinitions>
-                                            <TextBlock Text="概率阈值(%)" FontSize="12" Foreground="#666" VerticalAlignment="Center" Margin="0 0 8 0"/>
+                                            <TextBlock Text="出现(%)" FontSize="12" Foreground="#666" VerticalAlignment="Center" Margin="0 0 8 0"/>
                                             <TextBox Grid.Column="1"
                                                      Text="{Binding HighProbabilitySeenThresholdPercentText, UpdateSourceTrigger=PropertyChanged}"
                                                      Height="28"
@@ -526,6 +526,50 @@
                                                        TextWrapping="Wrap"
                                                        VerticalAlignment="Center"/>
                                         </Grid>
+                                        <WrapPanel Margin="0 0 0 8">
+                                            <TextBlock Text="非商店(%)" FontSize="12" Foreground="#666" VerticalAlignment="Center" Margin="0 0 8 8"/>
+                                            <TextBox Text="{Binding HighProbabilityNonShopThresholdPercentText, UpdateSourceTrigger=PropertyChanged}"
+                                                     Width="80"
+                                                     Height="28"
+                                                     VerticalContentAlignment="Center"
+                                                     hc:InfoElement.Placeholder="留空"
+                                                     Margin="0 0 16 8"/>
+                                            <TextBlock Text="商店(%)" FontSize="12" Foreground="#666" VerticalAlignment="Center" Margin="0 0 8 8"/>
+                                            <TextBox Text="{Binding HighProbabilityShopThresholdPercentText, UpdateSourceTrigger=PropertyChanged}"
+                                                     Width="80"
+                                                     Height="28"
+                                                     VerticalContentAlignment="Center"
+                                                     hc:InfoElement.Placeholder="留空"
+                                                     Margin="0 0 16 8"/>
+                                            <TextBlock Text="前期(%)" FontSize="12" Foreground="#666" VerticalAlignment="Center" Margin="0 0 8 8"/>
+                                            <TextBox Text="{Binding HighProbabilityEarlyThresholdPercentText, UpdateSourceTrigger=PropertyChanged}"
+                                                     Width="80"
+                                                     Height="28"
+                                                     VerticalContentAlignment="Center"
+                                                     hc:InfoElement.Placeholder="留空"
+                                                     Margin="0 0 16 8"/>
+                                            <TextBlock Text="平均首次机会≤" FontSize="12" Foreground="#666" VerticalAlignment="Center" Margin="0 0 8 8"/>
+                                            <TextBox Text="{Binding HighProbabilityAverageFirstOpportunityMaxText, UpdateSourceTrigger=PropertyChanged}"
+                                                     Width="90"
+                                                     Height="28"
+                                                     VerticalContentAlignment="Center"
+                                                     hc:InfoElement.Placeholder="留空"
+                                                     Margin="0 0 16 8"/>
+                                            <TextBlock Text="最常来源" FontSize="12" Foreground="#666" VerticalAlignment="Center" Margin="0 0 8 8"/>
+                                            <ComboBox ItemsSource="{Binding HighProbabilityMostCommonSourceOptions}"
+                                                      DisplayMemberPath="DisplayName"
+                                                      SelectedValuePath="Value"
+                                                      SelectedValue="{Binding HighProbabilityMostCommonSourceText}"
+                                                      Width="140"
+                                                      MinHeight="28"
+                                                      VerticalContentAlignment="Center"
+                                                      Margin="0 0 0 8"/>
+                                        </WrapPanel>
+                                        <TextBlock Text="可选项说明：这些条件只对上面已选中的遗物生效；留空表示不限制。命中时，同一个遗物需要在某一条路线画像下同时满足这些条件。"
+                                                   FontSize="11"
+                                                   Foreground="#888"
+                                                   TextWrapping="Wrap"
+                                                   Margin="0 0 0 8"/>
                                         <StackPanel>
                                             <TextBox Text="{Binding HighProbabilityRelicCatalogFilter, UpdateSourceTrigger=PropertyChanged}"
                                                      hc:InfoElement.Placeholder="输入文字过滤遗物列表..." Margin="0 0 0 6" Height="30"/>
@@ -1033,26 +1077,51 @@
                                 <TextBlock Grid.Row="0" Text="命中结果" FontSize="16" FontWeight="SemiBold" Foreground="#333" Margin="0 0 0 12"/>
                                 <Border Grid.Row="1" Background="#FAFAFA" CornerRadius="4" Padding="12">
                                     <ListBox x:Name="ResultsListBox" ItemsSource="{Binding Results}" BorderThickness="0" Background="Transparent"
+                                             HorizontalContentAlignment="Stretch"
+                                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                                              VirtualizingStackPanel.IsVirtualizing="True" PreviewMouseWheel="ResultsListBox_PreviewMouseWheel">
                                         <ListBox.ItemTemplate>
                                             <DataTemplate>
                                                 <Border Background="White" BorderBrush="#E8E8E8" BorderThickness="1"
-                                                        CornerRadius="6" Padding="16" Margin="0 0 0 12">
+                                                        CornerRadius="6" Padding="16" Margin="0 0 0 12"
+                                                        HorizontalAlignment="Stretch">
                                                     <StackPanel>
                                                         <!-- 头部：种子、角色、复制按钮 -->
                                                         <Grid Margin="0 0 0 12">
                                                             <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="Auto"/>
                                                                 <ColumnDefinition Width="*"/>
                                                                 <ColumnDefinition Width="Auto"/>
                                                             </Grid.ColumnDefinitions>
-                                                            <WrapPanel Grid.Column="0" VerticalAlignment="Center" Margin="0 0 12 0">
-                                                                <TextBlock Text="&#xE9CE;" FontFamily="Segoe MDL2 Assets" FontSize="16" Foreground="#1976D2" Margin="0 0 8 0"/>
-                                                                <TextBlock Text="{Binding SeedText}" FontWeight="Bold" FontSize="15" Foreground="#1976D2" VerticalAlignment="Center"/>
-                                                                <Border Background="#F5F5F5" CornerRadius="4" Padding="6 2" Margin="12 0 0 0" VerticalAlignment="Center">
+                                                            <TextBlock Grid.Column="0"
+                                                                       Text="&#xE9CE;"
+                                                                       FontFamily="Segoe MDL2 Assets"
+                                                                       FontSize="16"
+                                                                       Foreground="#1976D2"
+                                                                       Margin="0 0 8 0"
+                                                                       VerticalAlignment="Center"/>
+                                                            <Grid Grid.Column="1" Margin="0 0 12 0" VerticalAlignment="Center">
+                                                                <Grid.ColumnDefinitions>
+                                                                    <ColumnDefinition Width="*"/>
+                                                                    <ColumnDefinition Width="Auto"/>
+                                                                </Grid.ColumnDefinitions>
+                                                                <TextBlock Grid.Column="0"
+                                                                           Text="{Binding SeedText}"
+                                                                           FontWeight="Bold"
+                                                                           FontSize="15"
+                                                                           Foreground="#1976D2"
+                                                                           VerticalAlignment="Center"
+                                                                           TextTrimming="CharacterEllipsis"/>
+                                                                <Border Grid.Column="1"
+                                                                        Background="#F5F5F5"
+                                                                        CornerRadius="4"
+                                                                        Padding="6 2"
+                                                                        Margin="12 0 0 0"
+                                                                        VerticalAlignment="Center">
                                                                     <TextBlock Text="{Binding CharacterName}" Foreground="#666" FontSize="12"/>
                                                                 </Border>
-                                                            </WrapPanel>
-                                                            <Button Grid.Column="1"
+                                                            </Grid>
+                                                            <Button Grid.Column="2"
                                                                     Content="复制"
                                                                     Command="{Binding DataContext.CopyResultCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
                                                                     CommandParameter="{Binding}"
