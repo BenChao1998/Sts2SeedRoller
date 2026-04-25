@@ -10,6 +10,9 @@ internal sealed record AncientGenerationContext(
     uint RunSeed,
     CharacterId Character,
     int ActIndex,
+    // Current preview only carries the lightweight inputs we already reconstruct.
+    // Several Ancient events in the real game also depend on deck/relic state
+    // right before the node, so simplified logic below can drift from saves.
     IReadOnlyList<CharacterId> UnlockedCharacters);
 
 internal abstract class AncientEventLogic
@@ -74,6 +77,9 @@ internal sealed class OrobasEventLogic : AncientEventLogic
 
     public override IReadOnlyList<AncientOptionResult> GenerateOptions(AncientGenerationContext context, GameRng rng)
     {
+        // Source-fidelity note:
+        // the real event also runs SetupForPlayer on Pool3 relics, so ownership /
+        // character-specific setup can still affect whether a relic is truly valid.
         var pool1 = Pool1.ToList();
 
         var otherCharacters = context.UnlockedCharacters
@@ -118,6 +124,9 @@ internal sealed class PaelEventLogic : AncientEventLogic
 
     public override IReadOnlyList<AncientOptionResult> GenerateOptions(AncientGenerationContext context, GameRng rng)
     {
+        // Source-fidelity note:
+        // PaelsClaw / PaelsTooth / PaelsLegion are gated by current deck/relic
+        // state in the real event (Goopy count, removable cards, event pet).
         var option1 = CreateOption(Pool1[rng.NextInt(Pool1.Length)]);
 
         var pool2 = new List<string>
@@ -198,6 +207,9 @@ internal sealed class NonupeipeEventLogic : AncientEventLogic
 
     public override IReadOnlyList<AncientOptionResult> GenerateOptions(AncientGenerationContext context, GameRng rng)
     {
+        // Source-fidelity note:
+        // BeautifulBracelet only joins the pool when the current deck has at
+        // least four cards that can receive Swift.
         var pool = BasePool.ToList();
         pool.Add("BEAUTIFUL_BRACELET");
         rng.Shuffle(pool);
@@ -231,6 +243,9 @@ internal sealed class TanxEventLogic : AncientEventLogic
 
     public override IReadOnlyList<AncientOptionResult> GenerateOptions(AncientGenerationContext context, GameRng rng)
     {
+        // Source-fidelity note:
+        // TriBoomerang is only added when the current deck has enough cards that
+        // can receive Instinct.
         var pool = BasePool.ToList();
         pool.Add("TRI_BOOMERANG");
         rng.Shuffle(pool);
@@ -313,6 +328,8 @@ internal sealed class DarvEventLogic : AncientEventLogic
 
     public override IReadOnlyList<AncientOptionResult> GenerateOptions(AncientGenerationContext context, GameRng rng)
     {
+        // Darv depends on the act index because the boss-relic subset differs
+        // between the Act 2 and Act 3 Ancient nodes.
         var pool = new List<AncientOptionResult>();
         foreach (var set in RelicSets)
         {

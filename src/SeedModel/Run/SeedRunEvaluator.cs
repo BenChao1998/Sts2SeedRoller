@@ -9,6 +9,8 @@ namespace SeedModel.Run;
 
 public sealed class SeedRunEvaluator
 {
+    private const int PoolFilterVisibilityFastSamples = 1_024;
+
     private readonly NeowGenerator _neowGenerator;
     private readonly Sts2RunPreviewer? _ancientPreviewer;
     private readonly NeowOptionDataset _neowDataset;
@@ -46,34 +48,47 @@ public sealed class SeedRunEvaluator
             : neowOptions.ToList();
 
         var neowMatched = neowMatches.Count > 0;
+        if (!neowMatched)
+        {
+            return CreateMatch(
+                neowOptions,
+                neowMatches,
+                neowMatched: false,
+                ancientMatched: true,
+                poolMatched: true,
+                shopMatched: true);
+        }
+
         var ancientMatched = true;
 
         Sts2RunPreview? actPreview = null;
-        if (_ancientPreviewer != null && (context.IncludeAct2 || context.IncludeAct3))
-        {
-            var request = new Sts2RunRequest
-            {
-                SeedValue = context.RunSeed,
-                SeedText = context.SeedText,
-                Character = context.Character,
-                UnlockedCharacters = context.UnlockedCharacters,
-                PlayerCount = context.PlayerCount,
-                AscensionLevel = context.AscensionLevel,
-                IncludeDarvSharedAncient = context.IncludeDarvSharedAncient,
-                IncludeAct2 = context.IncludeAct2,
-                IncludeAct3 = context.IncludeAct3
-            };
-
-            actPreview = _ancientPreviewer.Preview(request);
-        }
-
         if (filter.AncientFilter.HasCriteria)
         {
-            ancientMatched = filter.AncientFilter.Matches(actPreview);
+            if (_ancientPreviewer == null)
+            {
+                ancientMatched = false;
+            }
+            else
+            {
+                actPreview = PreviewActs(context);
+                ancientMatched = filter.AncientFilter.Matches(actPreview);
+            }
+
+            if (!ancientMatched)
+            {
+                return CreateMatch(
+                    neowOptions,
+                    neowMatches,
+                    neowMatched: true,
+                    ancientMatched: false,
+                    poolMatched: true,
+                    shopMatched: true);
+            }
         }
 
         var poolMatched = true;
         Sts2SeedAnalysis? poolAnalysis = null;
+        Sts2RelicVisibilityAnalysis? relicVisibilityAnalysis = null;
         if (filter.PoolFilter.HasCriteria)
         {
             if (_ancientPreviewer == null)
@@ -82,16 +97,55 @@ public sealed class SeedRunEvaluator
             }
             else
             {
-                poolAnalysis = _ancientPreviewer.AnalyzePools(new Sts2SeedAnalysisRequest
+                var actOnlyPoolFilter = filter.PoolFilter with { HighProbabilityRelicIds = Array.Empty<string>() };
+                if (actOnlyPoolFilter.HasCriteria)
                 {
-                    SeedText = context.SeedText,
-                    SeedValue = context.RunSeed,
-                    Character = context.Character,
-                    UnlockedCharacters = context.UnlockedCharacters,
-                    AscensionLevel = context.AscensionLevel,
-                    IncludeDarvSharedAncient = context.IncludeDarvSharedAncient
-                });
-                poolMatched = filter.PoolFilter.Matches(poolAnalysis);
+                    poolAnalysis = _ancientPreviewer.AnalyzePools(new Sts2SeedAnalysisRequest
+                    {
+                        SeedText = context.SeedText,
+                        SeedValue = context.RunSeed,
+                        Character = context.Character,
+                        UnlockedCharacters = context.UnlockedCharacters,
+                        AscensionLevel = context.AscensionLevel,
+                        AncientAvailability = context.ResolveAncientAvailability(),
+                        IncludeDarvSharedAncient = context.IncludeDarvSharedAncient
+                    });
+
+                    poolMatched = actOnlyPoolFilter.Matches(poolAnalysis, relicVisibility: null);
+                }
+
+                if (poolMatched && filter.PoolFilter.HighProbabilityRelicIds.Count > 0)
+                {
+                    poolMatched = _ancientPreviewer.MatchesHighProbabilityRelics(
+                        _neowDataset,
+                        new Sts2RelicVisibilityRequest
+                        {
+                            SeedText = context.SeedText,
+                            SeedValue = context.RunSeed,
+                            Character = context.Character,
+                            UnlockedCharacters = context.UnlockedCharacters,
+                            AscensionLevel = context.AscensionLevel,
+                            PlayerCount = context.PlayerCount,
+                            Samples = PoolFilterVisibilityFastSamples,
+                            AncientAvailability = context.ResolveAncientAvailability(),
+                            IncludeDarvSharedAncient = context.IncludeDarvSharedAncient
+                        },
+                        filter.PoolFilter.HighProbabilityRelicIds,
+                        filter.PoolFilter.HighProbabilitySeenThreshold);
+                }
+            }
+
+            if (!poolMatched)
+            {
+                return CreateMatch(
+                    neowOptions,
+                    neowMatches,
+                    neowMatched: true,
+                    ancientMatched: true,
+                    poolMatched: false,
+                    shopMatched: true,
+                    actPreview: actPreview,
+                    poolAnalysis: poolAnalysis);
             }
         }
 
@@ -143,8 +197,109 @@ public sealed class SeedRunEvaluator
                     shopMatched = filter.ShopFilter.Matches(shopPreview);
                 }
             }
+
+            if (!shopMatched)
+            {
+                return CreateMatch(
+                    neowOptions,
+                    neowMatches,
+                    neowMatched: true,
+                    ancientMatched: true,
+                    poolMatched: true,
+                    shopMatched: false,
+                    actPreview: actPreview,
+                    poolAnalysis: poolAnalysis,
+                    shopPreview: shopPreview);
+            }
         }
 
+        if (_ancientPreviewer != null &&
+            actPreview == null &&
+            (context.IncludeAct2 || context.IncludeAct3))
+        {
+            actPreview = PreviewActs(context);
+        }
+
+        if (_ancientPreviewer != null &&
+            filter.PoolFilter.HighProbabilityRelicIds.Count > 0)
+        {
+            relicVisibilityAnalysis = _ancientPreviewer.AnalyzeRelicVisibility(_neowDataset, new Sts2RelicVisibilityRequest
+            {
+                SeedText = context.SeedText,
+                SeedValue = context.RunSeed,
+                Character = context.Character,
+                UnlockedCharacters = context.UnlockedCharacters,
+                AscensionLevel = context.AscensionLevel,
+                PlayerCount = context.PlayerCount,
+                AncientAvailability = context.ResolveAncientAvailability(),
+                IncludeDarvSharedAncient = context.IncludeDarvSharedAncient
+            });
+
+            if (!filter.PoolFilter.Matches(poolAnalysis, relicVisibilityAnalysis))
+            {
+                return CreateMatch(
+                    neowOptions,
+                    neowMatches,
+                    neowMatched: true,
+                    ancientMatched: true,
+                    poolMatched: false,
+                    shopMatched: true,
+                    actPreview: actPreview,
+                    shopPreview: shopPreview,
+                    poolAnalysis: poolAnalysis,
+                    relicVisibilityAnalysis: relicVisibilityAnalysis);
+            }
+        }
+
+        return CreateMatch(
+            neowOptions,
+            neowMatches,
+            neowMatched: true,
+            ancientMatched: true,
+            poolMatched: true,
+            shopMatched: true,
+            actPreview: actPreview,
+            shopPreview: shopPreview,
+            poolAnalysis: poolAnalysis,
+            relicVisibilityAnalysis: relicVisibilityAnalysis);
+    }
+
+    private Sts2RunPreview? PreviewActs(SeedRunEvaluationContext context)
+    {
+        if (_ancientPreviewer == null)
+        {
+            return null;
+        }
+
+        var request = new Sts2RunRequest
+        {
+            SeedValue = context.RunSeed,
+            SeedText = context.SeedText,
+            Character = context.Character,
+            UnlockedCharacters = context.UnlockedCharacters,
+            PlayerCount = context.PlayerCount,
+            AscensionLevel = context.AscensionLevel,
+            AncientAvailability = context.ResolveAncientAvailability(),
+            IncludeDarvSharedAncient = context.IncludeDarvSharedAncient,
+            IncludeAct2 = context.IncludeAct2,
+            IncludeAct3 = context.IncludeAct3
+        };
+
+        return _ancientPreviewer.Preview(request);
+    }
+
+    private static SeedRunMatch CreateMatch(
+        IReadOnlyList<NeowOptionResult> neowOptions,
+        IReadOnlyList<NeowOptionResult> neowMatches,
+        bool neowMatched,
+        bool ancientMatched,
+        bool poolMatched,
+        bool shopMatched,
+        Sts2RunPreview? actPreview = null,
+        ShopPreview? shopPreview = null,
+        Sts2SeedAnalysis? poolAnalysis = null,
+        Sts2RelicVisibilityAnalysis? relicVisibilityAnalysis = null)
+    {
         return new SeedRunMatch
         {
             NeowOptions = neowOptions,
@@ -156,7 +311,8 @@ public sealed class SeedRunEvaluator
             ShopFilterMatched = shopMatched,
             ShopPreview = shopPreview,
             PoolFilterMatched = poolMatched,
-            PoolAnalysis = poolAnalysis
+            PoolAnalysis = poolAnalysis,
+            RelicVisibilityAnalysis = relicVisibilityAnalysis
         };
     }
 }

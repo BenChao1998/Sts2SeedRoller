@@ -9,6 +9,13 @@ namespace SeedModel.Sts2.Generation;
 internal sealed class Sts2RelicShufflePrimer
 {
     private const int PreviewLimitPerRarity = 12;
+    private static readonly HashSet<string> TrackedPlayerRarities = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "Common",
+        "Uncommon",
+        "Rare",
+        "Shop"
+    };
 
     private readonly Sts2WorldData.RelicPoolInfo _pools;
 
@@ -24,14 +31,18 @@ internal sealed class Sts2RelicShufflePrimer
             throw new ArgumentNullException(nameof(rng));
         }
 
-        ShuffleBag(rng, _pools.SharedSequence);
+        // Save-backed regression showed the Ancient selection RNG matches the
+        // game when the shared bag uses all relic rarities, then the player bag
+        // consumes the extra gap step, and finally only the tracked gameplay
+        // rarities (Common/Uncommon/Rare/Shop) are shuffled for the player bag.
+        ShuffleBag(rng, _pools.SharedSequence, trackedOnly: false);
         rng.FastForward(rng.Counter + 1);
 
         var combined = CombineSequences(_pools.SharedSequence, _pools.GetSequenceFor(character));
         var players = Math.Max(1, playerCount);
         for (var i = 0; i < players; i++)
         {
-            ShuffleBag(rng, combined);
+            ShuffleBag(rng, combined, trackedOnly: true);
         }
     }
 
@@ -42,14 +53,14 @@ internal sealed class Sts2RelicShufflePrimer
             throw new ArgumentNullException(nameof(rng));
         }
 
-        var sharedPools = ShuffleBagAndCapture(rng, _pools.SharedSequence);
+        var sharedPools = ShuffleBagAndCapture(rng, _pools.SharedSequence, trackedOnly: false);
         rng.FastForward(rng.Counter + 1);
         var combined = CombineSequences(_pools.SharedSequence, _pools.GetSequenceFor(character));
         var playerPools = Array.Empty<Sts2RelicPoolPreviewGroup>();
         var players = Math.Max(1, playerCount);
         for (var i = 0; i < players; i++)
         {
-            playerPools = ShuffleBagAndCapture(rng, combined).ToArray();
+            playerPools = ShuffleBagAndCapture(rng, combined, trackedOnly: true).ToArray();
         }
 
         return new RelicPoolPreviewResult(sharedPools, playerPools);
@@ -70,9 +81,9 @@ internal sealed class Sts2RelicShufflePrimer
         return combined;
     }
 
-    private void ShuffleBag(GameRng rng, IReadOnlyList<string> sequence)
+    private void ShuffleBag(GameRng rng, IReadOnlyList<string> sequence, bool trackedOnly)
     {
-        var buckets = BuildBuckets(sequence);
+        var buckets = BuildBuckets(sequence, trackedOnly);
         foreach (var list in buckets.Values)
         {
             if (list.Count <= 1)
@@ -84,9 +95,12 @@ internal sealed class Sts2RelicShufflePrimer
         }
     }
 
-    private IReadOnlyList<Sts2RelicPoolPreviewGroup> ShuffleBagAndCapture(GameRng rng, IReadOnlyList<string> sequence)
+    private IReadOnlyList<Sts2RelicPoolPreviewGroup> ShuffleBagAndCapture(
+        GameRng rng,
+        IReadOnlyList<string> sequence,
+        bool trackedOnly)
     {
-        var buckets = BuildBuckets(sequence);
+        var buckets = BuildBuckets(sequence, trackedOnly);
         foreach (var list in buckets.Values)
         {
             if (list.Count <= 1)
@@ -118,7 +132,7 @@ internal sealed class Sts2RelicShufflePrimer
             .ToList();
     }
 
-    private Dictionary<string, List<string>> BuildBuckets(IReadOnlyList<string> sequence)
+    private Dictionary<string, List<string>> BuildBuckets(IReadOnlyList<string> sequence, bool trackedOnly)
     {
         var buckets = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
         foreach (var relic in sequence)
@@ -134,6 +148,11 @@ internal sealed class Sts2RelicShufflePrimer
             }
 
             if (string.IsNullOrWhiteSpace(rarity))
+            {
+                continue;
+            }
+
+            if (trackedOnly && !TrackedPlayerRarities.Contains(rarity))
             {
                 continue;
             }

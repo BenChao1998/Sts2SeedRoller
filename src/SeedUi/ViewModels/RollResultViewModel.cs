@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -17,6 +17,7 @@ internal sealed class RollResultViewModel
         string characterName,
         IEnumerable<NeowOptionResult> act1Options,
         Sts2SeedAnalysis? poolAnalysis,
+        Sts2RelicVisibilityAnalysis? relicVisibilityAnalysis,
         Sts2PoolFilter? poolFilter,
         Sts2RunPreview? ancientPreview,
         bool requiresAct2,
@@ -35,20 +36,27 @@ internal sealed class RollResultViewModel
         var optionList = act1Options.ToList();
         RawOptions = optionList;
         Options = optionList.Select(o => new OptionDisplayViewModel(o)).ToList();
+
         var act1EventIds = ToIdSet(poolFilter?.Act1EventIds);
         var act2EventIds = ToIdSet(poolFilter?.Act2EventIds);
         var act3EventIds = ToIdSet(poolFilter?.Act3EventIds);
-        var sharedRelicIds = ToIdSet(poolFilter?.SharedRelicIds);
-        var playerRelicIds = ToIdSet(poolFilter?.PlayerRelicIds);
+        var highProbabilityRelicIds = ToIdSet(poolFilter?.HighProbabilityRelicIds);
+        var highProbabilitySeenThreshold = poolFilter?.HighProbabilitySeenThreshold
+            ?? Sts2PoolFilter.DefaultHighProbabilitySeenThreshold;
+
         PoolActs = poolAnalysis == null
             ? Array.Empty<PoolActViewModel>()
-            : poolAnalysis.Acts.Select(act => new PoolActViewModel(act, GetRequiredEventIds(act.ActNumber, act1EventIds, act2EventIds, act3EventIds))).ToList();
-        SharedRelicPools = poolAnalysis == null
-            ? Array.Empty<PoolRelicGroupViewModel>()
-            : poolAnalysis.SharedRelicPools.Select(group => new PoolRelicGroupViewModel(group, sharedRelicIds)).ToList();
-        PlayerRelicPools = poolAnalysis == null
-            ? Array.Empty<PoolRelicGroupViewModel>()
-            : poolAnalysis.PlayerRelicPools.Select(group => new PoolRelicGroupViewModel(group, playerRelicIds)).ToList();
+            : poolAnalysis.Acts
+                .Select(act => new PoolActViewModel(act, GetRequiredEventIds(act.ActNumber, act1EventIds, act2EventIds, act3EventIds)))
+                .ToList();
+
+        RelicVisibilityProfiles = relicVisibilityAnalysis == null
+            ? Array.Empty<PoolRelicVisibilityProfileViewModel>()
+            : relicVisibilityAnalysis.Profiles
+                .Select(profile => new PoolRelicVisibilityProfileViewModel(profile, highProbabilityRelicIds, highProbabilitySeenThreshold))
+                .Where(profile => profile.HasRelics)
+                .ToList();
+
         AncientActs = ancientPreview == null
             ? Array.Empty<AncientActViewModel>()
             : ancientPreview.Acts.Select(act => new AncientActViewModel(act)).ToList();
@@ -91,11 +99,9 @@ internal sealed class RollResultViewModel
 
     public IReadOnlyList<PoolActViewModel> PoolActs { get; }
 
-    public IReadOnlyList<PoolRelicGroupViewModel> SharedRelicPools { get; }
+    public IReadOnlyList<PoolRelicVisibilityProfileViewModel> RelicVisibilityProfiles { get; }
 
-    public IReadOnlyList<PoolRelicGroupViewModel> PlayerRelicPools { get; }
-
-    public bool HasPoolAnalysis => PoolActs.Count > 0 || SharedRelicPools.Count > 0 || PlayerRelicPools.Count > 0;
+    public bool HasPoolAnalysis => PoolActs.Count > 0 || RelicVisibilityProfiles.Count > 0;
 
     public IReadOnlyList<AncientActViewModel> AncientActs { get; }
 
@@ -146,22 +152,49 @@ internal sealed class RollResultViewModel
         public IReadOnlyList<PoolEventItemViewModel> Events { get; }
     }
 
-    internal sealed class PoolRelicGroupViewModel
+    internal sealed class PoolRelicVisibilityProfileViewModel
     {
-        public PoolRelicGroupViewModel(Sts2RelicPoolPreviewGroup group, HashSet<string> requiredIds)
+        public PoolRelicVisibilityProfileViewModel(
+            Sts2RelicVisibilityProfileResult profile,
+            HashSet<string> requiredIds,
+            double seenThreshold)
         {
-            Title = $"{FormatRarity(group.Rarity)} (优先候选{group.PriorityCount}个 / 共{group.TotalCount}个)";
-            Relics = group.Relics
-                .Select((relicId, index) => new PoolRelicItemViewModel(
-                    MainWindowViewModel.GetRelicDisplayName(relicId),
-                    requiredIds.Contains(relicId),
-                    index + 1))
+            Title = $"{profile.Title} 路线画像";
+            Description = $"{profile.Description} 高概率阈值：出现概率 >= {seenThreshold:P0}。";
+            var filteredRelics = profile.SeenRelics
+                .Where(item => item.SeenProbability >= seenThreshold)
+                .ToList();
+
+            var visibleRelics = filteredRelics
+                .Take(12)
+                .ToList();
+
+            foreach (var matchedRelic in filteredRelics.Where(item => requiredIds.Contains(item.RelicId)))
+            {
+                if (visibleRelics.Any(item => string.Equals(item.RelicId, matchedRelic.RelicId, StringComparison.OrdinalIgnoreCase)))
+                {
+                    continue;
+                }
+
+                visibleRelics.Add(matchedRelic);
+            }
+
+            Relics = visibleRelics
+                .Select((item, index) => new PoolRelicVisibilityItemViewModel(
+                    $"{index + 1:D2}. {FormatRelicLine(item)}",
+                    requiredIds.Contains(item.RelicId)))
                 .ToList();
         }
 
         public string Title { get; }
 
-        public IReadOnlyList<PoolRelicItemViewModel> Relics { get; }
+        public string Description { get; }
+
+        public IReadOnlyList<PoolRelicVisibilityItemViewModel> Relics { get; }
+
+        public bool HasDescription => !string.IsNullOrWhiteSpace(Description);
+
+        public bool HasRelics => Relics.Count > 0;
     }
 
     internal sealed class PoolEventItemViewModel
@@ -191,11 +224,11 @@ internal sealed class RollResultViewModel
         public bool HasDescriptionAndOptions => HasDescription && HasOptions;
     }
 
-    internal sealed class PoolRelicItemViewModel
+    internal sealed class PoolRelicVisibilityItemViewModel
     {
-        public PoolRelicItemViewModel(string displayName, bool isMatched, int orderIndex)
+        public PoolRelicVisibilityItemViewModel(string displayName, bool isMatched)
         {
-            DisplayName = $"{orderIndex:D2}. {displayName}";
+            DisplayName = displayName;
             IsMatched = isMatched;
         }
 
@@ -314,15 +347,21 @@ internal sealed class RollResultViewModel
         };
     }
 
-    private static string FormatRarity(string rarity)
+    private static string FormatRelicLine(Sts2RelicVisibilityRankedRelic item)
     {
-        return rarity switch
+        return $"{MainWindowViewModel.GetRelicDisplayName(item.RelicId)} | Seen {item.SeenProbability:P1} | Non-shop {item.NonShopSeenProbability:P1} | Shop {item.ShopSeenProbability:P1} | Early {item.EarlyProbability:P1} | Avg {item.AverageFirstOpportunity:F2} | {FormatSource(item.MostCommonSource)}";
+    }
+
+    private static string FormatSource(Sts2RelicVisibilitySource source)
+    {
+        return source switch
         {
-            "Common" => "普通",
-            "Uncommon" => "非凡",
-            "Rare" => "稀有",
-            "Shop" => "商店",
-            _ => rarity
+            Sts2RelicVisibilitySource.Treasure => "Treasure",
+            Sts2RelicVisibilitySource.Elite => "Elite",
+            Sts2RelicVisibilitySource.Shop => "Shop",
+            Sts2RelicVisibilitySource.AncientAct2 => "Ancient Act2",
+            Sts2RelicVisibilitySource.AncientAct3 => "Ancient Act3",
+            _ => source.ToString()
         };
     }
 }

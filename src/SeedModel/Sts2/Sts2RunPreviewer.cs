@@ -35,16 +35,20 @@ public sealed class Sts2RunPreviewer
         };
 
     private readonly AncientOptionCatalog _catalog;
+    private readonly HashSet<string> _ancientOptionIds;
     private readonly Sts2WorldData _world;
     private readonly Sts2RunSimulator _simulator;
     private readonly Sts2RelicShufflePrimer _primer;
+    private readonly Sts2RelicVisibilityAnalyzer _relicVisibilityAnalyzer;
 
     internal Sts2RunPreviewer(AncientOptionCatalog catalog, Sts2WorldData world)
     {
         _catalog = catalog ?? throw new ArgumentNullException(nameof(catalog));
+        _ancientOptionIds = _catalog.OptionIds.ToHashSet(StringComparer.OrdinalIgnoreCase);
         _world = world ?? throw new ArgumentNullException(nameof(world));
         _simulator = new Sts2RunSimulator(_world);
         _primer = new Sts2RelicShufflePrimer(_world);
+        _relicVisibilityAnalyzer = new Sts2RelicVisibilityAnalyzer(_world);
     }
 
     public static Sts2RunPreviewer CreateFromDataFiles(string optionDataPath, string actDataPath)
@@ -92,6 +96,7 @@ public sealed class Sts2RunPreviewer
         var upFrontRng = new GameRng(request.SeedValue, "up_front");
         _primer.Prime(upFrontRng, request.Character, request.PlayerCount);
         var unlockedCharacters = ResolveUnlockedCharacters(request.Character, request.UnlockedCharacters);
+        var ancientAvailability = request.ResolveAncientAvailability();
 
         var generationContext = new AncientGenerationContext(
             request.SeedValue,
@@ -102,7 +107,7 @@ public sealed class Sts2RunPreviewer
         var actResults = _simulator.Simulate(
             upFrontRng,
             request.SeedValue,
-            request.IncludeDarvSharedAncient);
+            ancientAvailability);
         foreach (var result in actResults)
         {
             var shouldInclude = (result.ActNumber == 2 && request.IncludeAct2) ||
@@ -158,10 +163,11 @@ public sealed class Sts2RunPreviewer
 
         var upFrontRng = new GameRng(request.SeedValue, "up_front");
         var relicPools = _primer.PrimeAndCapture(upFrontRng, request.Character, playerCount: 1);
+        var ancientAvailability = request.ResolveAncientAvailability();
         var actPools = _simulator.Analyze(
             upFrontRng,
             request.SeedValue,
-            request.IncludeDarvSharedAncient);
+            ancientAvailability);
 
         return new Sts2SeedAnalysis
         {
@@ -184,6 +190,40 @@ public sealed class Sts2RunPreviewer
                 })
                 .ToList()
         };
+    }
+
+    public Sts2RelicVisibilityAnalysis AnalyzeRelicVisibility(NeowOptionDataset dataset, Sts2RelicVisibilityRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(dataset);
+        if (request is null)
+        {
+            throw new ArgumentNullException(nameof(request));
+        }
+
+        var (ancientActs, rarityMap) = BuildRelicVisibilityInputs(dataset, request);
+
+        return _relicVisibilityAnalyzer.Analyze(dataset, request, ancientActs, rarityMap);
+    }
+
+    internal bool MatchesHighProbabilityRelics(
+        NeowOptionDataset dataset,
+        Sts2RelicVisibilityRequest request,
+        IReadOnlyList<string> requiredRelicIds,
+        double seenThreshold)
+    {
+        ArgumentNullException.ThrowIfNull(dataset);
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(requiredRelicIds);
+
+        var needsAncientPreview = requiredRelicIds.Any(relicId => _ancientOptionIds.Contains(relicId));
+        var (ancientActs, rarityMap) = BuildRelicVisibilityInputs(dataset, request, includeAncientPreview: needsAncientPreview);
+        return _relicVisibilityAnalyzer.MatchesHighProbabilityRelics(
+            dataset,
+            request,
+            ancientActs,
+            rarityMap,
+            requiredRelicIds,
+            seenThreshold);
     }
 
     public ShopPreview PreviewFirstShop(
@@ -233,5 +273,56 @@ public sealed class Sts2RunPreviewer
         }
 
         return unlocked;
+    }
+
+    private (IReadOnlyList<Sts2RelicVisibilityAncientAct> AncientActs, IReadOnlyDictionary<string, string> RarityMap) BuildRelicVisibilityInputs(
+        NeowOptionDataset dataset,
+        Sts2RelicVisibilityRequest request,
+        bool includeAncientPreview = true)
+    {
+        IReadOnlyList<Sts2RelicVisibilityAncientAct> ancientActs = Array.Empty<Sts2RelicVisibilityAncientAct>();
+        if (includeAncientPreview)
+        {
+            var ancientAvailability = request.ResolveAncientAvailability();
+            var ancientPreview = Preview(new Sts2RunRequest
+            {
+                SeedText = request.SeedText,
+                SeedValue = request.SeedValue,
+                Character = request.Character,
+                UnlockedCharacters = ResolveUnlockedCharacters(request.Character, request.UnlockedCharacters),
+                AscensionLevel = request.AscensionLevel,
+                PlayerCount = request.PlayerCount,
+                AncientAvailability = ancientAvailability,
+                IncludeDarvSharedAncient = request.IncludeDarvSharedAncient,
+                IncludeAct2 = true,
+                IncludeAct3 = true
+            });
+
+            ancientActs = ancientPreview.Acts
+                .Select(act => new Sts2RelicVisibilityAncientAct
+                {
+                    ActNumber = act.ActNumber,
+                    AncientId = act.AncientId ?? string.Empty,
+                    AncientName = act.AncientName ?? act.AncientId ?? string.Empty,
+                    Options = act.AncientOptions
+                        .Where(option => !string.IsNullOrWhiteSpace(option.RelicId))
+                        .Select(option => new Sts2RelicVisibilityAncientOption
+                        {
+                            RelicId = option.RelicId ?? string.Empty,
+                            Title = option.Title ?? option.RelicId ?? string.Empty,
+                            Description = option.Description,
+                            Note = option.Note
+                        })
+                        .ToList()
+                })
+                .ToList();
+        }
+
+        var rarityMap = dataset.RelicMetadataMap.ToDictionary(
+            pair => pair.Key,
+            pair => pair.Value.Rarity,
+            StringComparer.OrdinalIgnoreCase);
+
+        return (ancientActs, rarityMap);
     }
 }

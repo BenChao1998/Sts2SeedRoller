@@ -59,6 +59,8 @@ internal sealed class AncientOptionCatalog
         };
     }
 
+    public IReadOnlyCollection<string> OptionIds => _options.Keys;
+
     private sealed record AncientOptionDataModel
     {
         public DateTimeOffset GeneratedAt { get; init; }

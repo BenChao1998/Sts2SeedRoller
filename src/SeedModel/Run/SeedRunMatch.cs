@@ -24,4 +24,6 @@ public sealed record SeedRunMatch
     public bool PoolFilterMatched { get; init; }
 
     public Sts2SeedAnalysis? PoolAnalysis { get; init; }
+
+    public Sts2RelicVisibilityAnalysis? RelicVisibilityAnalysis { get; init; }
 }

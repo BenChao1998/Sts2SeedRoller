@@ -225,23 +225,14 @@ internal static class AncientDisplayCatalog
 
     public static string ResolveOptionDataPath(string? version = null)
     {
-        string baseDirectory;
-        if (!string.IsNullOrWhiteSpace(version))
-        {
-            baseDirectory = Path.Combine(AppContext.BaseDirectory, "data", version, "ancients");
-        }
-        else
-        {
-            baseDirectory = Path.Combine(AppContext.BaseDirectory, "data", "0.99.1", "ancients");
-        }
-
-        var localized = Path.Combine(baseDirectory, "options.zhs.json");
+        var resolvedVersion = string.IsNullOrWhiteSpace(version) ? "0.99.1" : version;
+        var localized = UiDataPathResolver.ResolveVersionedDataFilePath(resolvedVersion, "ancients", "options.zhs.json");
         if (File.Exists(localized))
         {
             return localized;
         }
 
-        return Path.Combine(baseDirectory, "options.json");
+        return UiDataPathResolver.ResolveVersionedDataFilePath(resolvedVersion, "ancients", "options.json");
     }
 
     private static AncientRelicDisplayOption? CreateRelicOption(

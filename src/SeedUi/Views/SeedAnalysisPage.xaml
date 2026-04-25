@@ -104,17 +104,51 @@
 
                 <TextBlock Text="{Binding SeedAnalysisSummary}" Foreground="#333" TextWrapping="Wrap" Margin="0 0 0 4"/>
                 <TextBlock Text="{Binding SeedAnalysisSeedValueText}" Foreground="#1976D2" FontSize="12"/>
-                <TextBlock Text="补充：起始遗物、古神遗物，以及部分事件直接发放的固定遗物，不属于随机遗物池；它们即使会在游戏中出现，也不会显示在共享/角色遗物池里。"
+                <Border Margin="0 12 0 0"
+                        Padding="12"
+                        CornerRadius="6"
+                        BorderThickness="1"
+                        BorderBrush="#D7CCC8"
+                        Background="#FAFAFA">
+                    <StackPanel>
+                        <TextBlock Text="progress.save 说明"
+                                   FontSize="13"
+                                   FontWeight="SemiBold"
+                                   Foreground="#333"
+                                   Margin="0 0 0 8"/>
+                        <TextBlock Text="{Binding ProgressSaveLoadStatus}"
+                                   Foreground="#8A5A00"
+                                   FontWeight="SemiBold"
+                                   TextWrapping="Wrap"/>
+                        <TextBlock Text="{Binding ProgressSaveSummary}"
+                                   Foreground="#666"
+                                   TextWrapping="Wrap"
+                                   Margin="0 6 0 0"/>
+                        <TextBlock Text="{Binding ProgressSavePathText}"
+                                   Foreground="#666"
+                                   TextWrapping="Wrap"
+                                   Margin="0 6 0 0"/>
+                        <TextBlock Text="{Binding ProgressSaveEpochText}"
+                                   Foreground="#666"
+                                   TextWrapping="Wrap"
+                                   Margin="0 6 0 0"/>
+                        <TextBlock Text="{Binding ProgressSaveAncientRuleText}"
+                                   Foreground="#666"
+                                   TextWrapping="Wrap"
+                                   Margin="0 6 0 0"/>
+                        <TextBlock Text="说明：若未成功加载 progress.save，程序会回退为默认全解锁 Ancient 规则。"
+                                   Foreground="#888"
+                                   FontSize="12"
+                                   TextWrapping="Wrap"
+                                   Margin="0 8 0 0"/>
+                    </StackPanel>
+                </Border>
+                <TextBlock Text="说明：事件池、普通怪池和精英池展示的是该种子下的固定候选顺序；遗物则改为使用下方的概率预览，更接近实际跑图时能看到什么。"
                            Foreground="#888"
                            FontSize="12"
                            TextWrapping="Wrap"
                            Margin="0 6 0 0"/>
-                <TextBlock Text="说明：这里展示的是该种子按顺序生成的优先候选，不代表本局一定会把这些事件或遗物全部看到。实际是否出现，还会受到路线、奖励、事件消耗和当时可用条件影响。"
-                           Foreground="#888"
-                           FontSize="12"
-                           TextWrapping="Wrap"
-                           Margin="0 8 0 0"/>
-                <TextBlock Text="说明：当前页面展示的事件池、普通怪池、精英池、遗物池顺序不受进阶等级影响；进阶主要影响地图房型分布和战斗难度。事件名称支持鼠标悬浮查看说明。"
+                <TextBlock Text="说明：当前页面展示的事件池、普通怪池、精英池顺序不受进阶等级影响；进阶主要影响地图房型分布和战斗难度。事件名称支持鼠标悬浮查看说明。"
                            Foreground="#888"
                            FontSize="12"
                            TextWrapping="Wrap"
@@ -190,50 +224,79 @@
         </Border>
 
         <Border Grid.Row="2" Style="{StaticResource CardStyle}" Margin="0 0 0 16">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
+            <StackPanel>
+                <TextBlock Text="遗物概率预览" FontSize="16" FontWeight="SemiBold" Foreground="#333" Margin="0 0 0 12"/>
+                <TextBlock Text="{Binding SeedAnalysisRelicVisibilitySummary}" Foreground="#666" TextWrapping="Wrap" Margin="0 0 0 12"/>
+                <TextBlock Text="这里会按不同路线画像做 Monte Carlo 预估，帮助判断哪些遗物更容易在前期看到，哪些遗物整体更可能出现在本局流程中。"
+                           Foreground="#888"
+                           FontSize="12"
+                           TextWrapping="Wrap"
+                           Margin="0 0 0 12"/>
 
-                <StackPanel Grid.Column="0" Margin="0 0 12 0">
-                    <TextBlock Text="共享遗物池" Style="{StaticResource SectionHeaderStyle}"/>
-                    <ItemsControl ItemsSource="{Binding SeedAnalysisSharedRelicPools}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Expander Header="{Binding Title}" Margin="0 0 0 8">
-                                    <ItemsControl ItemsSource="{Binding Relics}">
+                <ItemsControl ItemsSource="{Binding SeedAnalysisRelicVisibilityProfiles}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Expander Header="{Binding Title}" IsExpanded="False" Margin="0 0 0 12">
+                                <StackPanel Margin="0 8 0 0">
+                                    <TextBlock Text="{Binding Description}"
+                                               Foreground="#666"
+                                               TextWrapping="Wrap"
+                                               Visibility="{Binding HasDescription, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+
+                                    <ItemsControl ItemsSource="{Binding ActSummaries}" Margin="0 8 0 0">
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
-                                                <TextBlock Text="{Binding}" Margin="0 2 0 2" Foreground="#444" TextWrapping="Wrap"/>
+                                                <TextBlock Text="{Binding}" Margin="0 2 0 2" Foreground="#555" TextWrapping="Wrap"/>
                                             </DataTemplate>
                                         </ItemsControl.ItemTemplate>
                                     </ItemsControl>
-                                </Expander>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </StackPanel>
 
-                <StackPanel Grid.Column="1" Margin="12 0 0 0">
-                    <TextBlock Text="当前角色遗物池" Style="{StaticResource SectionHeaderStyle}"/>
-                    <ItemsControl ItemsSource="{Binding SeedAnalysisPlayerRelicPools}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Expander Header="{Binding Title}" Margin="0 0 0 8">
-                                    <ItemsControl ItemsSource="{Binding Relics}">
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate>
-                                                <TextBlock Text="{Binding}" Margin="0 2 0 2" Foreground="#444" TextWrapping="Wrap"/>
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
-                                </Expander>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </StackPanel>
-            </Grid>
+                                    <Grid Margin="0 12 0 0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <StackPanel Grid.Column="0" Margin="0 0 12 0">
+                                            <TextBlock Text="更容易前期见到" Style="{StaticResource SectionHeaderStyle}"/>
+                                            <ItemsControl ItemsSource="{Binding EarlyRelics}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Text="{Binding Text}" Margin="0 2 0 2" Foreground="#444" TextWrapping="Wrap"/>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Column="1" Margin="12 0 0 0">
+                                            <TextBlock Text="更可能出现在流程中" Style="{StaticResource SectionHeaderStyle}"/>
+                                            <ItemsControl ItemsSource="{Binding SeenRelics}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Text="{Binding Text}" Margin="0 2 0 2" Foreground="#444" TextWrapping="Wrap"/>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <StackPanel Margin="0 12 0 0"
+                                                Visibility="{Binding HasSamples, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                        <TextBlock Text="前期样本序列" Style="{StaticResource SectionHeaderStyle}"/>
+                                        <ItemsControl ItemsSource="{Binding SampleLines}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding}" Margin="0 2 0 2" Foreground="#666" TextWrapping="Wrap"/>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Expander>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
         </Border>
 
         <Border Grid.Row="3" Style="{StaticResource CardStyle}">

@@ -26,9 +26,9 @@ internal sealed class Sts2RunSimulator
     public IReadOnlyList<ActAncientResult> Simulate(
         GameRng rng,
         uint runSeed,
-        bool includeDarvSharedAncient = true)
+        Sts2AncientAvailability? ancientAvailability = null)
     {
-        return Analyze(rng, runSeed, includeDarvSharedAncient)
+        return Analyze(rng, runSeed, ancientAvailability)
             .Select(result => new ActAncientResult(result.ActIndex, result.ActNumber, result.AncientId))
             .ToList();
     }
@@ -41,35 +41,41 @@ internal sealed class Sts2RunSimulator
     public IReadOnlyList<ActPoolResult> Analyze(
         GameRng rng,
         uint runSeed,
-        bool includeDarvSharedAncient = true)
+        Sts2AncientAvailability? ancientAvailability = null)
     {
         if (rng is null)
         {
             throw new ArgumentNullException(nameof(rng));
         }
 
+        ancientAvailability ??= Sts2AncientAvailability.Default;
         var acts = _world.ResolveActs(runSeed);
-        var sharedAssignments = AssignSharedAncients(rng, acts, includeDarvSharedAncient);
+        var sharedAssignments = AssignSharedAncients(rng, acts, ancientAvailability);
         var results = new List<ActPoolResult>(acts.Count);
 
         for (var i = 0; i < acts.Count; i++)
         {
             var act = acts[i];
             sharedAssignments.TryGetValue(i, out var shared);
-            var sharedAncients = (IReadOnlyList<string>? )shared ?? Array.Empty<string>();
-            results.Add(ConsumeAct(i, act, rng, sharedAncients));
+            var sharedAncients = (IReadOnlyList<string>?)shared ?? Array.Empty<string>();
+            results.Add(ConsumeAct(i, act, rng, sharedAncients, ancientAvailability));
         }
 
         return results;
     }
 
-    private ActPoolResult ConsumeAct(int actIndex, Sts2ActBlueprint act, GameRng rng, IReadOnlyList<string> sharedAncients)
+    private ActPoolResult ConsumeAct(
+        int actIndex,
+        Sts2ActBlueprint act,
+        GameRng rng,
+        IReadOnlyList<string> sharedAncients,
+        Sts2AncientAvailability ancientAvailability)
     {
         var events = ShuffleEvents(act, rng);
         var normalEncounters = GenerateNormalEncounters(act, rng);
         var eliteEncounters = GenerateEliteEncounters(act, rng);
         SelectBoss(act, rng);
-        var chosenAncient = SelectAncient(act, rng, sharedAncients);
+        var chosenAncient = SelectAncient(act, rng, sharedAncients, ancientAvailability);
         return new ActPoolResult(
             actIndex,
             act.ActNumber,
@@ -146,10 +152,14 @@ internal sealed class Sts2RunSimulator
         rng.NextItem(act.BossEncounters);
     }
 
-    private static string SelectAncient(Sts2ActBlueprint act, GameRng rng, IReadOnlyList<string> sharedAncients)
+    private static string SelectAncient(
+        Sts2ActBlueprint act,
+        GameRng rng,
+        IReadOnlyList<string> sharedAncients,
+        Sts2AncientAvailability ancientAvailability)
     {
         var available = new List<string>(act.AncientIds.Count + sharedAncients.Count);
-        available.AddRange(act.AncientIds);
+        available.AddRange(act.AncientIds.Where(id => ancientAvailability.IsActAncientAvailable(act.ActNumber, id)));
         available.AddRange(sharedAncients);
         if (available.Count == 0)
         {
@@ -162,14 +172,12 @@ internal sealed class Sts2RunSimulator
     private Dictionary<int, List<string>> AssignSharedAncients(
         GameRng rng,
         IReadOnlyList<Sts2ActBlueprint> acts,
-        bool includeDarvSharedAncient)
+        Sts2AncientAvailability ancientAvailability)
     {
         var assignments = new Dictionary<int, List<string>>();
-        var pool = includeDarvSharedAncient
-            ? _world.SharedAncients.ToList()
-            : _world.SharedAncients
-                .Where(id => !string.Equals(id, "DARV", StringComparison.OrdinalIgnoreCase))
-                .ToList();
+        var pool = _world.SharedAncients
+            .Where(ancientAvailability.IsSharedAncientAvailable)
+            .ToList();
 
         if (pool.Count == 0)
         {

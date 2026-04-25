@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Globalization;
 using System.Linq;
+using SeedModel.Sts2;
 using SeedUi.Commands;
 
 namespace SeedUi.ViewModels;
@@ -15,29 +17,25 @@ internal sealed partial class MainWindowViewModel
     private RelayCommand? _removeAct2EventPoolFilterCommand;
     private RelayCommand? _addAct3EventPoolFilterCommand;
     private RelayCommand? _removeAct3EventPoolFilterCommand;
-    private RelayCommand? _addSharedRelicPoolFilterCommand;
-    private RelayCommand? _removeSharedRelicPoolFilterCommand;
-    private RelayCommand? _addPlayerRelicPoolFilterCommand;
-    private RelayCommand? _removePlayerRelicPoolFilterCommand;
+    private RelayCommand? _addHighProbabilityRelicFilterCommand;
+    private RelayCommand? _removeHighProbabilityRelicFilterCommand;
     private bool _includePoolFilter;
     private string _poolFilterSummary = "分析池：关闭";
     private string _act1EventPoolCatalogFilter = string.Empty;
     private string _act2EventPoolCatalogFilter = string.Empty;
     private string _act3EventPoolCatalogFilter = string.Empty;
-    private string _sharedRelicPoolCatalogFilter = string.Empty;
-    private string _playerRelicPoolCatalogFilter = string.Empty;
+    private string _highProbabilityRelicCatalogFilter = string.Empty;
+    private string _highProbabilitySeenThresholdPercentText = FormatThresholdPercent(Sts2PoolFilter.DefaultHighProbabilitySeenThreshold);
     private CatalogItem? _selectedAct1EventPoolCatalogItem;
     private CatalogItem? _selectedAct2EventPoolCatalogItem;
     private CatalogItem? _selectedAct3EventPoolCatalogItem;
-    private CatalogItem? _selectedSharedRelicPoolCatalogItem;
-    private CatalogItem? _selectedPlayerRelicPoolCatalogItem;
+    private CatalogItem? _selectedHighProbabilityRelicCatalogItem;
     private IReadOnlyList<CatalogItem> _poolEventCatalog = Array.Empty<CatalogItem>();
     private IReadOnlyList<CatalogItem> _poolRelicCatalog = Array.Empty<CatalogItem>();
     private IReadOnlyList<CatalogItem> _filteredAct1EventPoolCatalog = Array.Empty<CatalogItem>();
     private IReadOnlyList<CatalogItem> _filteredAct2EventPoolCatalog = Array.Empty<CatalogItem>();
     private IReadOnlyList<CatalogItem> _filteredAct3EventPoolCatalog = Array.Empty<CatalogItem>();
-    private IReadOnlyList<CatalogItem> _filteredSharedRelicPoolCatalog = Array.Empty<CatalogItem>();
-    private IReadOnlyList<CatalogItem> _filteredPlayerRelicPoolCatalog = Array.Empty<CatalogItem>();
+    private IReadOnlyList<CatalogItem> _filteredHighProbabilityRelicCatalog = Array.Empty<CatalogItem>();
 
     public ObservableCollection<FilterChipViewModel> Act1EventPoolFilterChips { get; } = new();
 
@@ -45,9 +43,7 @@ internal sealed partial class MainWindowViewModel
 
     public ObservableCollection<FilterChipViewModel> Act3EventPoolFilterChips { get; } = new();
 
-    public ObservableCollection<FilterChipViewModel> SharedRelicPoolFilterChips { get; } = new();
-
-    public ObservableCollection<FilterChipViewModel> PlayerRelicPoolFilterChips { get; } = new();
+    public ObservableCollection<FilterChipViewModel> HighProbabilityRelicFilterChips { get; } = new();
 
     public IEnumerable<CatalogItem> Act1EventPoolCatalogView => _filteredAct1EventPoolCatalog;
 
@@ -55,9 +51,7 @@ internal sealed partial class MainWindowViewModel
 
     public IEnumerable<CatalogItem> Act3EventPoolCatalogView => _filteredAct3EventPoolCatalog;
 
-    public IEnumerable<CatalogItem> SharedRelicPoolCatalogView => _filteredSharedRelicPoolCatalog;
-
-    public IEnumerable<CatalogItem> PlayerRelicPoolCatalogView => _filteredPlayerRelicPoolCatalog;
+    public IEnumerable<CatalogItem> HighProbabilityRelicCatalogView => _filteredHighProbabilityRelicCatalog;
 
     public RelayCommand AddAct1EventPoolFilterCommand => _addAct1EventPoolFilterCommand ??= new RelayCommand(AddAct1EventPoolFilter);
 
@@ -71,13 +65,9 @@ internal sealed partial class MainWindowViewModel
 
     public RelayCommand RemoveAct3EventPoolFilterCommand => _removeAct3EventPoolFilterCommand ??= new RelayCommand(RemoveAct3EventPoolFilter);
 
-    public RelayCommand AddSharedRelicPoolFilterCommand => _addSharedRelicPoolFilterCommand ??= new RelayCommand(AddSharedRelicPoolFilter);
+    public RelayCommand AddHighProbabilityRelicFilterCommand => _addHighProbabilityRelicFilterCommand ??= new RelayCommand(AddHighProbabilityRelicFilter);
 
-    public RelayCommand RemoveSharedRelicPoolFilterCommand => _removeSharedRelicPoolFilterCommand ??= new RelayCommand(RemoveSharedRelicPoolFilter);
-
-    public RelayCommand AddPlayerRelicPoolFilterCommand => _addPlayerRelicPoolFilterCommand ??= new RelayCommand(AddPlayerRelicPoolFilter);
-
-    public RelayCommand RemovePlayerRelicPoolFilterCommand => _removePlayerRelicPoolFilterCommand ??= new RelayCommand(RemovePlayerRelicPoolFilter);
+    public RelayCommand RemoveHighProbabilityRelicFilterCommand => _removeHighProbabilityRelicFilterCommand ??= new RelayCommand(RemoveHighProbabilityRelicFilter);
 
     public bool IncludePoolFilter
     {
@@ -133,26 +123,14 @@ internal sealed partial class MainWindowViewModel
         }
     }
 
-    public string SharedRelicPoolCatalogFilter
+    public string HighProbabilityRelicCatalogFilter
     {
-        get => _sharedRelicPoolCatalogFilter;
+        get => _highProbabilityRelicCatalogFilter;
         set
         {
-            if (SetProperty(ref _sharedRelicPoolCatalogFilter, value ?? string.Empty))
+            if (SetProperty(ref _highProbabilityRelicCatalogFilter, value ?? string.Empty))
             {
-                ApplySharedRelicPoolFilter();
-            }
-        }
-    }
-
-    public string PlayerRelicPoolCatalogFilter
-    {
-        get => _playerRelicPoolCatalogFilter;
-        set
-        {
-            if (SetProperty(ref _playerRelicPoolCatalogFilter, value ?? string.Empty))
-            {
-                ApplyPlayerRelicPoolFilter();
+                ApplyHighProbabilityRelicFilter();
             }
         }
     }
@@ -175,30 +153,38 @@ internal sealed partial class MainWindowViewModel
         set => SetProperty(ref _selectedAct3EventPoolCatalogItem, value);
     }
 
-    public CatalogItem? SelectedSharedRelicPoolCatalogItem
+    public CatalogItem? SelectedHighProbabilityRelicCatalogItem
     {
-        get => _selectedSharedRelicPoolCatalogItem;
-        set => SetProperty(ref _selectedSharedRelicPoolCatalogItem, value);
+        get => _selectedHighProbabilityRelicCatalogItem;
+        set => SetProperty(ref _selectedHighProbabilityRelicCatalogItem, value);
     }
 
-    public CatalogItem? SelectedPlayerRelicPoolCatalogItem
+    public string HighProbabilitySeenThresholdPercentText
     {
-        get => _selectedPlayerRelicPoolCatalogItem;
-        set => SetProperty(ref _selectedPlayerRelicPoolCatalogItem, value);
+        get => _highProbabilitySeenThresholdPercentText;
+        set
+        {
+            if (SetProperty(ref _highProbabilitySeenThresholdPercentText, value ?? string.Empty))
+            {
+                RaisePropertyChanged(nameof(HighProbabilitySeenThresholdDescription));
+                UpdatePoolFilterSummary();
+            }
+        }
     }
+
+    public string HighProbabilitySeenThresholdDescription =>
+        $"命中规则：任一路线画像下，若遗物在流程中的出现概率达到高概率阈值（当前为 {FormatThresholdPercent(GetHighProbabilitySeenThreshold())}%），则视为命中。";
 
     private void InitializePoolFilter()
     {
         Act1EventPoolFilterChips.CollectionChanged += OnPoolFilterChipsChanged;
         Act2EventPoolFilterChips.CollectionChanged += OnPoolFilterChipsChanged;
         Act3EventPoolFilterChips.CollectionChanged += OnPoolFilterChipsChanged;
-        SharedRelicPoolFilterChips.CollectionChanged += OnPoolFilterChipsChanged;
-        PlayerRelicPoolFilterChips.CollectionChanged += OnPoolFilterChipsChanged;
+        HighProbabilityRelicFilterChips.CollectionChanged += OnPoolFilterChipsChanged;
 
         RefreshPoolEventCatalog();
         RefreshPoolRelicCatalog();
-        ApplySharedRelicPoolFilter();
-        ApplyPlayerRelicPoolFilter();
+        ApplyHighProbabilityRelicFilter();
         UpdatePoolFilterSummary();
     }
 
@@ -240,8 +226,7 @@ internal sealed partial class MainWindowViewModel
             .OrderBy(item => item.Display, StringComparer.OrdinalIgnoreCase)
             .ToList();
 
-        ApplySharedRelicPoolFilter();
-        ApplyPlayerRelicPoolFilter();
+        ApplyHighProbabilityRelicFilter();
     }
 
     private void ApplyAct1EventPoolFilter()
@@ -262,16 +247,10 @@ internal sealed partial class MainWindowViewModel
         RaisePropertyChanged(nameof(Act3EventPoolCatalogView));
     }
 
-    private void ApplySharedRelicPoolFilter()
+    private void ApplyHighProbabilityRelicFilter()
     {
-        _filteredSharedRelicPoolCatalog = FilterCatalog(_poolRelicCatalog, _sharedRelicPoolCatalogFilter);
-        RaisePropertyChanged(nameof(SharedRelicPoolCatalogView));
-    }
-
-    private void ApplyPlayerRelicPoolFilter()
-    {
-        _filteredPlayerRelicPoolCatalog = FilterCatalog(_poolRelicCatalog, _playerRelicPoolCatalogFilter);
-        RaisePropertyChanged(nameof(PlayerRelicPoolCatalogView));
+        _filteredHighProbabilityRelicCatalog = FilterCatalog(_poolRelicCatalog, _highProbabilityRelicCatalogFilter);
+        RaisePropertyChanged(nameof(HighProbabilityRelicCatalogView));
     }
 
     private string GetPoolRelicTitle(string relicId)
@@ -337,30 +316,17 @@ internal sealed partial class MainWindowViewModel
         RemoveChipById(Act3EventPoolFilterChips, parameter as string);
     }
 
-    private void AddSharedRelicPoolFilter()
+    private void AddHighProbabilityRelicFilter()
     {
-        if (TryAddCatalogChip(SharedRelicPoolFilterChips, SelectedSharedRelicPoolCatalogItem, "遗物"))
+        if (TryAddCatalogChip(HighProbabilityRelicFilterChips, SelectedHighProbabilityRelicCatalogItem, "遗物"))
         {
-            SelectedSharedRelicPoolCatalogItem = null;
+            SelectedHighProbabilityRelicCatalogItem = null;
         }
     }
 
-    private void RemoveSharedRelicPoolFilter(object? parameter)
+    private void RemoveHighProbabilityRelicFilter(object? parameter)
     {
-        RemoveChipById(SharedRelicPoolFilterChips, parameter as string);
-    }
-
-    private void AddPlayerRelicPoolFilter()
-    {
-        if (TryAddCatalogChip(PlayerRelicPoolFilterChips, SelectedPlayerRelicPoolCatalogItem, "遗物"))
-        {
-            SelectedPlayerRelicPoolCatalogItem = null;
-        }
-    }
-
-    private void RemovePlayerRelicPoolFilter(object? parameter)
-    {
-        RemoveChipById(PlayerRelicPoolFilterChips, parameter as string);
+        RemoveChipById(HighProbabilityRelicFilterChips, parameter as string);
     }
 
     private bool TryAddCatalogChip(
@@ -376,7 +342,7 @@ internal sealed partial class MainWindowViewModel
 
         if (chips.Any(chip => string.Equals(chip.Value, selectedItem.Value, StringComparison.OrdinalIgnoreCase)))
         {
-            LogWarn($"该{itemName}已在筛选条件中。");
+            LogWarn($"{itemName}已在筛选条件中。");
             return false;
         }
 
@@ -393,11 +359,11 @@ internal sealed partial class MainWindowViewModel
         }
 
         var parts = new List<string>();
+        parts.Add($"高概率阈值：{FormatThresholdPercent(GetHighProbabilitySeenThreshold())}%");
         AppendChipSummary(parts, "第一幕事件", Act1EventPoolFilterChips);
         AppendChipSummary(parts, "第二幕事件", Act2EventPoolFilterChips);
         AppendChipSummary(parts, "第三幕事件", Act3EventPoolFilterChips);
-        AppendChipSummary(parts, "共享遗物", SharedRelicPoolFilterChips);
-        AppendChipSummary(parts, "角色遗物", PlayerRelicPoolFilterChips);
+        AppendChipSummary(parts, "高概率出现遗物", HighProbabilityRelicFilterChips);
 
         PoolFilterSummary = parts.Count > 0
             ? string.Join(" | ", parts)
@@ -419,5 +385,26 @@ internal sealed partial class MainWindowViewModel
     private void OnPoolFilterChipsChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
         UpdatePoolFilterSummary();
+    }
+
+    private double GetHighProbabilitySeenThreshold()
+    {
+        if (!double.TryParse(
+                HighProbabilitySeenThresholdPercentText,
+                NumberStyles.Float | NumberStyles.AllowThousands,
+                CultureInfo.InvariantCulture,
+                out var percent))
+        {
+            return Sts2PoolFilter.DefaultHighProbabilitySeenThreshold;
+        }
+
+        percent = Math.Clamp(percent, 0d, 100d);
+        return percent / 100d;
+    }
+
+    private static string FormatThresholdPercent(double threshold)
+    {
+        var percent = threshold * 100d;
+        return percent.ToString("0.##", CultureInfo.InvariantCulture);
     }
 }

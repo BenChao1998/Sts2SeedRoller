@@ -6,6 +6,8 @@ namespace SeedModel.Sts2;
 
 public sealed record Sts2PoolFilter
 {
+    public const double DefaultHighProbabilitySeenThreshold = 0.50;
+
     public static Sts2PoolFilter Empty { get; } = new();
 
     public IReadOnlyList<string> Act1EventIds { get; init; } = Array.Empty<string>();
@@ -14,20 +16,39 @@ public sealed record Sts2PoolFilter
 
     public IReadOnlyList<string> Act3EventIds { get; init; } = Array.Empty<string>();
 
-    public IReadOnlyList<string> SharedRelicIds { get; init; } = Array.Empty<string>();
+    public IReadOnlyList<string> HighProbabilityRelicIds { get; init; } = Array.Empty<string>();
 
-    public IReadOnlyList<string> PlayerRelicIds { get; init; } = Array.Empty<string>();
+    public double HighProbabilitySeenThreshold { get; init; } = DefaultHighProbabilitySeenThreshold;
 
     public bool HasCriteria =>
         Act1EventIds.Count > 0 ||
         Act2EventIds.Count > 0 ||
         Act3EventIds.Count > 0 ||
-        SharedRelicIds.Count > 0 ||
-        PlayerRelicIds.Count > 0;
+        HighProbabilityRelicIds.Count > 0;
 
-    public bool Matches(Sts2SeedAnalysis? analysis)
+    public bool Matches(Sts2SeedAnalysis? analysis, Sts2RelicVisibilityAnalysis? relicVisibility)
     {
         if (!HasCriteria)
+        {
+            return true;
+        }
+
+        if (!MatchesActEvents(analysis, 1, Act1EventIds) ||
+            !MatchesActEvents(analysis, 2, Act2EventIds) ||
+            !MatchesActEvents(analysis, 3, Act3EventIds))
+        {
+            return false;
+        }
+
+        return MatchesHighProbabilityRelics(relicVisibility, HighProbabilityRelicIds, HighProbabilitySeenThreshold);
+    }
+
+    private static bool MatchesActEvents(
+        Sts2SeedAnalysis? analysis,
+        int actNumber,
+        IReadOnlyList<string> requiredEventIds)
+    {
+        if (requiredEventIds.Count == 0)
         {
             return true;
         }
@@ -35,23 +56,6 @@ public sealed record Sts2PoolFilter
         if (analysis == null)
         {
             return false;
-        }
-
-        return MatchesActEvents(analysis, 1, Act1EventIds) &&
-               MatchesActEvents(analysis, 2, Act2EventIds) &&
-               MatchesActEvents(analysis, 3, Act3EventIds) &&
-               MatchesRelicPools(analysis.SharedRelicPools, SharedRelicIds) &&
-               MatchesRelicPools(analysis.PlayerRelicPools, PlayerRelicIds);
-    }
-
-    private static bool MatchesActEvents(
-        Sts2SeedAnalysis analysis,
-        int actNumber,
-        IReadOnlyList<string> requiredEventIds)
-    {
-        if (requiredEventIds.Count == 0)
-        {
-            return true;
         }
 
         var act = analysis.Acts.FirstOrDefault(item => item.ActNumber == actNumber);
@@ -63,16 +67,28 @@ public sealed record Sts2PoolFilter
         return MatchesIds(requiredEventIds, act.EventPool.Take(act.PriorityEventCount));
     }
 
-    private static bool MatchesRelicPools(
-        IReadOnlyList<Sts2RelicPoolPreviewGroup> pools,
-        IReadOnlyList<string> requiredRelicIds)
+    private static bool MatchesHighProbabilityRelics(
+        Sts2RelicVisibilityAnalysis? analysis,
+        IReadOnlyList<string> requiredRelicIds,
+        double seenThreshold)
     {
         if (requiredRelicIds.Count == 0)
         {
             return true;
         }
 
-        return MatchesIds(requiredRelicIds, pools.SelectMany(group => group.Relics.Take(group.PriorityCount)));
+        if (analysis == null)
+        {
+            return false;
+        }
+
+        var availableIds = analysis.Profiles
+            .SelectMany(profile => profile.SeenRelics)
+            .Where(relic => relic.SeenProbability >= seenThreshold)
+            .Select(relic => relic.RelicId)
+            .Distinct(StringComparer.OrdinalIgnoreCase);
+
+        return MatchesIds(requiredRelicIds, availableIds);
     }
 
     private static bool MatchesIds(

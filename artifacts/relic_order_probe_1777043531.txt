@@ -1,0 +1,172 @@
+Relic Order Probe
+=================
+save      : E:\github project\Sts2SeedRoller\存档\1777043531.run
+acts      : E:\github project\Sts2SeedRoller\data\0.103.2\sts2\acts.json
+source    : E:\github project\Sts2SeedRoller\Slay the Spire 2 版本0.103.2源码（游戏源码，读取用）
+pool order: official source RelicPool.cs
+rarity map : official source Relics/*.cs
+bag init   : official DLL RelicGrabBag.Populate
+seed      : 8H0CTDB7H8
+character : Silent
+player id : 1
+run seed  : 2155605324
+player seed: 2155605325
+
+Pool order comparison
+---------------------
+Shared   acts=118 source=118 same_prefix=118 first_diff=-
+  acts   : AKABEKO, AMETHYST_AUBERGINE, ANCHOR, ART_OF_WAR, BAG_OF_MARBLES, BAG_OF_PREPARATION, BEATING_REMNANT, BELLOWS
+  source : AKABEKO, AMETHYST_AUBERGINE, ANCHOR, ART_OF_WAR, BAG_OF_MARBLES, BAG_OF_PREPARATION, BEATING_REMNANT, BELLOWS
+Ironclad acts=  8 source=  8 same_prefix=  8 first_diff=-
+  acts   : BRIMSTONE, BURNING_BLOOD, CHARONS_ASHES, DEMON_TONGUE, PAPER_PHROG, RED_SKULL, RUINED_HELMET, SELF_FORMING_CLAY
+  source : BRIMSTONE, BURNING_BLOOD, CHARONS_ASHES, DEMON_TONGUE, PAPER_PHROG, RED_SKULL, RUINED_HELMET, SELF_FORMING_CLAY
+Silent   acts=  8 source=  8 same_prefix=  8 first_diff=-
+  acts   : HELICAL_DART, NINJA_SCROLL, PAPER_KRANE, RING_OF_THE_SNAKE, SNECKO_SKULL, TINGSHA, TOUGH_BANDAGES, TWISTED_FUNNEL
+  source : HELICAL_DART, NINJA_SCROLL, PAPER_KRANE, RING_OF_THE_SNAKE, SNECKO_SKULL, TINGSHA, TOUGH_BANDAGES, TWISTED_FUNNEL
+Defect   acts=  8 source=  8 same_prefix=  8 first_diff=-
+  acts   : CRACKED_CORE, DATA_DISK, EMOTION_CHIP, GOLD_PLATED_CABLES, POWER_CELL, METRONOME, RUNIC_CAPACITOR, SYMBIOTIC_VIRUS
+  source : CRACKED_CORE, DATA_DISK, EMOTION_CHIP, GOLD_PLATED_CABLES, POWER_CELL, METRONOME, RUNIC_CAPACITOR, SYMBIOTIC_VIRUS
+Necrobinder acts=  8 source=  8 same_prefix=  8 first_diff=-
+  acts   : BIG_HAT, BONE_FLUTE, BOOK_REPAIR_KNIFE, BOOKMARK, BOUND_PHYLACTERY, FUNERARY_MASK, IVORY_TILE, UNDYING_SIGIL
+  source : BIG_HAT, BONE_FLUTE, BOOK_REPAIR_KNIFE, BOOKMARK, BOUND_PHYLACTERY, FUNERARY_MASK, IVORY_TILE, UNDYING_SIGIL
+Regent   acts=  8 source=  8 same_prefix=  8 first_diff=-
+  acts   : DIVINE_RIGHT, FENCING_MANUAL, GALACTIC_DUST, LUNAR_PASTRY, MINI_REGENT, ORANGE_DOUGH, REGALITE, VITRUVIAN_MINION
+  source : DIVINE_RIGHT, FENCING_MANUAL, GALACTIC_DUST, LUNAR_PASTRY, MINI_REGENT, ORANGE_DOUGH, REGALITE, VITRUVIAN_MINION
+
+Rarity differences
+------------------
+acts vs source mismatch count: 11
+  BAG_OF_MARBLES           acts=Uncommon  source=Common
+  BELLOWS                  acts=Uncommon  source=Rare
+  HEFTY_TABLET             acts=None      source=Ancient
+  LASTING_CANDY            acts=Rare      source=Uncommon
+  NEOWS_BONES              acts=None      source=Ancient
+  NEOWS_TALISMAN           acts=None      source=Ancient
+  PERMAFROST               acts=Common    source=Uncommon
+  PHIAL_HOLSTER            acts=None      source=Ancient
+  RED_MASK                 acts=Uncommon  source=Common
+  TINY_MAILBOX             acts=Common    source=Uncommon
+  WINGED_BOOTS             acts=None      source=Ancient
+
+Fixed / non-random relic pickups (excluded from bag replay)
+-----------------------------------------------------------
+ 1F  Event     LEAFY_POULTICE            rarity=Ancient   room=EVENT.NEOW
+18F  Event     SAND_CASTLE               rarity=Ancient   room=EVENT.OROBAS
+34F  Event     DELICATE_FROND            rarity=Ancient   room=EVENT.NONUPEIPE
+43F  Event     FRAGRANT_MUSHROOM         rarity=Event     room=EVENT.HUNGRY_FOR_MUSHROOMS
+44F  Other     LANTERN                   rarity=Common    room=-
+
+Random relic pickups from save
+------------------------------
+ 3F  Treasure  PENDULUM                  rarity=Common    room=-
+ 8F  Elite     AMETHYST_AUBERGINE        rarity=Common    room=ENCOUNTER.PHANTASMAL_GARDENERS_ELITE
+10F  Treasure  PLANISPHERE               rarity=Uncommon  room=-
+15F  Elite     BRONZE_SCALES             rarity=Common    room=ENCOUNTER.SKULKING_COLONY_ELITE
+25F  Elite     ODDLY_SMOOTH_STONE        rarity=Common    room=ENCOUNTER.INFESTED_PRISMS_ELITE
+26F  Treasure  ANCHOR                    rarity=Common    room=-
+31F  Elite     PERMAFROST                rarity=Uncommon  room=ENCOUNTER.DECIMILLIPEDE_ELITE
+40F  Elite     SNECKO_SKULL              rarity=Common    room=ENCOUNTER.MECHA_KNIGHT_ELITE
+41F  Treasure  WHETSTONE                 rarity=Common    room=-
+42F  Elite     KUNAI                     rarity=Rare      room=ENCOUNTER.KNIGHTS_ELITE
+46F  Elite     STRIKE_DUMMY              rarity=Common    room=ENCOUNTER.SOUL_NEXUS_ELITE
+
+L1: initial bag positions
+-------------------------
+floor  source    rarity     relic                     initial_pos
+    3  Treasure  Common     PENDULUM                  1
+    8  Elite     Common     AMETHYST_AUBERGINE        1
+   10  Treasure  Uncommon   PLANISPHERE               1
+   15  Elite     Common     BRONZE_SCALES             2
+   25  Elite     Common     ODDLY_SMOOTH_STONE        3
+   26  Treasure  Common     ANCHOR                    2
+   31  Elite     Uncommon   PERMAFROST                1
+   40  Elite     Common     SNECKO_SKULL              4
+   41  Treasure  Common     WHETSTONE                 5
+   42  Elite     Rare       KUNAI                     1
+   46  Elite     Common     STRIKE_DUMMY              5
+
+L2: 按真实来源 + 存档真实稀有度回放
+---------------------
+Exact matches: 11/11
+floor  source    actual_r   used_r     actual_relic              predicted_relic           match
+    3  Treasure  Common     Common     PENDULUM                  PENDULUM                  Y
+    8  Elite     Common     Common     AMETHYST_AUBERGINE        AMETHYST_AUBERGINE        Y
+   10  Treasure  Uncommon   Uncommon   PLANISPHERE               PLANISPHERE               Y
+   15  Elite     Common     Common     BRONZE_SCALES             BRONZE_SCALES             Y
+   25  Elite     Common     Common     ODDLY_SMOOTH_STONE        ODDLY_SMOOTH_STONE        Y
+   26  Treasure  Common     Common     ANCHOR                    ANCHOR                    Y
+   31  Elite     Uncommon   Uncommon   PERMAFROST                PERMAFROST                Y
+   40  Elite     Common     Common     SNECKO_SKULL              SNECKO_SKULL              Y
+   41  Treasure  Common     Common     WHETSTONE                 WHETSTONE                 Y
+   42  Elite     Rare       Rare       KUNAI                     KUNAI                     Y
+   46  Elite     Common     Common     STRIKE_DUMMY              STRIKE_DUMMY              Y
+
+L3: 按真实来源 + RNG 稀有度（不做精英跨袋移除）
+-----------------------------
+Exact matches: 4/11
+floor  source    actual_r   used_r     actual_relic              predicted_relic           match
+    3  Treasure  Common     Common     PENDULUM                  PENDULUM                  Y
+    8  Elite     Common     Uncommon   AMETHYST_AUBERGINE        PERMAFROST                N
+   10  Treasure  Uncommon   Uncommon   PLANISPHERE               PLANISPHERE               Y
+   15  Elite     Common     Rare       BRONZE_SCALES             KUNAI                     N
+   25  Elite     Common     Rare       ODDLY_SMOOTH_STONE        WHITE_STAR                N
+   26  Treasure  Common     Common     ANCHOR                    ANCHOR                    Y
+   31  Elite     Uncommon   Uncommon   PERMAFROST                SPARKLING_ROUGE           N
+   40  Elite     Common     Common     SNECKO_SKULL              AMETHYST_AUBERGINE        N
+   41  Treasure  Common     Common     WHETSTONE                 WHETSTONE                 Y
+   42  Elite     Rare       Uncommon   KUNAI                     AKABEKO                   N
+   46  Elite     Common     Rare       STRIKE_DUMMY              RAZOR_TOOTH               N
+
+L4: 按真实来源 + RNG 稀有度 + 精英跨袋移除
+----------------------------
+Exact matches: 4/11
+floor  source    actual_r   used_r     actual_relic              predicted_relic           match
+    3  Treasure  Common     Common     PENDULUM                  PENDULUM                  Y
+    8  Elite     Common     Uncommon   AMETHYST_AUBERGINE        PERMAFROST                N
+   10  Treasure  Uncommon   Uncommon   PLANISPHERE               PLANISPHERE               Y
+   15  Elite     Common     Rare       BRONZE_SCALES             KUNAI                     N
+   25  Elite     Common     Rare       ODDLY_SMOOTH_STONE        WHITE_STAR                N
+   26  Treasure  Common     Common     ANCHOR                    ANCHOR                    Y
+   31  Elite     Uncommon   Uncommon   PERMAFROST                SPARKLING_ROUGE           N
+   40  Elite     Common     Common     SNECKO_SKULL              AMETHYST_AUBERGINE        N
+   41  Treasure  Common     Common     WHETSTONE                 WHETSTONE                 Y
+   42  Elite     Rare       Uncommon   KUNAI                     AKABEKO                   N
+   46  Elite     Common     Rare       STRIKE_DUMMY              RAZOR_TOOTH               N
+
+Shuffle-order probe
+-------------------
+Bruteforced all 24 x 24 rarity-bucket shuffle orders for L2 replay.
+Best exact matches: 4/11
+Best shared order : Uncommon>Common>Rare>Shop
+Best player order : Common>Uncommon>Rare>Shop
+Top candidates:
+  matches= 4  shared=Uncommon>Common>Rare>Shop       player=Common>Rare>Shop>Uncommon
+  matches= 4  shared=Uncommon>Common>Rare>Shop       player=Common>Rare>Uncommon>Shop
+  matches= 4  shared=Uncommon>Common>Rare>Shop       player=Common>Shop>Rare>Uncommon
+  matches= 4  shared=Uncommon>Common>Rare>Shop       player=Common>Shop>Uncommon>Rare
+  matches= 4  shared=Uncommon>Common>Rare>Shop       player=Common>Uncommon>Rare>Shop
+  matches= 4  shared=Uncommon>Common>Rare>Shop       player=Common>Uncommon>Shop>Rare
+  matches= 4  shared=Uncommon>Common>Rare>Shop       player=Rare>Common>Shop>Uncommon
+  matches= 4  shared=Uncommon>Common>Rare>Shop       player=Rare>Common>Uncommon>Shop
+
+Initial bag previews
+--------------------
+Shared bag
+  Common    [12/25 shown] PENDULUM, ANCHOR, JUZU_BRACELET, BOOK_OF_FIVE_RINGS, WHETSTONE, POTION_BELT, MEAL_TICKET, BRONZE_SCALES, RED_MASK, LANTERN, BAG_OF_MARBLES, STRIKE_DUMMY
+  Uncommon  [12/30 shown] PLANISPHERE, PEAR, ORICHALCUM, GREMLIN_HORN, MINIATURE_CANNON, CANDELABRA, TUNING_FORK, STONE_CRACKER, TINY_MAILBOX, ORNAMENTAL_FAN, SPARKLING_ROUGE, AKABEKO
+  Rare      [12/35 shown] UNCEASING_TOP, SHURIKEN, SHOVEL, RAINBOW_RING, VEXING_PUZZLEBOX, THE_COURIER, TUNGSTEN_ROD, INTIMIDATING_HELMET, GIRYA, MEAT_ON_THE_BONE, OLD_COIN, STURDY_CLAMP
+  Shop      [12/25 shown] GNARLED_HAMMER, DRAGON_FRUIT, DINGY_RUG, CAULDRON, ROYAL_STAMP, ORRERY, MYSTIC_LIGHTER, KIFUDA, DOLLYS_MIRROR, PUNCH_DAGGER, MINIATURE_TENT, SCREAMING_FLAGON
+Player bag
+  Common    [12/26 shown] AMETHYST_AUBERGINE, BRONZE_SCALES, ODDLY_SMOOTH_STONE, SNECKO_SKULL, STRIKE_DUMMY, WHETSTONE, BLOOD_VIAL, GORGET, WAR_PAINT, JUZU_BRACELET, BAG_OF_PREPARATION, VENERABLE_TEA_SET
+  Uncommon  [12/32 shown] PERMAFROST, SPARKLING_ROUGE, BOWLER_HAT, AKABEKO, ORICHALCUM, PEN_NIB, REPTILE_TRINKET, NUNCHAKU, TINGSHA, MINIATURE_CANNON, HORN_CLEAT, RIPPLE_BASIN
+  Rare      [12/38 shown] KUNAI, WHITE_STAR, RAZOR_TOOTH, TOUGH_BANDAGES, BEATING_REMNANT, PRAYER_WHEEL, RAINBOW_RING, OLD_COIN, STONE_CALENDAR, FROZEN_EGG, WHITE_BEAST_STATUE, VEXING_PUZZLEBOX
+  Shop      [12/26 shown] SLING_OF_COURAGE, TOOLBOX, DRAGON_FRUIT, GHOST_SEED, LEES_WAFFLE, RINGING_TRIANGLE, ROYAL_STAMP, DOLLYS_MIRROR, PUNCH_DAGGER, DINGY_RUG, WING_CHARM, LAVA_LAMP
+
+Quick read
+----------
+L2 exact matches: 11/11
+L3 exact matches: 4/11
+L4 exact matches: 4/11
+L2 is now perfect: the bag source, rarity map, shared->player same-relic removal, and Act 3 availability gating line up with the save.
+The remaining gap is rewards RNG timing. Elite rewards still miss at L3/L4, which means gold/potion/card population is advancing PlayerRng.Rewards before some relic rarity rolls.
+Elite rewards in the live game populate gold/potion/card before relic, so card and potion generation can move PlayerRng.Rewards ahead of the relic rarity roll.

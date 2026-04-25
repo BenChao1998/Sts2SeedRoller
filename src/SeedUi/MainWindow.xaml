@@ -392,7 +392,7 @@
                                     <StackPanel Orientation="Horizontal" Margin="0 0 0 16">
                                         <TextBlock Text="种子分析筛选" FontSize="16" FontWeight="SemiBold" Foreground="#333"/>
                                         <CheckBox IsChecked="{Binding IncludePoolFilter}" Content="启用" Margin="16 0 0 0" VerticalAlignment="Center"/>
-                                        <TextBlock Text="基于种子分析中的事件池与遗物池进行命中筛选" FontSize="11" Foreground="#888" Margin="8 0 0 0" VerticalAlignment="Center" TextWrapping="Wrap" MaxWidth="300"/>
+                                        <TextBlock Text="基于种子分析中的事件池与遗物概率预览进行命中筛选" FontSize="11" Foreground="#888" Margin="8 0 0 0" VerticalAlignment="Center" TextWrapping="Wrap" MaxWidth="300"/>
                                     </StackPanel>
 
                                     <TextBlock Text="{Binding PoolFilterSummary}" Foreground="#666" TextWrapping="Wrap" Margin="0 0 0 16"/>
@@ -506,79 +506,57 @@
                                             </StackPanel>
                                         </Grid>
 
-                                        <TextBlock Text="遗物池" FontSize="13" Foreground="#666" Margin="0 0 0 8"/>
-                                        <Grid>
+                                        <TextBlock Text="高概率出现遗物" FontSize="13" Foreground="#666" Margin="0 0 0 8"/>
+                                        <Grid Margin="0 0 0 8">
                                             <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="90"/>
                                                 <ColumnDefinition Width="*"/>
                                             </Grid.ColumnDefinitions>
-
-                                            <StackPanel Grid.Column="0" Margin="0 0 8 0">
-                                                <TextBlock Text="共享遗物池" FontSize="12" Foreground="#666" Margin="0 0 0 6"/>
-                                                <TextBox Text="{Binding SharedRelicPoolCatalogFilter, UpdateSourceTrigger=PropertyChanged}"
-                                                         hc:InfoElement.Placeholder="输入文字过滤遗物列表..." Margin="0 0 0 6" Height="30"/>
-                                                <Grid Margin="0 0 0 6">
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="*"/>
-                                                        <ColumnDefinition Width="Auto"/>
-                                                    </Grid.ColumnDefinitions>
-                                                    <ComboBox Grid.Column="0" ItemsSource="{Binding SharedRelicPoolCatalogView}" DisplayMemberPath="Display"
-                                                              SelectedItem="{Binding SelectedSharedRelicPoolCatalogItem}" Margin="0 0 8 0" MinHeight="25" VerticalContentAlignment="Center"/>
-                                                    <Button Grid.Column="1" Content="添加" Command="{Binding AddSharedRelicPoolFilterCommand}" Style="{StaticResource ButtonDefault}"/>
-                                                </Grid>
-                                                <ItemsControl ItemsSource="{Binding SharedRelicPoolFilterChips}">
-                                                    <ItemsControl.ItemsPanel>
-                                                        <ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate>
-                                                    </ItemsControl.ItemsPanel>
-                                                    <ItemsControl.ItemTemplate>
-                                                        <DataTemplate>
-                                                            <Border Style="{StaticResource FilterTagStyle}">
-                                                                <StackPanel Orientation="Horizontal">
-                                                                    <TextBlock Text="{Binding Label}" Foreground="#1976D2" FontSize="12"/>
-                                                                    <Button Content="&#xE711;" FontFamily="Segoe MDL2 Assets" FontSize="10"
-                                                                            Command="{Binding DataContext.RemoveSharedRelicPoolFilterCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                                                            CommandParameter="{Binding Id}" Margin="6 0 0 0" Padding="2"
-                                                                            Style="{StaticResource GhostButtonStyle}"/>
-                                                                </StackPanel>
-                                                            </Border>
-                                                        </DataTemplate>
-                                                    </ItemsControl.ItemTemplate>
-                                                </ItemsControl>
-                                            </StackPanel>
-
-                                            <StackPanel Grid.Column="1" Margin="8 0 0 0">
-                                                <TextBlock Text="当前角色遗物池" FontSize="12" Foreground="#666" Margin="0 0 0 6"/>
-                                                <TextBox Text="{Binding PlayerRelicPoolCatalogFilter, UpdateSourceTrigger=PropertyChanged}"
-                                                         hc:InfoElement.Placeholder="输入文字过滤遗物列表..." Margin="0 0 0 6" Height="30"/>
-                                                <Grid Margin="0 0 0 6">
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="*"/>
-                                                        <ColumnDefinition Width="Auto"/>
-                                                    </Grid.ColumnDefinitions>
-                                                    <ComboBox Grid.Column="0" ItemsSource="{Binding PlayerRelicPoolCatalogView}" DisplayMemberPath="Display"
-                                                              SelectedItem="{Binding SelectedPlayerRelicPoolCatalogItem}" Margin="0 0 8 0" MinHeight="25" VerticalContentAlignment="Center"/>
-                                                    <Button Grid.Column="1" Content="添加" Command="{Binding AddPlayerRelicPoolFilterCommand}" Style="{StaticResource ButtonDefault}"/>
-                                                </Grid>
-                                                <ItemsControl ItemsSource="{Binding PlayerRelicPoolFilterChips}">
-                                                    <ItemsControl.ItemsPanel>
-                                                        <ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate>
-                                                    </ItemsControl.ItemsPanel>
-                                                    <ItemsControl.ItemTemplate>
-                                                        <DataTemplate>
-                                                            <Border Style="{StaticResource FilterTagStyle}">
-                                                                <StackPanel Orientation="Horizontal">
-                                                                    <TextBlock Text="{Binding Label}" Foreground="#1976D2" FontSize="12"/>
-                                                                    <Button Content="&#xE711;" FontFamily="Segoe MDL2 Assets" FontSize="10"
-                                                                            Command="{Binding DataContext.RemovePlayerRelicPoolFilterCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                                                            CommandParameter="{Binding Id}" Margin="6 0 0 0" Padding="2"
-                                                                            Style="{StaticResource GhostButtonStyle}"/>
-                                                                </StackPanel>
-                                                            </Border>
-                                                        </DataTemplate>
-                                                    </ItemsControl.ItemTemplate>
-                                                </ItemsControl>
-                                            </StackPanel>
+                                            <TextBlock Text="概率阈值(%)" FontSize="12" Foreground="#666" VerticalAlignment="Center" Margin="0 0 8 0"/>
+                                            <TextBox Grid.Column="1"
+                                                     Text="{Binding HighProbabilitySeenThresholdPercentText, UpdateSourceTrigger=PropertyChanged}"
+                                                     Height="28"
+                                                     VerticalContentAlignment="Center"
+                                                     Margin="0 0 8 0"/>
+                                            <TextBlock Grid.Column="2"
+                                                       Text="{Binding HighProbabilitySeenThresholdDescription}"
+                                                       FontSize="11"
+                                                       Foreground="#888"
+                                                       TextWrapping="Wrap"
+                                                       VerticalAlignment="Center"/>
                                         </Grid>
+                                        <StackPanel>
+                                            <TextBox Text="{Binding HighProbabilityRelicCatalogFilter, UpdateSourceTrigger=PropertyChanged}"
+                                                     hc:InfoElement.Placeholder="输入文字过滤遗物列表..." Margin="0 0 0 6" Height="30"/>
+                                            <Grid Margin="0 0 0 6">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <ComboBox Grid.Column="0" ItemsSource="{Binding HighProbabilityRelicCatalogView}" DisplayMemberPath="Display"
+                                                          SelectedItem="{Binding SelectedHighProbabilityRelicCatalogItem}" Margin="0 0 8 0" MinHeight="25" VerticalContentAlignment="Center"/>
+                                                <Button Grid.Column="1" Content="添加" Command="{Binding AddHighProbabilityRelicFilterCommand}" Style="{StaticResource ButtonDefault}"/>
+                                            </Grid>
+                                            <ItemsControl ItemsSource="{Binding HighProbabilityRelicFilterChips}">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Border Style="{StaticResource FilterTagStyle}">
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <TextBlock Text="{Binding Label}" Foreground="#1976D2" FontSize="12"/>
+                                                                <Button Content="&#xE711;" FontFamily="Segoe MDL2 Assets" FontSize="10"
+                                                                        Command="{Binding DataContext.RemoveHighProbabilityRelicFilterCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                                        CommandParameter="{Binding Id}" Margin="6 0 0 0" Padding="2"
+                                                                        Style="{StaticResource GhostButtonStyle}"/>
+                                                            </StackPanel>
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </StackPanel>
                                     </StackPanel>
                                 </StackPanel>
                             </Border>
@@ -1148,12 +1126,12 @@
                                                                     <TextBlock Text="&#xE8B7;" FontFamily="Segoe MDL2 Assets" FontSize="14" Foreground="#7B1FA2" Margin="0 0 6 0"/>
                                                                     <TextBlock Text="种子分析命中" FontWeight="SemiBold" FontSize="13" Foreground="#7B1FA2"/>
                                                                 </StackPanel>
-                                                                <TextBlock Text="说明：这里展示的是该种子按顺序生成的优先候选，不代表本局一定会把这些事件或遗物全部看到。实际是否出现，还会受到路线、奖励、事件消耗和当时可用条件影响。"
+                                                                <TextBlock Text="说明：这里的事件池是固定候选顺序；遗物部分改为概率预览，用来表示在不同路线画像下更可能实际看到的遗物。"
                                                                            FontSize="11"
                                                                            Foreground="#7B1FA2"
                                                                            TextWrapping="Wrap"
                                                                            Margin="0 0 0 8"/>
-                                                                <TextBlock Text="补充：起始遗物、古神遗物，以及部分事件直接发放的固定遗物，不属于随机遗物池；它们即使会在游戏中出现，也不会显示在共享/角色遗物池里。"
+                                                                <TextBlock Text="补充：起始遗物、古神遗物，以及部分事件直接发放的固定遗物，不属于随机遗物池；它们会在游戏中出现，但不会参与这里的随机遗物概率预览。"
                                                                            FontSize="11"
                                                                            Foreground="#7B1FA2"
                                                                            TextWrapping="Wrap"
@@ -1238,18 +1216,18 @@
                                                                         </DataTemplate>
                                                                     </ItemsControl.ItemTemplate>
                                                                 </ItemsControl>
-                                                                <Grid Margin="0 4 0 0">
-                                                                    <Grid.ColumnDefinitions>
-                                                                        <ColumnDefinition Width="*"/>
-                                                                        <ColumnDefinition Width="*"/>
-                                                                    </Grid.ColumnDefinitions>
-                                                                    <StackPanel Grid.Column="0" Margin="0 0 8 0">
-                                                                        <TextBlock Text="共享遗物池" FontSize="12" FontWeight="SemiBold" Foreground="#666" Margin="0 0 0 6"/>
-                                                                        <ItemsControl ItemsSource="{Binding SharedRelicPools}">
-                                                                            <ItemsControl.ItemTemplate>
-                                                                                <DataTemplate>
-                                                                                    <Expander Header="{Binding Title}" Margin="0 0 0 8">
-                                                                                        <ItemsControl ItemsSource="{Binding Relics}" Margin="0 6 0 0">
+                                                                <StackPanel Margin="0 4 0 0">
+                                                                    <TextBlock Text="高概率出现遗物" FontSize="12" FontWeight="SemiBold" Foreground="#666" Margin="0 0 0 6"/>
+                                                                    <ItemsControl ItemsSource="{Binding RelicVisibilityProfiles}">
+                                                                        <ItemsControl.ItemTemplate>
+                                                                            <DataTemplate>
+                                                                                <Expander Header="{Binding Title}" Margin="0 0 0 8">
+                                                                                    <StackPanel Margin="0 6 0 0">
+                                                                                        <TextBlock Text="{Binding Description}"
+                                                                                                   Foreground="#666"
+                                                                                                   TextWrapping="Wrap"
+                                                                                                   Visibility="{Binding HasDescription, Converter={StaticResource BooleanVisibilityConverter}}"/>
+                                                                                        <ItemsControl ItemsSource="{Binding Relics}" Margin="0 8 0 0">
                                                                                             <ItemsControl.ItemTemplate>
                                                                                                 <DataTemplate>
                                                                                                     <Border Margin="0 2 0 2" Padding="8 4" CornerRadius="4" BorderThickness="1">
@@ -1282,56 +1260,12 @@
                                                                                                 </DataTemplate>
                                                                                             </ItemsControl.ItemTemplate>
                                                                                         </ItemsControl>
-                                                                                    </Expander>
-                                                                                </DataTemplate>
-                                                                            </ItemsControl.ItemTemplate>
-                                                                        </ItemsControl>
-                                                                    </StackPanel>
-                                                                    <StackPanel Grid.Column="1" Margin="8 0 0 0">
-                                                                        <TextBlock Text="当前角色遗物池" FontSize="12" FontWeight="SemiBold" Foreground="#666" Margin="0 0 0 6"/>
-                                                                        <ItemsControl ItemsSource="{Binding PlayerRelicPools}">
-                                                                            <ItemsControl.ItemTemplate>
-                                                                                <DataTemplate>
-                                                                                    <Expander Header="{Binding Title}" Margin="0 0 0 8">
-                                                                                        <ItemsControl ItemsSource="{Binding Relics}" Margin="0 6 0 0">
-                                                                                            <ItemsControl.ItemTemplate>
-                                                                                                <DataTemplate>
-                                                                                                    <Border Margin="0 2 0 2" Padding="8 4" CornerRadius="4" BorderThickness="1">
-                                                                                                        <Border.Style>
-                                                                                                            <Style TargetType="Border">
-                                                                                                                <Setter Property="Background" Value="Transparent"/>
-                                                                                                                <Setter Property="BorderBrush" Value="Transparent"/>
-                                                                                                                <Style.Triggers>
-                                                                                                                    <DataTrigger Binding="{Binding IsMatched}" Value="True">
-                                                                                                                        <Setter Property="Background" Value="#FFF8E1"/>
-                                                                                                                        <Setter Property="BorderBrush" Value="#FFCC80"/>
-                                                                                                                    </DataTrigger>
-                                                                                                                </Style.Triggers>
-                                                                                                            </Style>
-                                                                                                        </Border.Style>
-                                                                                                        <TextBlock Text="{Binding DisplayName}" FontSize="12" TextWrapping="Wrap">
-                                                                                                            <TextBlock.Style>
-                                                                                                                <Style TargetType="TextBlock">
-                                                                                                                    <Setter Property="Foreground" Value="#333"/>
-                                                                                                                    <Style.Triggers>
-                                                                                                                        <DataTrigger Binding="{Binding IsMatched}" Value="True">
-                                                                                                                            <Setter Property="Foreground" Value="#C77800"/>
-                                                                                                                            <Setter Property="FontWeight" Value="SemiBold"/>
-                                                                                                                        </DataTrigger>
-                                                                                                                    </Style.Triggers>
-                                                                                                                </Style>
-                                                                                                            </TextBlock.Style>
-                                                                                                        </TextBlock>
-                                                                                                    </Border>
-                                                                                                </DataTemplate>
-                                                                                            </ItemsControl.ItemTemplate>
-                                                                                        </ItemsControl>
-                                                                                    </Expander>
-                                                                                </DataTemplate>
-                                                                            </ItemsControl.ItemTemplate>
-                                                                        </ItemsControl>
-                                                                    </StackPanel>
-                                                                </Grid>
+                                                                                    </StackPanel>
+                                                                                </Expander>
+                                                                            </DataTemplate>
+                                                                        </ItemsControl.ItemTemplate>
+                                                                    </ItemsControl>
+                                                                </StackPanel>
                                                             </StackPanel>
                                                         </Border>
 
@@ -1454,8 +1388,9 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <TextBlock Text="{Binding StatusMessage}" Foreground="#B0BEC5" FontSize="12" VerticalAlignment="Center"/>
-                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Text="{Binding DatasetSummary}" Foreground="#78909C" FontSize="11"/>
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding ProgressSaveLoadStatus}" Foreground="#CFD8DC" FontSize="11" HorizontalAlignment="Right"/>
+                    <TextBlock Text="{Binding DatasetSummary}" Foreground="#78909C" FontSize="11" HorizontalAlignment="Right"/>
                 </StackPanel>
             </Grid>
         </Border>

@@ -14,7 +14,14 @@ public sealed class Sts2SeedAnalysisRequest
 
     public int AscensionLevel { get; init; }
 
+    public Sts2AncientAvailability? AncientAvailability { get; init; }
+
     public bool IncludeDarvSharedAncient { get; init; } = true;
+
+    internal Sts2AncientAvailability ResolveAncientAvailability()
+    {
+        return AncientAvailability ?? Sts2AncientAvailability.FromLegacyDarvFlag(IncludeDarvSharedAncient);
+    }
 }
 
 public sealed class Sts2SeedAnalysis

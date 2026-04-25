@@ -1,4 +1,5 @@
 using SeedModel.Neow;
+using SeedModel.Sts2;
 
 namespace SeedModel.Run;
 
@@ -20,9 +21,16 @@ public sealed record SeedRunEvaluationContext
 
     public int AscensionLevel { get; init; }
 
+    public Sts2AncientAvailability? AncientAvailability { get; init; }
+
     public bool IncludeDarvSharedAncient { get; init; } = true;
 
     public bool IncludeAct2 { get; init; }
 
     public bool IncludeAct3 { get; init; }
+
+    internal Sts2AncientAvailability ResolveAncientAvailability()
+    {
+        return AncientAvailability ?? Sts2AncientAvailability.FromLegacyDarvFlag(IncludeDarvSharedAncient);
+    }
 }

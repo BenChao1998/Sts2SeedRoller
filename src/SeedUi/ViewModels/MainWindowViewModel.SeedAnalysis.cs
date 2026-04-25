@@ -37,10 +37,6 @@ internal sealed partial class MainWindowViewModel
 
     public ObservableCollection<SeedAnalysisOpeningActViewModel> SeedAnalysisOpeningActs { get; } = new();
 
-    public ObservableCollection<SeedAnalysisRelicGroupViewModel> SeedAnalysisSharedRelicPools { get; } = new();
-
-    public ObservableCollection<SeedAnalysisRelicGroupViewModel> SeedAnalysisPlayerRelicPools { get; } = new();
-
     public RelayCommand AnalyzeSeedCommand => _analyzeSeedCommand ??= new RelayCommand(AnalyzeSeed);
 
     public bool HasSeedAnalysisResult
@@ -79,20 +75,48 @@ internal sealed partial class MainWindowViewModel
 
         try
         {
+            var seedAnalysisDataset = EnsureSeedAnalysisDataset();
+            if (seedAnalysisDataset == null)
+            {
+                SeedAnalysisSummary = "种子分析所需的数据尚未成功加载。";
+                LogWarn(SeedAnalysisSummary);
+                return;
+            }
+
             var seedValue = SeedFormatter.ToUIntSeed(normalizedSeed);
-            var analysis = _ancientPreviewer.AnalyzePools(new Sts2SeedAnalysisRequest
+            var unlockedCharacters = GetConfiguredUnlockedCharacters();
+            var ancientAvailability = ResolveEffectiveAncientAvailability("种子分析");
+            LogInfo(
+                $"[种子分析] 输入参数: seed={normalizedSeed}, seedValue={seedValue}, character={SelectedCharacter}, ascension={SelectedAscensionLevel}, unlocked={FormatCharacterList(unlockedCharacters)}, {FormatAncientAvailability(ancientAvailability)}");
+
+            var analysisRequest = new Sts2SeedAnalysisRequest
             {
                 SeedText = normalizedSeed,
                 SeedValue = seedValue,
                 Character = SelectedCharacter,
-                UnlockedCharacters = GetConfiguredUnlockedCharacters(),
+                UnlockedCharacters = unlockedCharacters,
                 AscensionLevel = SelectedAscensionLevel,
-                IncludeDarvSharedAncient = DefaultIncludeDarvSharedAncient
-            });
+                AncientAvailability = ancientAvailability
+            };
+            var analysis = _ancientPreviewer.AnalyzePools(analysisRequest);
+            LogInfo($"[种子分析] AnalyzePools: {FormatActPoolSummary(analysis)}");
+
+            var relicVisibilityRequest = new Sts2RelicVisibilityRequest
+            {
+                SeedText = normalizedSeed,
+                SeedValue = seedValue,
+                Character = SelectedCharacter,
+                UnlockedCharacters = unlockedCharacters,
+                AscensionLevel = SelectedAscensionLevel,
+                PlayerCount = 1,
+                AncientAvailability = ancientAvailability
+            };
+            var relicVisibility = _ancientPreviewer.AnalyzeRelicVisibility(seedAnalysisDataset, relicVisibilityRequest);
 
             var openingActs = BuildSeedAnalysisOpeningActs(normalizedSeed, seedValue);
             ApplySeedAnalysis(analysis);
             ApplySeedAnalysisOpenings(openingActs);
+            ApplySeedAnalysisRelicVisibility(relicVisibility);
             SeedAnalysisSummary = $"已分析种子 {normalizedSeed}，角色：{GetCharacterDisplayName(SelectedCharacter)}，进阶等级：{SelectedAscensionLevel}";
             SeedAnalysisSeedValueText = $"uint seed: {analysis.SeedValue}";
             StatusMessage = "种子分析完成。";
@@ -121,20 +145,6 @@ internal sealed partial class MainWindowViewModel
                 act.ElitePool.Select(FormatEncounterId).ToList()));
         }
 
-        foreach (var rarityGroup in analysis.SharedRelicPools)
-        {
-            SeedAnalysisSharedRelicPools.Add(new SeedAnalysisRelicGroupViewModel(
-                $"{FormatRarity(rarityGroup.Rarity)} (优先候选{rarityGroup.PriorityCount}个 / 共{rarityGroup.TotalCount}个)",
-                rarityGroup.Relics.Select((relicId, index) => FormatOrderedName(index + 1, FormatRelicId(relicId))).ToList()));
-        }
-
-        foreach (var rarityGroup in analysis.PlayerRelicPools)
-        {
-            SeedAnalysisPlayerRelicPools.Add(new SeedAnalysisRelicGroupViewModel(
-                $"{FormatRarity(rarityGroup.Rarity)} (优先候选{rarityGroup.PriorityCount}个 / 共{rarityGroup.TotalCount}个)",
-                rarityGroup.Relics.Select((relicId, index) => FormatOrderedName(index + 1, FormatRelicId(relicId))).ToList()));
-        }
-
         HasSeedAnalysisResult = true;
     }
 
@@ -151,8 +161,7 @@ internal sealed partial class MainWindowViewModel
     {
         SeedAnalysisActs.Clear();
         SeedAnalysisOpeningActs.Clear();
-        SeedAnalysisSharedRelicPools.Clear();
-        SeedAnalysisPlayerRelicPools.Clear();
+        ClearSeedAnalysisRelicVisibility();
         HasSeedAnalysisResult = false;
     }
 
@@ -222,7 +231,8 @@ internal sealed partial class MainWindowViewModel
                 act1Options));
         }
 
-        var preview = _ancientPreviewer?.Preview(new Sts2RunRequest
+        var ancientAvailability = ResolveEffectiveAncientAvailability("种子分析预览");
+        var previewRequest = new Sts2RunRequest
         {
             SeedValue = seedValue,
             SeedText = seedText,
@@ -230,13 +240,17 @@ internal sealed partial class MainWindowViewModel
             UnlockedCharacters = GetConfiguredUnlockedCharacters(),
             AscensionLevel = SelectedAscensionLevel,
             PlayerCount = 1,
-            IncludeDarvSharedAncient = DefaultIncludeDarvSharedAncient,
+            AncientAvailability = ancientAvailability,
             IncludeAct2 = true,
             IncludeAct3 = true
-        });
+        };
+        LogInfo(
+            $"[种子分析] Preview 请求: seed={previewRequest.SeedText}, seedValue={previewRequest.SeedValue}, character={previewRequest.Character}, ascension={previewRequest.AscensionLevel}, unlocked={FormatCharacterList(previewRequest.UnlockedCharacters)}, {FormatAncientAvailability(ancientAvailability)}");
+        var preview = _ancientPreviewer?.Preview(previewRequest);
 
         if (preview != null)
         {
+            LogInfo($"[种子分析] Preview 返回: {FormatOpeningPreview(preview)}");
             foreach (var act in preview.Acts.OrderBy(act => act.ActNumber))
             {
                 var fallbackName = act.AncientName ?? act.AncientId ?? string.Empty;
@@ -255,6 +269,31 @@ internal sealed partial class MainWindowViewModel
         }
 
         return openingActs;
+    }
+
+    private static string FormatCharacterList(IReadOnlyList<CharacterId>? characters)
+    {
+        return characters == null || characters.Count == 0
+            ? "(default)"
+            : string.Join(", ", characters.Select(character => character.ToString()));
+    }
+
+    private static string FormatActPoolSummary(Sts2SeedAnalysis analysis)
+    {
+        return string.Join(
+            " | ",
+            analysis.Acts.Select(
+                act => $"Act{act.ActNumber}:{act.ActName}, events=[{string.Join(", ", act.EventPool.Take(3))}], elites=[{string.Join(", ", act.ElitePool.Take(3))}]"));
+    }
+
+    private static string FormatOpeningPreview(Sts2RunPreview preview)
+    {
+        return string.Join(
+            " | ",
+            preview.Acts
+                .OrderBy(act => act.ActNumber)
+                .Select(
+                    act => $"Act{act.ActNumber}:{act.AncientId}[{string.Join(", ", act.AncientOptions.Select(option => option.OptionId))}]"));
     }
 
     private IReadOnlyList<SeedAnalysisOpeningOptionViewModel> BuildAct1OpeningOptions(uint seedValue)
@@ -293,12 +332,13 @@ internal sealed partial class MainWindowViewModel
         try
         {
             var version = SelectedGameVersion.Id;
-            var neowPath = Path.Combine(AppContext.BaseDirectory, "data", version, "neow", "options.json");
+            var neowPath = UiDataPathResolver.ResolveVersionedDataFilePath(version, "neow", "options.json");
             if (!File.Exists(neowPath))
             {
-                neowPath = Path.Combine(AppContext.BaseDirectory, "data", "0.99.1", "neow", "options.json");
+                neowPath = UiDataPathResolver.ResolveVersionedDataFilePath("0.99.1", "neow", "options.json");
             }
 
+            LogInfo($"[数据路径] seed-analysis-neow={neowPath}");
             _dataset = LoadDatasetInternal(neowPath);
             BuildCatalogs(_dataset);
             _rollCommand?.RaiseCanExecuteChanged();
@@ -771,16 +811,4 @@ internal sealed partial class MainWindowViewModel
         public bool HasDescription => !string.IsNullOrWhiteSpace(Description);
     }
 
-    internal sealed class SeedAnalysisRelicGroupViewModel
-    {
-        public SeedAnalysisRelicGroupViewModel(string title, IReadOnlyList<string> relics)
-        {
-            Title = title;
-            Relics = relics;
-        }
-
-        public string Title { get; }
-
-        public IReadOnlyList<string> Relics { get; }
-    }
 }

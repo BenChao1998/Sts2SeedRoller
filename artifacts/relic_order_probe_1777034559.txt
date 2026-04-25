@@ -1,0 +1,175 @@
+Relic Order Probe
+=================
+save      : E:\github project\Sts2SeedRoller\存档\1777034559.run
+acts      : E:\github project\Sts2SeedRoller\data\0.103.2\sts2\acts.json
+source    : E:\github project\Sts2SeedRoller\Slay the Spire 2 版本0.103.2源码（游戏源码，读取用）
+pool order: official source RelicPool.cs
+rarity map : official source Relics/*.cs
+bag init   : official DLL RelicGrabBag.Populate
+seed      : PCKDQFERHM
+character : Silent
+player id : 1
+run seed  : 2049729193
+player seed: 2049729194
+
+Pool order comparison
+---------------------
+Shared   acts=118 source=118 same_prefix=118 first_diff=-
+  acts   : AKABEKO, AMETHYST_AUBERGINE, ANCHOR, ART_OF_WAR, BAG_OF_MARBLES, BAG_OF_PREPARATION, BEATING_REMNANT, BELLOWS
+  source : AKABEKO, AMETHYST_AUBERGINE, ANCHOR, ART_OF_WAR, BAG_OF_MARBLES, BAG_OF_PREPARATION, BEATING_REMNANT, BELLOWS
+Ironclad acts=  8 source=  8 same_prefix=  8 first_diff=-
+  acts   : BRIMSTONE, BURNING_BLOOD, CHARONS_ASHES, DEMON_TONGUE, PAPER_PHROG, RED_SKULL, RUINED_HELMET, SELF_FORMING_CLAY
+  source : BRIMSTONE, BURNING_BLOOD, CHARONS_ASHES, DEMON_TONGUE, PAPER_PHROG, RED_SKULL, RUINED_HELMET, SELF_FORMING_CLAY
+Silent   acts=  8 source=  8 same_prefix=  8 first_diff=-
+  acts   : HELICAL_DART, NINJA_SCROLL, PAPER_KRANE, RING_OF_THE_SNAKE, SNECKO_SKULL, TINGSHA, TOUGH_BANDAGES, TWISTED_FUNNEL
+  source : HELICAL_DART, NINJA_SCROLL, PAPER_KRANE, RING_OF_THE_SNAKE, SNECKO_SKULL, TINGSHA, TOUGH_BANDAGES, TWISTED_FUNNEL
+Defect   acts=  8 source=  8 same_prefix=  8 first_diff=-
+  acts   : CRACKED_CORE, DATA_DISK, EMOTION_CHIP, GOLD_PLATED_CABLES, POWER_CELL, METRONOME, RUNIC_CAPACITOR, SYMBIOTIC_VIRUS
+  source : CRACKED_CORE, DATA_DISK, EMOTION_CHIP, GOLD_PLATED_CABLES, POWER_CELL, METRONOME, RUNIC_CAPACITOR, SYMBIOTIC_VIRUS
+Necrobinder acts=  8 source=  8 same_prefix=  8 first_diff=-
+  acts   : BIG_HAT, BONE_FLUTE, BOOK_REPAIR_KNIFE, BOOKMARK, BOUND_PHYLACTERY, FUNERARY_MASK, IVORY_TILE, UNDYING_SIGIL
+  source : BIG_HAT, BONE_FLUTE, BOOK_REPAIR_KNIFE, BOOKMARK, BOUND_PHYLACTERY, FUNERARY_MASK, IVORY_TILE, UNDYING_SIGIL
+Regent   acts=  8 source=  8 same_prefix=  8 first_diff=-
+  acts   : DIVINE_RIGHT, FENCING_MANUAL, GALACTIC_DUST, LUNAR_PASTRY, MINI_REGENT, ORANGE_DOUGH, REGALITE, VITRUVIAN_MINION
+  source : DIVINE_RIGHT, FENCING_MANUAL, GALACTIC_DUST, LUNAR_PASTRY, MINI_REGENT, ORANGE_DOUGH, REGALITE, VITRUVIAN_MINION
+
+Rarity differences
+------------------
+acts vs source mismatch count: 11
+  BAG_OF_MARBLES           acts=Uncommon  source=Common
+  BELLOWS                  acts=Uncommon  source=Rare
+  HEFTY_TABLET             acts=None      source=Ancient
+  LASTING_CANDY            acts=Rare      source=Uncommon
+  NEOWS_BONES              acts=None      source=Ancient
+  NEOWS_TALISMAN           acts=None      source=Ancient
+  PERMAFROST               acts=Common    source=Uncommon
+  PHIAL_HOLSTER            acts=None      source=Ancient
+  RED_MASK                 acts=Uncommon  source=Common
+  TINY_MAILBOX             acts=Common    source=Uncommon
+  WINGED_BOOTS             acts=None      source=Ancient
+
+Fixed / non-random relic pickups (excluded from bag replay)
+-----------------------------------------------------------
+ 1F  Event     LEAFY_POULTICE            rarity=Ancient   room=EVENT.NEOW
+18F  Event     SAND_CASTLE               rarity=Ancient   room=EVENT.OROBAS
+34F  Event     DISTINGUISHED_CAPE        rarity=Ancient   room=EVENT.VAKUU
+
+Random relic pickups from save
+------------------------------
+ 3F  Treasure  HAPPY_FLOWER              rarity=Common    room=-
+ 7F  Elite     BLOOD_VIAL                rarity=Common    room=ENCOUNTER.TERROR_EEL_ELITE
+10F  Treasure  KUSARIGAMA                rarity=Uncommon  room=-
+12F  Elite     TINY_MAILBOX              rarity=Uncommon  room=ENCOUNTER.SKULKING_COLONY_ELITE
+14F  Elite     ODDLY_SMOOTH_STONE        rarity=Common    room=ENCOUNTER.PHANTASMAL_GARDENERS_ELITE
+15F  Treasure  MEAL_TICKET               rarity=Common    room=-
+26F  Treasure  AKABEKO                   rarity=Uncommon  room=-
+29F  Elite     BOOK_OF_FIVE_RINGS        rarity=Common    room=ENCOUNTER.INFESTED_PRISMS_ELITE
+31F  Elite     PLANISPHERE               rarity=Uncommon  room=ENCOUNTER.DECIMILLIPEDE_ELITE
+41F  Treasure  JOSS_PAPER                rarity=Uncommon  room=-
+43F  Elite     MUMMIFIED_HAND            rarity=Rare      room=ENCOUNTER.KNIGHTS_ELITE
+45F  Elite     STRIKE_DUMMY              rarity=Common    room=ENCOUNTER.SOUL_NEXUS_ELITE
+
+L1: initial bag positions
+-------------------------
+floor  source    rarity     relic                     initial_pos
+    3  Treasure  Common     HAPPY_FLOWER              1
+    7  Elite     Common     BLOOD_VIAL                1
+   10  Treasure  Uncommon   KUSARIGAMA                1
+   12  Elite     Uncommon   TINY_MAILBOX              1
+   14  Elite     Common     ODDLY_SMOOTH_STONE        2
+   15  Treasure  Common     MEAL_TICKET               2
+   26  Treasure  Uncommon   AKABEKO                   2
+   29  Elite     Common     BOOK_OF_FIVE_RINGS        4
+   31  Elite     Uncommon   PLANISPHERE               3
+   41  Treasure  Uncommon   JOSS_PAPER                3
+   43  Elite     Rare       MUMMIFIED_HAND            2
+   45  Elite     Common     STRIKE_DUMMY              5
+
+L2: 按真实来源 + 存档真实稀有度回放
+---------------------
+Exact matches: 12/12
+floor  source    actual_r   used_r     actual_relic              predicted_relic           match
+    3  Treasure  Common     Common     HAPPY_FLOWER              HAPPY_FLOWER              Y
+    7  Elite     Common     Common     BLOOD_VIAL                BLOOD_VIAL                Y
+   10  Treasure  Uncommon   Uncommon   KUSARIGAMA                KUSARIGAMA                Y
+   12  Elite     Uncommon   Uncommon   TINY_MAILBOX              TINY_MAILBOX              Y
+   14  Elite     Common     Common     ODDLY_SMOOTH_STONE        ODDLY_SMOOTH_STONE        Y
+   15  Treasure  Common     Common     MEAL_TICKET               MEAL_TICKET               Y
+   26  Treasure  Uncommon   Uncommon   AKABEKO                   AKABEKO                   Y
+   29  Elite     Common     Common     BOOK_OF_FIVE_RINGS        BOOK_OF_FIVE_RINGS        Y
+   31  Elite     Uncommon   Uncommon   PLANISPHERE               PLANISPHERE               Y
+   41  Treasure  Uncommon   Uncommon   JOSS_PAPER                JOSS_PAPER                Y
+   43  Elite     Rare       Rare       MUMMIFIED_HAND            MUMMIFIED_HAND            Y
+   45  Elite     Common     Common     STRIKE_DUMMY              STRIKE_DUMMY              Y
+
+L3: 按真实来源 + RNG 稀有度（不做精英跨袋移除）
+-----------------------------
+Exact matches: 7/12
+floor  source    actual_r   used_r     actual_relic              predicted_relic           match
+    3  Treasure  Common     Common     HAPPY_FLOWER              HAPPY_FLOWER              Y
+    7  Elite     Common     Common     BLOOD_VIAL                BLOOD_VIAL                Y
+   10  Treasure  Uncommon   Uncommon   KUSARIGAMA                KUSARIGAMA                Y
+   12  Elite     Uncommon   Common     TINY_MAILBOX              ODDLY_SMOOTH_STONE        N
+   14  Elite     Common     Rare       ODDLY_SMOOTH_STONE        SHOVEL                    N
+   15  Treasure  Common     Common     MEAL_TICKET               MEAL_TICKET               Y
+   26  Treasure  Uncommon   Uncommon   AKABEKO                   AKABEKO                   Y
+   29  Elite     Common     Common     BOOK_OF_FIVE_RINGS        BOOK_OF_FIVE_RINGS        Y
+   31  Elite     Uncommon   Uncommon   PLANISPHERE               TINY_MAILBOX              N
+   41  Treasure  Uncommon   Uncommon   JOSS_PAPER                JOSS_PAPER                Y
+   43  Elite     Rare       Common     MUMMIFIED_HAND            STRIKE_DUMMY              N
+   45  Elite     Common     Rare       STRIKE_DUMMY              MUMMIFIED_HAND            N
+
+L4: 按真实来源 + RNG 稀有度 + 精英跨袋移除
+----------------------------
+Exact matches: 7/12
+floor  source    actual_r   used_r     actual_relic              predicted_relic           match
+    3  Treasure  Common     Common     HAPPY_FLOWER              HAPPY_FLOWER              Y
+    7  Elite     Common     Common     BLOOD_VIAL                BLOOD_VIAL                Y
+   10  Treasure  Uncommon   Uncommon   KUSARIGAMA                KUSARIGAMA                Y
+   12  Elite     Uncommon   Common     TINY_MAILBOX              ODDLY_SMOOTH_STONE        N
+   14  Elite     Common     Rare       ODDLY_SMOOTH_STONE        SHOVEL                    N
+   15  Treasure  Common     Common     MEAL_TICKET               MEAL_TICKET               Y
+   26  Treasure  Uncommon   Uncommon   AKABEKO                   AKABEKO                   Y
+   29  Elite     Common     Common     BOOK_OF_FIVE_RINGS        BOOK_OF_FIVE_RINGS        Y
+   31  Elite     Uncommon   Uncommon   PLANISPHERE               TINY_MAILBOX              N
+   41  Treasure  Uncommon   Uncommon   JOSS_PAPER                JOSS_PAPER                Y
+   43  Elite     Rare       Common     MUMMIFIED_HAND            STRIKE_DUMMY              N
+   45  Elite     Common     Rare       STRIKE_DUMMY              MUMMIFIED_HAND            N
+
+Shuffle-order probe
+-------------------
+Bruteforced all 24 x 24 rarity-bucket shuffle orders for L2 replay.
+Best exact matches: 6/12
+Best shared order : Uncommon>Common>Rare>Shop
+Best player order : Common>Uncommon>Rare>Shop
+Top candidates:
+  matches= 6  shared=Uncommon>Common>Rare>Shop       player=Common>Rare>Shop>Uncommon
+  matches= 6  shared=Uncommon>Common>Rare>Shop       player=Common>Shop>Rare>Uncommon
+  matches= 6  shared=Uncommon>Common>Rare>Shop       player=Common>Uncommon>Rare>Shop
+  matches= 6  shared=Uncommon>Common>Rare>Shop       player=Common>Uncommon>Shop>Rare
+  matches= 6  shared=Uncommon>Common>Rare>Shop       player=Rare>Shop>Common>Uncommon
+  matches= 6  shared=Uncommon>Common>Rare>Shop       player=Shop>Common>Rare>Uncommon
+  matches= 6  shared=Uncommon>Common>Rare>Shop       player=Shop>Rare>Common>Uncommon
+  matches= 6  shared=Uncommon>Common>Rare>Shop       player=Shop>Uncommon>Common>Rare
+
+Initial bag previews
+--------------------
+Shared bag
+  Common    [12/25 shown] HAPPY_FLOWER, MEAL_TICKET, BAG_OF_MARBLES, GORGET, REGAL_PILLOW, JUZU_BRACELET, AMETHYST_AUBERGINE, WAR_PAINT, VAJRA, BLOOD_VIAL, CENTENNIAL_PUZZLE, STRAWBERRY
+  Uncommon  [12/30 shown] KUSARIGAMA, AKABEKO, JOSS_PAPER, ORICHALCUM, PERMAFROST, MERCURY_HOURGLASS, VAMBRACE, CANDELABRA, STONE_CRACKER, MINIATURE_CANNON, TUNING_FORK, REPTILE_TRINKET
+  Rare      [12/35 shown] VEXING_PUZZLEBOX, BEATING_REMNANT, STURDY_CLAMP, CHANDELIER, SHOVEL, WHITE_BEAST_STATUE, GIRYA, RAINBOW_RING, STONE_CALENDAR, MUMMIFIED_HAND, UNSETTLING_LAMP, OLD_COIN
+  Shop      [12/25 shown] RINGING_TRIANGLE, MINIATURE_TENT, WING_CHARM, CHEMICAL_X, MYSTIC_LIGHTER, SLING_OF_COURAGE, BURNING_STICKS, CAULDRON, TOOLBOX, BELT_BUCKLE, DOLLYS_MIRROR, THE_ABACUS
+Player bag
+  Common    [12/26 shown] BLOOD_VIAL, ODDLY_SMOOTH_STONE, HAPPY_FLOWER, BOOK_OF_FIVE_RINGS, STRIKE_DUMMY, JUZU_BRACELET, STRAWBERRY, WAR_PAINT, VAJRA, PENDULUM, AMETHYST_AUBERGINE, LANTERN
+  Uncommon  [12/32 shown] TINY_MAILBOX, KUSARIGAMA, PLANISPHERE, ORICHALCUM, ETERNAL_FEATHER, STONE_CRACKER, PETRIFIED_TOAD, HORN_CLEAT, LETTER_OPENER, PARRYING_SHIELD, REPTILE_TRINKET, LUCKY_FYSH
+  Rare      [12/38 shown] SHOVEL, MUMMIFIED_HAND, LIZARD_TAIL, ICE_CREAM, POCKETWATCH, RAZOR_TOOTH, WHITE_BEAST_STATUE, CHANDELIER, BEATING_REMNANT, GAME_PIECE, STONE_CALENDAR, HELICAL_DART
+  Shop      [12/26 shown] DRAGON_FRUIT, TOOLBOX, BURNING_STICKS, MINIATURE_TENT, BELT_BUCKLE, THE_ABACUS, LAVA_LAMP, SLING_OF_COURAGE, MYSTIC_LIGHTER, KIFUDA, CAULDRON, ORRERY
+
+Quick read
+----------
+L2 exact matches: 12/12
+L3 exact matches: 7/12
+L4 exact matches: 7/12
+L2 is now perfect: the bag source, rarity map, shared->player same-relic removal, and Act 3 availability gating line up with the save.
+The remaining gap is rewards RNG timing. Elite rewards still miss at L3/L4, which means gold/potion/card population is advancing PlayerRng.Rewards before some relic rarity rolls.
+Elite rewards in the live game populate gold/potion/card before relic, so card and potion generation can move PlayerRng.Rewards ahead of the relic rarity roll.

@@ -22,6 +22,64 @@ var cardFeatureCache = new Dictionary<string, CardSourceFeatures>(StringComparer
 var relicAddsPetCache = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
 
 Console.OutputEncoding = Encoding.UTF8;
+if (args.Length >= 2 &&
+    string.Equals(args[0], "--save-compare", StringComparison.OrdinalIgnoreCase))
+{
+    // Save-backed comparison isolates whether the mismatch comes from the
+    // simplified Ancient option logic or from earlier run-state reconstruction.
+    CompareSaveDrivenAncientPredictions(args[1]);
+    return;
+}
+
+if (args.Length >= 2 &&
+    string.Equals(args[0], "--darv-compare", StringComparison.OrdinalIgnoreCase))
+{
+    CompareDarvToggleForSeed(args[1]);
+    return;
+}
+
+if (args.Length >= 1 &&
+    string.Equals(args[0], "--current-vs-save-options", StringComparison.OrdinalIgnoreCase))
+{
+    CompareCurrentLogicAgainstSaveOptions();
+    return;
+}
+
+if (args.Length >= 2 &&
+    string.Equals(args[0], "--preview-seed", StringComparison.OrdinalIgnoreCase))
+{
+    PrintSeedPreview(args[1]);
+    return;
+}
+
+if (args.Length >= 2 &&
+    string.Equals(args[0], "--ui-sequence-preview", StringComparison.OrdinalIgnoreCase))
+{
+    PrintSeedPreviewAfterUiSequence(args[1]);
+    return;
+}
+
+if (args.Length >= 2 &&
+    string.Equals(args[0], "--analyze-then-preview", StringComparison.OrdinalIgnoreCase))
+{
+    PrintSeedPreviewAfterAnalyze(args[1]);
+    return;
+}
+
+if (args.Length >= 2 &&
+    string.Equals(args[0], "--visibility-then-preview", StringComparison.OrdinalIgnoreCase))
+{
+    PrintSeedPreviewAfterVisibility(args[1]);
+    return;
+}
+
+if (args.Length >= 2 &&
+    string.Equals(args[0], "--preview-twice", StringComparison.OrdinalIgnoreCase))
+{
+    PrintSeedPreviewTwice(args[1]);
+    return;
+}
+
 if (args.Contains("--root-cause", StringComparer.OrdinalIgnoreCase))
 {
     RunRootCauseDiagnostics();
@@ -584,6 +642,269 @@ Sts2RunRequest CreateRunRequest(string seedText, CharacterId character)
         IncludeAct3 = true,
         PlayerCount = 1
     };
+}
+
+void CompareDarvToggleForSeed(string seedText)
+{
+    const CharacterId character = CharacterId.Silent;
+    var request = CreateRunRequest(seedText, character);
+    request = request with { IncludeDarvSharedAncient = true };
+    var withDarv = CreateOfficialSeedPreviewerCore(seedText, includeDarv: true).Preview(request);
+    var withoutDarv = CreateOfficialSeedPreviewerCore(seedText, includeDarv: false)
+        .Preview(request with { IncludeDarvSharedAncient = false });
+
+    Console.WriteLine($"seed={seedText}");
+    foreach (var actNumber in new[] { 2, 3 })
+    {
+        var withAct = withDarv.Acts.FirstOrDefault(act => act.ActNumber == actNumber);
+        var withoutAct = withoutDarv.Acts.FirstOrDefault(act => act.ActNumber == actNumber);
+        var withText = withAct is null
+            ? "(none)"
+            : $"{withAct.AncientId}{FormatOptions(withAct.AncientOptions.Select(option => option.OptionId).ToList())}";
+        var withoutText = withoutAct is null
+            ? "(none)"
+            : $"{withoutAct.AncientId}{FormatOptions(withoutAct.AncientOptions.Select(option => option.OptionId).ToList())}";
+        Console.WriteLine($"  Act {actNumber}: withDarv={withText} | withoutDarv={withoutText}");
+    }
+}
+
+void PrintSeedPreview(string seedText)
+{
+    const CharacterId character = CharacterId.Silent;
+    var request = CreateRunRequest(seedText, character);
+    var preview = currentPreviewer.Preview(request);
+
+    Console.WriteLine($"seed={seedText}");
+    foreach (var act in preview.Acts.OrderBy(act => act.ActNumber))
+    {
+        Console.WriteLine(
+            $"  Act {act.ActNumber}: {act.AncientId} [{string.Join(", ", act.AncientOptions.Select(option => option.OptionId))}]");
+    }
+}
+
+void PrintSeedPreviewAfterUiSequence(string seedText)
+{
+    const CharacterId character = CharacterId.Silent;
+    var normalizedSeed = SeedFormatter.Normalize(seedText);
+    var seedValue = SeedFormatter.ToUIntSeed(normalizedSeed);
+    var ancientAvailability = ResolveUiAncientAvailability();
+    var unlockedCharacters = new[]
+    {
+        CharacterId.Ironclad,
+        CharacterId.Silent,
+        CharacterId.Defect,
+        CharacterId.Necrobinder,
+        CharacterId.Regent
+    };
+
+    using var datasetStream = File.OpenRead(Path.Combine(workspace, "data", "0.103.2", "neow", "options.json"));
+    var dataset = NeowOptionDataLoader.Load(datasetStream);
+
+    var analysisRequest = new Sts2SeedAnalysisRequest
+    {
+        SeedText = normalizedSeed,
+        SeedValue = seedValue,
+        Character = character,
+        UnlockedCharacters = unlockedCharacters,
+        AscensionLevel = 10,
+        AncientAvailability = ancientAvailability
+    };
+    var analysis = currentPreviewer.AnalyzePools(analysisRequest);
+
+    var visibilityRequest = new Sts2RelicVisibilityRequest
+    {
+        SeedText = normalizedSeed,
+        SeedValue = seedValue,
+        Character = character,
+        UnlockedCharacters = unlockedCharacters,
+        AscensionLevel = 10,
+        PlayerCount = 1,
+        AncientAvailability = ancientAvailability
+    };
+    var visibility = currentPreviewer.AnalyzeRelicVisibility(dataset, visibilityRequest);
+
+    var previewRequest = new Sts2RunRequest
+    {
+        SeedValue = seedValue,
+        SeedText = normalizedSeed,
+        Character = character,
+        UnlockedCharacters = unlockedCharacters,
+        AscensionLevel = 10,
+        PlayerCount = 1,
+        AncientAvailability = ancientAvailability,
+        IncludeAct2 = true,
+        IncludeAct3 = true
+    };
+    var preview = currentPreviewer.Preview(previewRequest);
+
+    Console.WriteLine($"seed={normalizedSeed}");
+    Console.WriteLine($"  AnalyzePools acts={string.Join(" | ", analysis.Acts.Select(act => $"Act{act.ActNumber}:{act.ActName}"))}");
+    Console.WriteLine($"  Visibility profiles={visibility.Profiles.Count}");
+    foreach (var act in preview.Acts.OrderBy(act => act.ActNumber))
+    {
+        Console.WriteLine(
+            $"  Preview Act {act.ActNumber}: {act.AncientId} [{string.Join(", ", act.AncientOptions.Select(option => option.OptionId))}]");
+    }
+}
+
+void PrintSeedPreviewAfterAnalyze(string seedText)
+{
+    const CharacterId character = CharacterId.Silent;
+    var normalizedSeed = SeedFormatter.Normalize(seedText);
+    var seedValue = SeedFormatter.ToUIntSeed(normalizedSeed);
+    var ancientAvailability = ResolveUiAncientAvailability();
+    var unlockedCharacters = new[]
+    {
+        CharacterId.Ironclad,
+        CharacterId.Silent,
+        CharacterId.Defect,
+        CharacterId.Necrobinder,
+        CharacterId.Regent
+    };
+
+    var analysisRequest = new Sts2SeedAnalysisRequest
+    {
+        SeedText = normalizedSeed,
+        SeedValue = seedValue,
+        Character = character,
+        UnlockedCharacters = unlockedCharacters,
+        AscensionLevel = 10,
+        AncientAvailability = ancientAvailability
+    };
+    currentPreviewer.AnalyzePools(analysisRequest);
+
+    var previewRequest = new Sts2RunRequest
+    {
+        SeedValue = seedValue,
+        SeedText = normalizedSeed,
+        Character = character,
+        UnlockedCharacters = unlockedCharacters,
+        AscensionLevel = 10,
+        PlayerCount = 1,
+        AncientAvailability = ancientAvailability,
+        IncludeAct2 = true,
+        IncludeAct3 = true
+    };
+    var preview = currentPreviewer.Preview(previewRequest);
+    PrintPreview(normalizedSeed, preview);
+}
+
+void PrintSeedPreviewAfterVisibility(string seedText)
+{
+    const CharacterId character = CharacterId.Silent;
+    var normalizedSeed = SeedFormatter.Normalize(seedText);
+    var seedValue = SeedFormatter.ToUIntSeed(normalizedSeed);
+    var ancientAvailability = ResolveUiAncientAvailability();
+    var unlockedCharacters = new[]
+    {
+        CharacterId.Ironclad,
+        CharacterId.Silent,
+        CharacterId.Defect,
+        CharacterId.Necrobinder,
+        CharacterId.Regent
+    };
+
+    using var datasetStream = File.OpenRead(Path.Combine(workspace, "data", "0.103.2", "neow", "options.json"));
+    var dataset = NeowOptionDataLoader.Load(datasetStream);
+    var visibilityRequest = new Sts2RelicVisibilityRequest
+    {
+        SeedText = normalizedSeed,
+        SeedValue = seedValue,
+        Character = character,
+        UnlockedCharacters = unlockedCharacters,
+        AscensionLevel = 10,
+        PlayerCount = 1,
+        AncientAvailability = ancientAvailability
+    };
+    currentPreviewer.AnalyzeRelicVisibility(dataset, visibilityRequest);
+
+    var previewRequest = new Sts2RunRequest
+    {
+        SeedValue = seedValue,
+        SeedText = normalizedSeed,
+        Character = character,
+        UnlockedCharacters = unlockedCharacters,
+        AscensionLevel = 10,
+        PlayerCount = 1,
+        AncientAvailability = ancientAvailability,
+        IncludeAct2 = true,
+        IncludeAct3 = true
+    };
+    var preview = currentPreviewer.Preview(previewRequest);
+    PrintPreview(normalizedSeed, preview);
+}
+
+void PrintPreview(string seedText, Sts2RunPreview preview)
+{
+    Console.WriteLine($"seed={seedText}");
+    foreach (var act in preview.Acts.OrderBy(act => act.ActNumber))
+    {
+        Console.WriteLine(
+            $"  Preview Act {act.ActNumber}: {act.AncientId} [{string.Join(", ", act.AncientOptions.Select(option => option.OptionId))}]");
+    }
+}
+
+void PrintSeedPreviewTwice(string seedText)
+{
+    const CharacterId character = CharacterId.Silent;
+    var ancientAvailability = ResolveUiAncientAvailability();
+    var request = CreateRunRequest(seedText, character);
+    request = request with
+    {
+        UnlockedCharacters = new[]
+        {
+            CharacterId.Ironclad,
+            CharacterId.Silent,
+            CharacterId.Defect,
+            CharacterId.Necrobinder,
+            CharacterId.Regent
+        },
+        AncientAvailability = ancientAvailability
+    };
+
+    var first = currentPreviewer.Preview(request);
+    var second = currentPreviewer.Preview(request);
+
+    Console.WriteLine("first");
+    PrintPreview(seedText, first);
+    Console.WriteLine("second");
+    PrintPreview(seedText, second);
+}
+
+Sts2AncientAvailability ResolveUiAncientAvailability()
+{
+    var progressPath = Path.Combine(workspace, "存档", "progress.save");
+    if (!File.Exists(progressPath))
+    {
+        return Sts2AncientAvailability.Default;
+    }
+
+    using var document = JsonDocument.Parse(File.ReadAllText(progressPath));
+    if (!document.RootElement.TryGetProperty("epochs", out var epochs) || epochs.ValueKind != JsonValueKind.Array)
+    {
+        return Sts2AncientAvailability.Default;
+    }
+
+    var revealedEpochs = new List<string>();
+    foreach (var epoch in epochs.EnumerateArray())
+    {
+        if (!epoch.TryGetProperty("id", out var idElement) ||
+            idElement.ValueKind != JsonValueKind.String ||
+            !epoch.TryGetProperty("state", out var stateElement) ||
+            stateElement.ValueKind != JsonValueKind.String ||
+            !string.Equals(stateElement.GetString(), "revealed", StringComparison.OrdinalIgnoreCase))
+        {
+            continue;
+        }
+
+        var epochId = idElement.GetString();
+        if (!string.IsNullOrWhiteSpace(epochId))
+        {
+            revealedEpochs.Add(epochId);
+        }
+    }
+
+    return Sts2AncientAvailability.FromRevealedEpochIds(revealedEpochs);
 }
 
 void PrintAncientVariantComparison(string relativeRunPath)

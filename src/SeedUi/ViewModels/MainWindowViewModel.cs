@@ -43,6 +43,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
     };
 
     private readonly string _configFilePath = Path.Combine(AppContext.BaseDirectory, "config.json");
+    private readonly string _debugLogFilePath = Path.Combine(AppContext.BaseDirectory, "logs", "ui-debug.log");
     private readonly AsyncRelayCommand _rollCommand;
     private readonly RelayCommand _cancelCommand;
     private readonly AsyncRelayCommand _loadDatasetCommand;
@@ -67,8 +68,6 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         get => _isRolling;
         private set => SetProperty(ref _isRolling, value);
     }
-
-    private const bool DefaultIncludeDarvSharedAncient = false;
 
     private string _datasetSummary = "尚未加载数据";
     private string _relicCatalogFilter = string.Empty;
@@ -151,6 +150,8 @@ internal sealed partial class MainWindowViewModel : ObservableObject
 
     public MainWindowViewModel()
     {
+        InitializeDebugLogFile();
+
         GameVersionOptions =
         [
             new GameVersionOption("0.103.2", "v0.103.2", "从源码 C# 文件中解析"),
@@ -220,20 +221,22 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         UpdateAncientFilterSummary();
         InitializePoolFilter();
         InitializeSeedArchive();
+        RefreshAncientAvailabilityStatus("startup", shouldLog: false);
     }
     public bool TryAutoLoadOnStartup => true;
 
     private Sts2RunPreviewer? InitializeAncientPreviewer()
     {
         var version = SelectedGameVersion.Id;
-        var versionDir = $"data/{version}";
 
         // Reload AncientDisplayCatalog for the current version
         AncientDisplayCatalog.ReloadForVersion(version);
 
         // Try loading from files first
         var optionPath = AncientDisplayCatalog.ResolveOptionDataPath(version);
-        var actDataPath = Path.Combine(AppContext.BaseDirectory, versionDir, "sts2", "acts.json");
+        var actDataPath = UiDataPathResolver.ResolveVersionedDataFilePath(version, "sts2", "acts.json");
+        LogInfo($"[数据路径] ancient-options={optionPath}");
+        LogInfo($"[数据路径] acts={actDataPath}");
 
         if (File.Exists(optionPath) && File.Exists(actDataPath))
         {
@@ -866,14 +869,15 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         try
         {
             var version = SelectedGameVersion.Id;
-            var versionDir = $"data/{version}";
-            var neowPath = Path.Combine(AppContext.BaseDirectory, versionDir, "neow", "options.json");
+            var neowPath = UiDataPathResolver.ResolveVersionedDataFilePath(version, "neow", "options.json");
 
             // Fallback: old flat path (for backward compatibility during transition)
             if (!File.Exists(neowPath))
             {
-                neowPath = Path.Combine(AppContext.BaseDirectory, "data", "0.99.1", "neow", "options.json");
+                neowPath = UiDataPathResolver.ResolveVersionedDataFilePath("0.99.1", "neow", "options.json");
             }
+
+            LogInfo($"[数据路径] neow={neowPath}");
 
             StatusMessage = $"正在加载第一幕数据（{version}）…";
             var dataset = await Task.Run(() => LoadDatasetInternal(neowPath));
@@ -921,7 +925,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
 
     private IReadOnlyDictionary<string, string> LoadSts2LocalizationTable(string version, string fileName, string categoryName)
     {
-        var path = Path.Combine(AppContext.BaseDirectory, "data", version, "sts2", "localization", "zhs", fileName);
+        var path = UiDataPathResolver.ResolveVersionedDataFilePath(version, "sts2", "localization", "zhs", fileName);
         if (!File.Exists(path))
         {
             return EmptyLocalizationTable;
@@ -929,6 +933,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
 
         try
         {
+            LogInfo($"[数据路径] localization-{categoryName}={path}");
             using var stream = File.OpenRead(path);
             return JsonSerializer.Deserialize<Dictionary<string, string>>(stream) ?? EmptyLocalizationTable;
         }
@@ -989,8 +994,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         SelectedShopCardCatalogItem = null;
         SelectedShopRelicCatalogItem = null;
         SelectedShopPotionCatalogItem = null;
-        SelectedSharedRelicPoolCatalogItem = null;
-        SelectedPlayerRelicPoolCatalogItem = null;
+        SelectedHighProbabilityRelicCatalogItem = null;
     }
 
     private static string BuildSearchKey(params string?[] fragments)
@@ -1366,7 +1370,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         }
 
         var normalized = metadata.DefaultDataPath.Replace('/', Path.DirectorySeparatorChar);
-        return Path.Combine(AppContext.BaseDirectory, normalized);
+        return UiDataPathResolver.ResolveRelativeFilePath(normalized);
     }
 
     private async Task RollAsync()
@@ -1705,6 +1709,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
 
         var hitFlag = 0;
         var partitioner = Partitioner.Create(workItems, loadBalance: true);
+        var ancientAvailability = ResolveEffectiveAncientAvailability("roll");
 
         Parallel.ForEach(
             partitioner,
@@ -1715,7 +1720,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
                 config.Character,
                 config.CharacterName,
                 GetConfiguredUnlockedCharacters(),
-                DefaultIncludeDarvSharedAncient,
+                ancientAvailability,
                 includeAct2,
                 includeAct3,
                 SelectedAscensionLevel,
@@ -2009,8 +2014,8 @@ internal sealed partial class MainWindowViewModel : ObservableObject
                 Act1EventIds = Act1EventPoolFilterChips.Select(chip => chip.Value).ToList(),
                 Act2EventIds = Act2EventPoolFilterChips.Select(chip => chip.Value).ToList(),
                 Act3EventIds = Act3EventPoolFilterChips.Select(chip => chip.Value).ToList(),
-                SharedRelicIds = SharedRelicPoolFilterChips.Select(chip => chip.Value).ToList(),
-                PlayerRelicIds = PlayerRelicPoolFilterChips.Select(chip => chip.Value).ToList()
+                HighProbabilityRelicIds = HighProbabilityRelicFilterChips.Select(chip => chip.Value).ToList(),
+                HighProbabilitySeenThreshold = GetHighProbabilitySeenThreshold()
             }
             : Sts2PoolFilter.Empty;
 
@@ -2369,8 +2374,9 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         Act1EventPoolFilterChips.Clear();
         Act2EventPoolFilterChips.Clear();
         Act3EventPoolFilterChips.Clear();
-        SharedRelicPoolFilterChips.Clear();
-        PlayerRelicPoolFilterChips.Clear();
+        HighProbabilitySeenThresholdPercentText = (Sts2PoolFilter.DefaultHighProbabilitySeenThreshold * 100d)
+            .ToString("0.##", CultureInfo.InvariantCulture);
+        HighProbabilityRelicFilterChips.Clear();
         ShopCardFilterChips.Clear();
         ShopRelicFilterChips.Clear();
         ShopPotionFilterChips.Clear();
@@ -2379,8 +2385,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         SelectedAct1EventPoolCatalogItem = null;
         SelectedAct2EventPoolCatalogItem = null;
         SelectedAct3EventPoolCatalogItem = null;
-        SelectedSharedRelicPoolCatalogItem = null;
-        SelectedPlayerRelicPoolCatalogItem = null;
+        SelectedHighProbabilityRelicCatalogItem = null;
         StatusMessage = "配置已重置为默认值。";
         LogInfo(StatusMessage);
     }
@@ -2478,8 +2483,14 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         ResetChips(Act1EventPoolFilterChips, config.Act1EventIds, _poolEventCatalog);
         ResetChips(Act2EventPoolFilterChips, config.Act2EventIds, _poolEventCatalog);
         ResetChips(Act3EventPoolFilterChips, config.Act3EventIds, _poolEventCatalog);
-        ResetChips(SharedRelicPoolFilterChips, config.SharedRelicIds, _poolRelicCatalog);
-        ResetChips(PlayerRelicPoolFilterChips, config.PlayerRelicIds, _poolRelicCatalog);
+        var highProbabilityRelicIds = config.HighProbabilityRelicIds
+            ?? config.SharedRelicIds
+                ?.Concat(config.PlayerRelicIds ?? Enumerable.Empty<string>())
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+        HighProbabilitySeenThresholdPercentText = config.HighProbabilitySeenThresholdPercent?.ToString("0.##", CultureInfo.InvariantCulture)
+            ?? "50";
+        ResetChips(HighProbabilityRelicFilterChips, highProbabilityRelicIds, _poolRelicCatalog);
         IncludeShop = config.IncludeShop;
         ShopMaxFirstRow = config.ShopMaxFirstRow?.ToString(CultureInfo.InvariantCulture) ?? string.Empty;
         ResetChips(ShopCardFilterChips, config.ShopCardIds, _cardCatalog);
@@ -2558,8 +2569,8 @@ internal sealed partial class MainWindowViewModel : ObservableObject
                 Act1EventIds = Act1EventPoolFilterChips.Select(chip => chip.Value).ToList(),
                 Act2EventIds = Act2EventPoolFilterChips.Select(chip => chip.Value).ToList(),
                 Act3EventIds = Act3EventPoolFilterChips.Select(chip => chip.Value).ToList(),
-                SharedRelicIds = SharedRelicPoolFilterChips.Select(chip => chip.Value).ToList(),
-                PlayerRelicIds = PlayerRelicPoolFilterChips.Select(chip => chip.Value).ToList(),
+                HighProbabilitySeenThresholdPercent = GetHighProbabilitySeenThreshold() * 100d,
+                HighProbabilityRelicIds = HighProbabilityRelicFilterChips.Select(chip => chip.Value).ToList(),
                 IncludeShop = IncludeShop,
                 ShopMaxFirstRow = ParsePositiveIntOrNull(ShopMaxFirstRow),
                 ShopCardIds = ShopCardFilterChips.Select(chip => chip.Value).ToList(),
@@ -2654,12 +2665,49 @@ internal sealed partial class MainWindowViewModel : ObservableObject
 
     private void LogError(string message) => AddLog("错误", message);
 
+    private void InitializeDebugLogFile()
+    {
+        try
+        {
+            var directory = Path.GetDirectoryName(_debugLogFilePath);
+            if (!string.IsNullOrWhiteSpace(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+
+            File.AppendAllText(
+                _debugLogFilePath,
+                $"{Environment.NewLine}===== Session {DateTimeOffset.Now:yyyy-MM-dd HH:mm:ss} ====={Environment.NewLine}");
+        }
+        catch
+        {
+            // Best-effort only: logging must never block the UI.
+        }
+    }
+
     private void AddLog(string level, string message)
     {
-        Logs.Add(new LogEntryViewModel(level, message));
+        var entry = new LogEntryViewModel(level, message);
+        Logs.Add(entry);
         if (Logs.Count > MaxLogEntries)
         {
             Logs.RemoveAt(0);
+        }
+
+        TryAppendLogFile(entry);
+    }
+
+    private void TryAppendLogFile(LogEntryViewModel entry)
+    {
+        try
+        {
+            File.AppendAllText(
+                _debugLogFilePath,
+                $"[{entry.Timestamp:yyyy-MM-dd HH:mm:ss}] [{entry.Level}] {entry.Message}{Environment.NewLine}");
+        }
+        catch
+        {
+            // Best-effort only: logging must never block the UI.
         }
     }
 
@@ -2801,7 +2849,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         private readonly CharacterId _character;
         private readonly string _characterName;
         private readonly IReadOnlyList<CharacterId> _unlockedCharacters;
-        private readonly bool _includeDarvSharedAncient;
+        private readonly Sts2AncientAvailability _ancientAvailability;
         private readonly bool _includeAct2;
         private readonly bool _includeAct3;
         private readonly int _ascensionLevel;
@@ -2815,7 +2863,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
             CharacterId character,
             string characterName,
             IReadOnlyList<CharacterId> unlockedCharacters,
-            bool includeDarvSharedAncient,
+            Sts2AncientAvailability ancientAvailability,
             bool includeAct2,
             bool includeAct3,
             int ascensionLevel,
@@ -2827,7 +2875,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
             _character = character;
             _characterName = characterName;
             _unlockedCharacters = unlockedCharacters;
-            _includeDarvSharedAncient = includeDarvSharedAncient;
+            _ancientAvailability = ancientAvailability;
             _includeAct2 = includeAct2;
             _includeAct3 = includeAct3;
             _ascensionLevel = ascensionLevel;
@@ -2846,7 +2894,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
                 PlayerCount = 1,
                 ScrollBoxesEligible = true,
                 AscensionLevel = _ascensionLevel,
-                IncludeDarvSharedAncient = _includeDarvSharedAncient,
+                AncientAvailability = _ancientAvailability,
                 IncludeAct2 = _includeAct2,
                 IncludeAct3 = _includeAct3
             };
@@ -2866,6 +2914,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
                 _characterName,
                 displayNeow,
                 match.PoolAnalysis,
+                match.RelicVisibilityAnalysis,
                 _filter.PoolFilter,
                 match.Sts2Preview,
                 _requireAct2Match,
@@ -3061,6 +3110,11 @@ internal sealed partial class MainWindowViewModel : ObservableObject
 
         public List<string>? Act3EventIds { get; init; }
 
+        public double? HighProbabilitySeenThresholdPercent { get; init; }
+
+        public List<string>? HighProbabilityRelicIds { get; init; }
+
+        // Legacy fields kept for backward compatibility with old configs.
         public List<string>? SharedRelicIds { get; init; }
 
         public List<string>? PlayerRelicIds { get; init; }

@@ -664,8 +664,8 @@ internal sealed partial class MainWindowViewModel
         var components = new[]
         {
             BuildDataVersionComponent("neow", ResolveDefaultDataPath(SelectedEvent)),
-            BuildDataVersionComponent("acts", System.IO.Path.Combine(AppContext.BaseDirectory, "data", "sts2", "acts.json")),
-            BuildDataVersionComponent("ancients", AncientDisplayCatalog.ResolveOptionDataPath())
+            BuildDataVersionComponent("acts", UiDataPathResolver.ResolveVersionedDataFilePath(SelectedGameVersion.Id, "sts2", "acts.json")),
+            BuildDataVersionComponent("ancients", AncientDisplayCatalog.ResolveOptionDataPath(SelectedGameVersion.Id))
         };
 
         return new SeedArchiveVersionInfo(
@@ -884,6 +884,7 @@ internal sealed partial class MainWindowViewModel
         var results = new ConcurrentBag<EvaluatedArchiveRun>();
         var partitioner = Partitioner.Create(workItems, loadBalance: true);
         var character = ParseArchiveCharacter(job.Character);
+        var ancientAvailability = ResolveEffectiveAncientAvailability("archive");
 
         Parallel.ForEach(
             partitioner,
@@ -905,7 +906,7 @@ internal sealed partial class MainWindowViewModel
                     PlayerCount = 1,
                     ScrollBoxesEligible = true,
                     AscensionLevel = job.Ascension,
-                    IncludeDarvSharedAncient = DefaultIncludeDarvSharedAncient,
+                    AncientAvailability = ancientAvailability,
                     IncludeAct2 = true,
                     IncludeAct3 = true
                 };
@@ -1220,6 +1221,7 @@ internal sealed partial class MainWindowViewModel
             characterName,
             run.Act1Options,
             poolAnalysis: null,
+            relicVisibilityAnalysis: null,
             poolFilter: null,
             run.Sts2Preview,
             requiresAct2: false,

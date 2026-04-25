@@ -1,0 +1,155 @@
+Relic Order Probe
+=================
+save      : E:\github project\Sts2SeedRoller\存档\1777084566.run
+acts      : E:\github project\Sts2SeedRoller\data\0.103.2\sts2\acts.json
+source    : E:\github project\Sts2SeedRoller\Slay the Spire 2 版本0.103.2源码（游戏源码，读取用）
+pool order: official source RelicPool.cs
+rarity map : official source Relics/*.cs
+bag init   : official DLL RelicGrabBag.Populate
+seed      : Y7T3FK52HA
+character : Silent
+player id : 1
+run seed  : 3952260208
+player seed: 3952260209
+
+Pool order comparison
+---------------------
+Shared   acts=118 source=118 same_prefix=118 first_diff=-
+  acts   : AKABEKO, AMETHYST_AUBERGINE, ANCHOR, ART_OF_WAR, BAG_OF_MARBLES, BAG_OF_PREPARATION, BEATING_REMNANT, BELLOWS
+  source : AKABEKO, AMETHYST_AUBERGINE, ANCHOR, ART_OF_WAR, BAG_OF_MARBLES, BAG_OF_PREPARATION, BEATING_REMNANT, BELLOWS
+Ironclad acts=  8 source=  8 same_prefix=  8 first_diff=-
+  acts   : BRIMSTONE, BURNING_BLOOD, CHARONS_ASHES, DEMON_TONGUE, PAPER_PHROG, RED_SKULL, RUINED_HELMET, SELF_FORMING_CLAY
+  source : BRIMSTONE, BURNING_BLOOD, CHARONS_ASHES, DEMON_TONGUE, PAPER_PHROG, RED_SKULL, RUINED_HELMET, SELF_FORMING_CLAY
+Silent   acts=  8 source=  8 same_prefix=  8 first_diff=-
+  acts   : HELICAL_DART, NINJA_SCROLL, PAPER_KRANE, RING_OF_THE_SNAKE, SNECKO_SKULL, TINGSHA, TOUGH_BANDAGES, TWISTED_FUNNEL
+  source : HELICAL_DART, NINJA_SCROLL, PAPER_KRANE, RING_OF_THE_SNAKE, SNECKO_SKULL, TINGSHA, TOUGH_BANDAGES, TWISTED_FUNNEL
+Defect   acts=  8 source=  8 same_prefix=  8 first_diff=-
+  acts   : CRACKED_CORE, DATA_DISK, EMOTION_CHIP, GOLD_PLATED_CABLES, POWER_CELL, METRONOME, RUNIC_CAPACITOR, SYMBIOTIC_VIRUS
+  source : CRACKED_CORE, DATA_DISK, EMOTION_CHIP, GOLD_PLATED_CABLES, POWER_CELL, METRONOME, RUNIC_CAPACITOR, SYMBIOTIC_VIRUS
+Necrobinder acts=  8 source=  8 same_prefix=  8 first_diff=-
+  acts   : BIG_HAT, BONE_FLUTE, BOOK_REPAIR_KNIFE, BOOKMARK, BOUND_PHYLACTERY, FUNERARY_MASK, IVORY_TILE, UNDYING_SIGIL
+  source : BIG_HAT, BONE_FLUTE, BOOK_REPAIR_KNIFE, BOOKMARK, BOUND_PHYLACTERY, FUNERARY_MASK, IVORY_TILE, UNDYING_SIGIL
+Regent   acts=  8 source=  8 same_prefix=  8 first_diff=-
+  acts   : DIVINE_RIGHT, FENCING_MANUAL, GALACTIC_DUST, LUNAR_PASTRY, MINI_REGENT, ORANGE_DOUGH, REGALITE, VITRUVIAN_MINION
+  source : DIVINE_RIGHT, FENCING_MANUAL, GALACTIC_DUST, LUNAR_PASTRY, MINI_REGENT, ORANGE_DOUGH, REGALITE, VITRUVIAN_MINION
+
+Rarity differences
+------------------
+acts vs source mismatch count: 11
+  BAG_OF_MARBLES           acts=Uncommon  source=Common
+  BELLOWS                  acts=Uncommon  source=Rare
+  HEFTY_TABLET             acts=None      source=Ancient
+  LASTING_CANDY            acts=Rare      source=Uncommon
+  NEOWS_BONES              acts=None      source=Ancient
+  NEOWS_TALISMAN           acts=None      source=Ancient
+  PERMAFROST               acts=Common    source=Uncommon
+  PHIAL_HOLSTER            acts=None      source=Ancient
+  RED_MASK                 acts=Uncommon  source=Common
+  TINY_MAILBOX             acts=Common    source=Uncommon
+  WINGED_BOOTS             acts=None      source=Ancient
+
+Fixed / non-random relic pickups (excluded from bag replay)
+-----------------------------------------------------------
+ 1F  Event     HEFTY_TABLET              rarity=Ancient   room=EVENT.NEOW
+18F  Event     BIIIG_HUG                 rarity=Ancient   room=EVENT.TEZCATARA
+34F  Event     DISTINGUISHED_CAPE        rarity=Ancient   room=EVENT.VAKUU
+
+Random relic pickups from save
+------------------------------
+ 9F  Treasure  TINY_MAILBOX              rarity=Uncommon  room=-
+10F  Treasure  RED_MASK                  rarity=Common    room=-
+13F  Elite     BAG_OF_MARBLES            rarity=Common    room=ENCOUNTER.BYGONE_EFFIGY_ELITE
+26F  Treasure  ANCHOR                    rarity=Common    room=-
+40F  Elite     SNECKO_SKULL              rarity=Common    room=ENCOUNTER.KNIGHTS_ELITE
+41F  Treasure  CLOAK_CLASP               rarity=Rare      room=-
+42F  Elite     WAR_PAINT                 rarity=Common    room=ENCOUNTER.MECHA_KNIGHT_ELITE
+46F  Elite     FESTIVE_POPPER            rarity=Common    room=ENCOUNTER.SOUL_NEXUS_ELITE
+
+L1: initial bag positions
+-------------------------
+floor  source    rarity     relic                     initial_pos
+    9  Treasure  Uncommon   TINY_MAILBOX              1
+   10  Treasure  Common     RED_MASK                  1
+   13  Elite     Common     BAG_OF_MARBLES            1
+   26  Treasure  Common     ANCHOR                    2
+   40  Elite     Common     SNECKO_SKULL              2
+   41  Treasure  Rare       CLOAK_CLASP               1
+   42  Elite     Common     WAR_PAINT                 4
+   46  Elite     Common     FESTIVE_POPPER            5
+
+L2: 按真实来源 + 存档真实稀有度回放
+---------------------
+Exact matches: 8/8
+floor  source    actual_r   used_r     actual_relic              predicted_relic           match
+    9  Treasure  Uncommon   Uncommon   TINY_MAILBOX              TINY_MAILBOX              Y
+   10  Treasure  Common     Common     RED_MASK                  RED_MASK                  Y
+   13  Elite     Common     Common     BAG_OF_MARBLES            BAG_OF_MARBLES            Y
+   26  Treasure  Common     Common     ANCHOR                    ANCHOR                    Y
+   40  Elite     Common     Common     SNECKO_SKULL              SNECKO_SKULL              Y
+   41  Treasure  Rare       Rare       CLOAK_CLASP               CLOAK_CLASP               Y
+   42  Elite     Common     Common     WAR_PAINT                 WAR_PAINT                 Y
+   46  Elite     Common     Common     FESTIVE_POPPER            FESTIVE_POPPER            Y
+
+L3: 按真实来源 + RNG 稀有度（不做精英跨袋移除）
+-----------------------------
+Exact matches: 4/8
+floor  source    actual_r   used_r     actual_relic              predicted_relic           match
+    9  Treasure  Uncommon   Uncommon   TINY_MAILBOX              TINY_MAILBOX              Y
+   10  Treasure  Common     Common     RED_MASK                  RED_MASK                  Y
+   13  Elite     Common     Uncommon   BAG_OF_MARBLES            SPARKLING_ROUGE           N
+   26  Treasure  Common     Common     ANCHOR                    ANCHOR                    Y
+   40  Elite     Common     Uncommon   SNECKO_SKULL              NUNCHAKU                  N
+   41  Treasure  Rare       Rare       CLOAK_CLASP               CLOAK_CLASP               Y
+   42  Elite     Common     Common     WAR_PAINT                 BAG_OF_MARBLES            N
+   46  Elite     Common     Common     FESTIVE_POPPER            SNECKO_SKULL              N
+
+L4: 按真实来源 + RNG 稀有度 + 精英跨袋移除
+----------------------------
+Exact matches: 4/8
+floor  source    actual_r   used_r     actual_relic              predicted_relic           match
+    9  Treasure  Uncommon   Uncommon   TINY_MAILBOX              TINY_MAILBOX              Y
+   10  Treasure  Common     Common     RED_MASK                  RED_MASK                  Y
+   13  Elite     Common     Uncommon   BAG_OF_MARBLES            SPARKLING_ROUGE           N
+   26  Treasure  Common     Common     ANCHOR                    ANCHOR                    Y
+   40  Elite     Common     Uncommon   SNECKO_SKULL              NUNCHAKU                  N
+   41  Treasure  Rare       Rare       CLOAK_CLASP               CLOAK_CLASP               Y
+   42  Elite     Common     Common     WAR_PAINT                 BAG_OF_MARBLES            N
+   46  Elite     Common     Common     FESTIVE_POPPER            SNECKO_SKULL              N
+
+Shuffle-order probe
+-------------------
+Bruteforced all 24 x 24 rarity-bucket shuffle orders for L2 replay.
+Best exact matches: 5/8
+Best shared order : Uncommon>Common>Rare>Shop
+Best player order : Common>Uncommon>Rare>Shop
+Top candidates:
+  matches= 5  shared=Uncommon>Common>Rare>Shop       player=Common>Rare>Shop>Uncommon
+  matches= 5  shared=Uncommon>Common>Rare>Shop       player=Common>Rare>Uncommon>Shop
+  matches= 5  shared=Uncommon>Common>Rare>Shop       player=Common>Shop>Rare>Uncommon
+  matches= 5  shared=Uncommon>Common>Rare>Shop       player=Common>Shop>Uncommon>Rare
+  matches= 5  shared=Uncommon>Common>Rare>Shop       player=Common>Uncommon>Rare>Shop
+  matches= 5  shared=Uncommon>Common>Rare>Shop       player=Common>Uncommon>Shop>Rare
+  matches= 5  shared=Uncommon>Common>Rare>Shop       player=Rare>Shop>Uncommon>Common
+  matches= 5  shared=Uncommon>Common>Rare>Shop       player=Rare>Uncommon>Shop>Common
+
+Initial bag previews
+--------------------
+Shared bag
+  Common    [12/25 shown] RED_MASK, ANCHOR, BOOK_OF_FIVE_RINGS, BAG_OF_MARBLES, BLOOD_VIAL, LANTERN, VENERABLE_TEA_SET, REGAL_PILLOW, GORGET, FESTIVE_POPPER, STRIKE_DUMMY, POTION_BELT
+  Uncommon  [12/30 shown] TINY_MAILBOX, PEAR, LETTER_OPENER, MINIATURE_CANNON, STONE_CRACKER, PLANISPHERE, BOWLER_HAT, ORICHALCUM, PANTOGRAPH, PEN_NIB, GREMLIN_HORN, PERMAFROST
+  Rare      [12/35 shown] CLOAK_CLASP, WHITE_BEAST_STATUE, WHITE_STAR, MANGO, VEXING_PUZZLEBOX, MEAT_ON_THE_BONE, RAZOR_TOOTH, ICE_CREAM, CHANDELIER, CAPTAINS_WHEEL, THE_COURIER, UNSETTLING_LAMP
+  Shop      [12/25 shown] ROYAL_STAMP, SLING_OF_COURAGE, MEMBERSHIP_CARD, BELT_BUCKLE, GHOST_SEED, DINGY_RUG, WING_CHARM, RINGING_TRIANGLE, BREAD, KIFUDA, SCREAMING_FLAGON, CHEMICAL_X
+Player bag
+  Common    [12/26 shown] BAG_OF_MARBLES, SNECKO_SKULL, MEAL_TICKET, WAR_PAINT, FESTIVE_POPPER, HAPPY_FLOWER, RED_MASK, STRIKE_DUMMY, CENTENNIAL_PUZZLE, LANTERN, REGAL_PILLOW, JUZU_BRACELET
+  Uncommon  [12/32 shown] SPARKLING_ROUGE, NUNCHAKU, BOWLER_HAT, ETERNAL_FEATHER, PEN_NIB, LETTER_OPENER, HORN_CLEAT, TINY_MAILBOX, KUSARIGAMA, RIPPLE_BASIN, GREMLIN_HORN, MERCURY_HOURGLASS
+  Rare      [12/38 shown] ART_OF_WAR, UNCEASING_TOP, INTIMIDATING_HELMET, HELICAL_DART, THE_COURIER, TOUGH_BANDAGES, RAINBOW_RING, MANGO, RAZOR_TOOTH, GAMBLING_CHIP, GAME_PIECE, OLD_COIN
+  Shop      [12/26 shown] SLING_OF_COURAGE, CAULDRON, MINIATURE_TENT, PUNCH_DAGGER, WING_CHARM, DOLLYS_MIRROR, BURNING_STICKS, BREAD, ORRERY, ROYAL_STAMP, DRAGON_FRUIT, GNARLED_HAMMER
+
+Quick read
+----------
+L2 exact matches: 8/8
+L3 exact matches: 4/8
+L4 exact matches: 4/8
+L2 is now perfect: the bag source, rarity map, shared->player same-relic removal, and Act 3 availability gating line up with the save.
+The remaining gap is rewards RNG timing. Elite rewards still miss at L3/L4, which means gold/potion/card population is advancing PlayerRng.Rewards before some relic rarity rolls.
+Elite rewards in the live game populate gold/potion/card before relic, so card and potion generation can move PlayerRng.Rewards ahead of the relic rarity roll.
