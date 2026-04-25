@@ -159,8 +159,8 @@ internal sealed class RollResultViewModel
             HashSet<string> requiredIds,
             double seenThreshold)
         {
-            Title = $"{profile.Title} 路线画像";
-            Description = $"{profile.Description} 高概率阈值：出现概率 >= {seenThreshold:P0}。";
+            Title = $"{TranslateRelicVisibilityProfileTitle(profile.Title)} 路线画像";
+            Description = $"{TranslateRelicVisibilityProfileDescription(profile.Description)} 高概率阈值：出现概率 >= {seenThreshold:P0}。";
             var filteredRelics = profile.SeenRelics
                 .Where(item => item.SeenProbability >= seenThreshold)
                 .ToList();
@@ -349,19 +349,44 @@ internal sealed class RollResultViewModel
 
     private static string FormatRelicLine(Sts2RelicVisibilityRankedRelic item)
     {
-        return $"{MainWindowViewModel.GetRelicDisplayName(item.RelicId)} | Seen {item.SeenProbability:P1} | Non-shop {item.NonShopSeenProbability:P1} | Shop {item.ShopSeenProbability:P1} | Early {item.EarlyProbability:P1} | Avg {item.AverageFirstOpportunity:F2} | {FormatSource(item.MostCommonSource)}";
+        return $"{MainWindowViewModel.GetRelicDisplayName(item.RelicId)} | 出现 {item.SeenProbability:P1} | 非商店 {item.NonShopSeenProbability:P1} | 商店 {item.ShopSeenProbability:P1} | 前期 {item.EarlyProbability:P1} | 平均首次机会 {item.AverageFirstOpportunity:F2} | 最常来源 {FormatSource(item.MostCommonSource)}";
     }
 
     private static string FormatSource(Sts2RelicVisibilitySource source)
     {
         return source switch
         {
-            Sts2RelicVisibilitySource.Treasure => "Treasure",
-            Sts2RelicVisibilitySource.Elite => "Elite",
-            Sts2RelicVisibilitySource.Shop => "Shop",
-            Sts2RelicVisibilitySource.AncientAct2 => "Ancient Act2",
-            Sts2RelicVisibilitySource.AncientAct3 => "Ancient Act3",
+            Sts2RelicVisibilitySource.Treasure => "宝箱",
+            Sts2RelicVisibilitySource.Elite => "精英",
+            Sts2RelicVisibilitySource.Shop => "商店",
+            Sts2RelicVisibilitySource.AncientAct2 => "第二幕古神",
+            Sts2RelicVisibilitySource.AncientAct3 => "第三幕古神",
             _ => source.ToString()
+        };
+    }
+
+    private static string TranslateRelicVisibilityProfileTitle(string title)
+    {
+        return title switch
+        {
+            "Balanced" => "均衡",
+            "Aggressive" => "激进",
+            "Shopper" => "商店优先",
+            _ => title
+        };
+    }
+
+    private static string TranslateRelicVisibilityProfileDescription(string description)
+    {
+        return description switch
+        {
+            "Balanced route: a moderate number of elites, a few shops, and a medium chance to visit ancients."
+                => "均衡路线：精英数量适中，商店较少，遇到古神的概率中等。",
+            "Aggressive route: earlier elites, fewer shops, and a slightly lower ancient chance."
+                => "激进路线：更早打精英，商店更少，遇到古神的概率略低。",
+            "Shop-heavy route: more shop visibility, fewer elites, and a slightly higher ancient chance."
+                => "商店优先路线：更容易经过商店，精英更少，遇到古神的概率略高。",
+            _ => description
         };
     }
 }

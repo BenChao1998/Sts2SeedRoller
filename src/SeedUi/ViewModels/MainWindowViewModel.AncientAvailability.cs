@@ -9,8 +9,8 @@ internal sealed partial class MainWindowViewModel
     private string _progressSaveLoadStatus = "progress.save：启动后自动检查";
     private string _progressSaveSummary = "未执行 progress.save 检查。";
     private string _progressSavePathText = "路径：—";
-    private string _progressSaveEpochText = "已识别 epoch：—";
-    private string _progressSaveAncientRuleText = "当前 Ancient 规则：默认全解锁";
+    private string _progressSaveEpochText = "已识别纪元：—";
+    private string _progressSaveAncientRuleText = "当前古神规则：默认全解锁";
     private bool _isProgressSaveLoaded;
     private bool _hasProgressSavePath;
 
@@ -81,14 +81,14 @@ internal sealed partial class MainWindowViewModel
             ? "路径：—"
             : $"路径：{resolved.ProgressSavePath}";
         ProgressSaveEpochText = resolved.RevealedEpochIds.Count == 0
-            ? "已识别 epoch：—"
-            : $"已识别 epoch（{resolved.RevealedEpochIds.Count}）：{string.Join(", ", resolved.RevealedEpochIds)}";
-        ProgressSaveAncientRuleText = $"当前 Ancient 规则：{ruleText}";
+            ? "已识别纪元：—"
+            : $"已识别纪元（{resolved.RevealedEpochIds.Count}）：{string.Join(", ", resolved.RevealedEpochIds)}";
+        ProgressSaveAncientRuleText = $"当前古神规则：{ruleText}";
 
         if (shouldLog)
         {
-            LogInfo($"[Ancient 解锁] {scenario}: {resolved.Summary}");
-            LogInfo($"[Ancient 解锁] {scenario}: {ruleText}");
+            LogInfo($"[古神解锁] {scenario}: {resolved.Summary}");
+            LogInfo($"[古神解锁] {scenario}: {ruleText}");
         }
 
         return resolved;
@@ -98,18 +98,18 @@ internal sealed partial class MainWindowViewModel
     {
         var disabledShared = FormatAncientIds(availability.DisabledSharedAncientIds);
         var disabledActs = availability.DisabledActAncientIds.Count == 0
-            ? "none"
+            ? "无"
             : string.Join(
                 "; ",
                 availability.DisabledActAncientIds
                     .OrderBy(entry => entry.Key)
-                    .Select(entry => $"Act{entry.Key}=[{FormatAncientIds(entry.Value)}]"));
+                    .Select(entry => $"第{entry.Key}幕=[{FormatAncientIds(entry.Value)}]"));
 
-        return $"disabledShared=[{disabledShared}], disabledActs={disabledActs}";
+        return $"共享古神禁用=[{disabledShared}]，分幕古神禁用={disabledActs}";
     }
 
     private static string FormatAncientIds(IReadOnlyList<string> ancientIds)
     {
-        return ancientIds.Count == 0 ? "none" : string.Join(", ", ancientIds);
+        return ancientIds.Count == 0 ? "无" : string.Join(", ", ancientIds);
     }
 }

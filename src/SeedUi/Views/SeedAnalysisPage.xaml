@@ -136,7 +136,7 @@
                                    Foreground="#666"
                                    TextWrapping="Wrap"
                                    Margin="0 6 0 0"/>
-                        <TextBlock Text="说明：若未成功加载 progress.save，程序会回退为默认全解锁 Ancient 规则。"
+                        <TextBlock Text="说明：程序会读取软件根目录下的 progress.save；若未成功加载，会回退为默认全解锁古神规则。"
                                    Foreground="#888"
                                    FontSize="12"
                                    TextWrapping="Wrap"
@@ -228,6 +228,16 @@
                 <TextBlock Text="遗物概率预览" FontSize="16" FontWeight="SemiBold" Foreground="#333" Margin="0 0 0 12"/>
                 <TextBlock Text="{Binding SeedAnalysisRelicVisibilitySummary}" Foreground="#666" TextWrapping="Wrap" Margin="0 0 0 12"/>
                 <TextBlock Text="这里会按不同路线画像做 Monte Carlo 预估，帮助判断哪些遗物更容易在前期看到，哪些遗物整体更可能出现在本局流程中。"
+                           Foreground="#888"
+                           FontSize="12"
+                           TextWrapping="Wrap"
+                           Margin="0 0 0 12"/>
+                <TextBlock Text="路线画像说明：均衡 = 精英与商店分布较平均；激进 = 更早、更偏向打精英；商店优先 = 更容易经过商店、精英相对更少。"
+                           Foreground="#888"
+                           FontSize="12"
+                           TextWrapping="Wrap"
+                           Margin="0 0 0 6"/>
+                <TextBlock Text="字段说明：出现 = 任意来源看到该遗物的概率；非商店 = 不通过商店看到的概率；商店 = 在商店货架看到的概率；前期 = 在前期窗口内看到的概率；平均首次机会 = 平均第几次遗物机会首次见到，越小越靠前；最常来源 = 最常出现的来源类型。"
                            Foreground="#888"
                            FontSize="12"
                            TextWrapping="Wrap"

@@ -2688,13 +2688,27 @@ internal sealed partial class MainWindowViewModel : ObservableObject
     private void AddLog(string level, string message)
     {
         var entry = new LogEntryViewModel(level, message);
+
+        var dispatcher = Application.Current?.Dispatcher;
+        if (dispatcher != null && !dispatcher.CheckAccess())
+        {
+            dispatcher.Invoke(() => AddLogEntry(entry));
+        }
+        else
+        {
+            AddLogEntry(entry);
+        }
+
+        TryAppendLogFile(entry);
+    }
+
+    private void AddLogEntry(LogEntryViewModel entry)
+    {
         Logs.Add(entry);
         if (Logs.Count > MaxLogEntries)
         {
             Logs.RemoveAt(0);
         }
-
-        TryAppendLogFile(entry);
     }
 
     private void TryAppendLogFile(LogEntryViewModel entry)

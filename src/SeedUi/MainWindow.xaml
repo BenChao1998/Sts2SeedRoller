@@ -610,7 +610,6 @@
                                     <StackPanel Orientation="Horizontal" Margin="0 0 0 16">
                                         <TextBlock Text="第二幕古神" FontSize="16" FontWeight="SemiBold" Foreground="#333"/>
                                         <CheckBox IsChecked="{Binding IncludeAct2}" Content="启用" Margin="16 0 0 0" VerticalAlignment="Center"/>
-                                        <TextBlock Text="可能因局内游戏随机变化而产生变化，非100%命中" FontSize="11" Foreground="#888" Margin="8 0 0 0" VerticalAlignment="Center" TextWrapping="Wrap" MaxWidth="280"/>
                                     </StackPanel>
 
                                     <StackPanel IsEnabled="{Binding IncludeAct2}">
@@ -661,7 +660,6 @@
                                     <StackPanel Orientation="Horizontal" Margin="0 0 0 16">
                                         <TextBlock Text="第三幕古神" FontSize="16" FontWeight="SemiBold" Foreground="#333"/>
                                         <CheckBox IsChecked="{Binding IncludeAct3}" Content="启用" Margin="16 0 0 0" VerticalAlignment="Center"/>
-                                        <TextBlock Text="可能因局内游戏随机变化而产生变化，非100%命中" FontSize="11" Foreground="#888" Margin="8 0 0 0" VerticalAlignment="Center" TextWrapping="Wrap" MaxWidth="280"/>
                                     </StackPanel>
 
                                     <StackPanel IsEnabled="{Binding IncludeAct3}">
@@ -1042,18 +1040,26 @@
                                                         CornerRadius="6" Padding="16" Margin="0 0 0 12">
                                                     <StackPanel>
                                                         <!-- 头部：种子、角色、复制按钮 -->
-                                                        <DockPanel Margin="0 0 0 12">
-                                                            <StackPanel DockPanel.Dock="Left" Orientation="Horizontal">
+                                                        <Grid Margin="0 0 0 12">
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="*"/>
+                                                                <ColumnDefinition Width="Auto"/>
+                                                            </Grid.ColumnDefinitions>
+                                                            <WrapPanel Grid.Column="0" VerticalAlignment="Center" Margin="0 0 12 0">
                                                                 <TextBlock Text="&#xE9CE;" FontFamily="Segoe MDL2 Assets" FontSize="16" Foreground="#1976D2" Margin="0 0 8 0"/>
-                                                                <TextBlock Text="{Binding SeedText}" FontWeight="Bold" FontSize="15" Foreground="#1976D2"/>
-                                                                <Border Background="#F5F5F5" CornerRadius="4" Padding="6 2" Margin="12 0 0 0">
+                                                                <TextBlock Text="{Binding SeedText}" FontWeight="Bold" FontSize="15" Foreground="#1976D2" VerticalAlignment="Center"/>
+                                                                <Border Background="#F5F5F5" CornerRadius="4" Padding="6 2" Margin="12 0 0 0" VerticalAlignment="Center">
                                                                     <TextBlock Text="{Binding CharacterName}" Foreground="#666" FontSize="12"/>
                                                                 </Border>
-                                                            </StackPanel>
-                                                            <Button Content="复制" Command="{Binding DataContext.CopyResultCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
-                                                                    CommandParameter="{Binding}" Style="{StaticResource ButtonPrimary}"
-                                                                    HorizontalAlignment="Right" DockPanel.Dock="Right" FontSize="12"/>
-                                                        </DockPanel>
+                                                            </WrapPanel>
+                                                            <Button Grid.Column="1"
+                                                                    Content="复制"
+                                                                    Command="{Binding DataContext.CopyResultCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
+                                                                    CommandParameter="{Binding}"
+                                                                    Style="{StaticResource ButtonPrimary}"
+                                                                    FontSize="12"
+                                                                    VerticalAlignment="Center"/>
+                                                        </Grid>
 
                                                         <!-- 第一幕选项 -->
                                                         <TextBlock Text="&#xE70F; 命中的选项" FontSize="13" FontWeight="SemiBold" Foreground="#333" Margin="0 0 0 8"/>
@@ -1218,6 +1224,16 @@
                                                                 </ItemsControl>
                                                                 <StackPanel Margin="0 4 0 0">
                                                                     <TextBlock Text="高概率出现遗物" FontSize="12" FontWeight="SemiBold" Foreground="#666" Margin="0 0 0 6"/>
+                                                                    <TextBlock Text="路线画像说明：均衡 = 精英与商店分布较平均；激进 = 更早、更偏向打精英；商店优先 = 更容易经过商店、精英相对更少。"
+                                                                               Foreground="#666"
+                                                                               FontSize="11"
+                                                                               TextWrapping="Wrap"
+                                                                               Margin="0 0 0 4"/>
+                                                                    <TextBlock Text="字段说明：出现 = 任意来源看到该遗物的概率；非商店 = 不通过商店看到的概率；商店 = 在商店货架看到的概率；前期 = 在前期窗口内看到的概率；平均首次机会 = 平均第几次遗物机会首次见到，越小越靠前；最常来源 = 最常出现的来源类型。"
+                                                                               Foreground="#666"
+                                                                               FontSize="11"
+                                                                               TextWrapping="Wrap"
+                                                                               Margin="0 0 0 8"/>
                                                                     <ItemsControl ItemsSource="{Binding RelicVisibilityProfiles}">
                                                                         <ItemsControl.ItemTemplate>
                                                                             <DataTemplate>

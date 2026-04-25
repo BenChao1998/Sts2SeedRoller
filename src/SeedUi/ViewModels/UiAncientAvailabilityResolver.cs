@@ -9,22 +9,11 @@ namespace SeedUi.ViewModels;
 
 internal static class UiAncientAvailabilityResolver
 {
-    private static readonly string[] CandidateRelativePaths =
-    [
-        Path.Combine("存档", "progress.save"),
-        "progress.save"
-    ];
-
     public static ResolvedAncientAvailabilityResult Resolve()
     {
-        foreach (var relativePath in CandidateRelativePaths)
+        var candidatePath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "progress.save"));
+        if (File.Exists(candidatePath))
         {
-            var candidatePath = UiDataPathResolver.ResolveRelativeFilePath(relativePath);
-            if (!File.Exists(candidatePath))
-            {
-                continue;
-            }
-
             try
             {
                 return LoadFromProgressSave(candidatePath);
@@ -36,7 +25,7 @@ internal static class UiAncientAvailabilityResolver
                     candidatePath,
                     UsedProgressSave: false,
                     RevealedEpochIds: Array.Empty<string>(),
-                    $"读取 progress.save 失败，已回退为默认全解锁 Ancient：{ex.Message}");
+                    $"读取软件根目录下的 progress.save 失败，已回退为默认全解锁古神规则：{ex.Message}");
             }
         }
 
@@ -45,7 +34,7 @@ internal static class UiAncientAvailabilityResolver
             ProgressSavePath: null,
             UsedProgressSave: false,
             RevealedEpochIds: Array.Empty<string>(),
-            "未找到 progress.save，已回退为默认全解锁 Ancient（包含 DARV / OROBAS）。");
+            "未在软件根目录找到 progress.save，已回退为默认全解锁古神规则（包含 DARV / OROBAS）。");
     }
 
     private static ResolvedAncientAvailabilityResult LoadFromProgressSave(string path)
@@ -60,7 +49,7 @@ internal static class UiAncientAvailabilityResolver
             path,
             UsedProgressSave: true,
             revealedEpochIds,
-            $"从 progress.save 读取 Ancient 解锁：path={path}, revealed=[{string.Join(", ", revealedEpochIds)}]");
+            $"已从软件根目录的 progress.save 读取古神解锁：路径={path}，已识别纪元=[{string.Join(", ", revealedEpochIds)}]");
     }
 
     private static IReadOnlyList<string> ReadRevealedEpochIds(JsonElement root)

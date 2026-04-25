@@ -7,7 +7,7 @@ namespace SeedUi.ViewModels;
 
 internal sealed partial class MainWindowViewModel
 {
-    private string _seedAnalysisRelicVisibilitySummary = "Probability preview is generated together with seed analysis.";
+    private string _seedAnalysisRelicVisibilitySummary = "遗物概率预览会随种子分析一并生成。";
 
     public ObservableCollection<SeedAnalysisRelicVisibilityProfileViewModel> SeedAnalysisRelicVisibilityProfiles { get; } = new();
 
@@ -25,7 +25,7 @@ internal sealed partial class MainWindowViewModel
         {
             var actSummaries = profile.Acts
                 .Select(act =>
-                    $"Act {act.ActNumber}: treasure {FormatChanceList(act.TreasureCounts)} / elite {FormatChanceList(act.EliteCounts)} / shop {FormatChanceList(act.ShopCounts)} / ancient {act.AncientVisitChance:P0}")
+                    $"第 {act.ActNumber} 幕：宝箱 {FormatChanceList(act.TreasureCounts)} / 精英 {FormatChanceList(act.EliteCounts)} / 商店 {FormatChanceList(act.ShopCounts)} / 古神 {act.AncientVisitChance:P0}")
                 .ToList();
 
             var earlyRelics = profile.EarlyRelics
@@ -43,12 +43,12 @@ internal sealed partial class MainWindowViewModel
                 .ToList();
 
             var samples = profile.EarlySamples
-                .Select((sample, index) => $"Sample {index + 1}: {FormatRelicSample(sample)}")
+                .Select((sample, index) => $"样本 {index + 1}：{FormatRelicSample(sample)}")
                 .ToList();
 
             SeedAnalysisRelicVisibilityProfiles.Add(new SeedAnalysisRelicVisibilityProfileViewModel(
-                profile.Title,
-                profile.Description,
+                TranslateRelicVisibilityProfileTitle(profile.Title),
+                TranslateRelicVisibilityProfileDescription(profile.Description),
                 actSummaries,
                 earlyRelics,
                 seenRelics,
@@ -56,13 +56,13 @@ internal sealed partial class MainWindowViewModel
         }
 
         SeedAnalysisRelicVisibilitySummary =
-            $"Probability preview uses {analysis.Samples} Monte Carlo samples per route profile. Early window = first {analysis.EarlyWindow} relic opportunities.";
+            $"当前每条路线画像使用 {analysis.Samples} 次采样；前期窗口为前 {analysis.EarlyWindow} 次遗物机会。";
     }
 
     private void ClearSeedAnalysisRelicVisibility()
     {
         SeedAnalysisRelicVisibilityProfiles.Clear();
-        SeedAnalysisRelicVisibilitySummary = "Probability preview is generated together with seed analysis.";
+        SeedAnalysisRelicVisibilitySummary = "遗物概率预览会随种子分析一并生成。";
     }
 
     private static string FormatChanceList(IReadOnlyList<Sts2WeightedIntChance> entries)
@@ -73,25 +73,50 @@ internal sealed partial class MainWindowViewModel
     private static string FormatRelicSample(IReadOnlyList<string> relicIds)
     {
         return relicIds.Count == 0
-            ? "none in early window"
+            ? "前期窗口内未出现遗物"
             : string.Join(" / ", relicIds.Select(GetRelicDisplayName));
     }
 
     private static string FormatRelicVisibilityRelicLine(Sts2RelicVisibilityRankedRelic item)
     {
-        return $"{GetRelicDisplayName(item.RelicId)} | Seen {item.SeenProbability:P1} | Non-shop {item.NonShopSeenProbability:P1} | Shop {item.ShopSeenProbability:P1} | Early {item.EarlyProbability:P1} | Avg {item.AverageFirstOpportunity:F2} | {FormatRelicVisibilitySource(item.MostCommonSource)}";
+        return $"{GetRelicDisplayName(item.RelicId)} | 出现 {item.SeenProbability:P1} | 非商店 {item.NonShopSeenProbability:P1} | 商店 {item.ShopSeenProbability:P1} | 前期 {item.EarlyProbability:P1} | 平均首次机会 {item.AverageFirstOpportunity:F2} | 最常来源 {FormatRelicVisibilitySource(item.MostCommonSource)}";
     }
 
     private static string FormatRelicVisibilitySource(Sts2RelicVisibilitySource source)
     {
         return source switch
         {
-            Sts2RelicVisibilitySource.Treasure => "Treasure",
-            Sts2RelicVisibilitySource.Elite => "Elite",
-            Sts2RelicVisibilitySource.Shop => "Shop",
-            Sts2RelicVisibilitySource.AncientAct2 => "Ancient Act2",
-            Sts2RelicVisibilitySource.AncientAct3 => "Ancient Act3",
+            Sts2RelicVisibilitySource.Treasure => "宝箱",
+            Sts2RelicVisibilitySource.Elite => "精英",
+            Sts2RelicVisibilitySource.Shop => "商店",
+            Sts2RelicVisibilitySource.AncientAct2 => "第二幕古神",
+            Sts2RelicVisibilitySource.AncientAct3 => "第三幕古神",
             _ => source.ToString()
+        };
+    }
+
+    private static string TranslateRelicVisibilityProfileTitle(string title)
+    {
+        return title switch
+        {
+            "Balanced" => "均衡",
+            "Aggressive" => "激进",
+            "Shopper" => "商店优先",
+            _ => title
+        };
+    }
+
+    private static string TranslateRelicVisibilityProfileDescription(string description)
+    {
+        return description switch
+        {
+            "Balanced route: a moderate number of elites, a few shops, and a medium chance to visit ancients."
+                => "均衡路线：精英数量适中，商店较少，遇到古神的概率中等。",
+            "Aggressive route: earlier elites, fewer shops, and a slightly lower ancient chance."
+                => "激进路线：更早打精英，商店更少，遇到古神的概率略低。",
+            "Shop-heavy route: more shop visibility, fewer elites, and a slightly higher ancient chance."
+                => "商店优先路线：更容易经过商店，精英更少，遇到古神的概率略高。",
+            _ => description
         };
     }
 
