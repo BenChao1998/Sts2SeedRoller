@@ -43,6 +43,14 @@ Console.WriteLine();
 DumpBag("Shared", sharedBag.ToSerializable());
 DumpBag("Player", playerBag.ToSerializable());
 
+if (args.Length >= 6)
+{
+    Console.WriteLine("Full RunManager probe");
+    Console.WriteLine("---------------------");
+    Console.WriteLine("disabled: constructing official RunManager/Player triggers native Godot SaveManager init and crashes in this environment.");
+    Console.WriteLine();
+}
+
 static void DumpBag(string label, SerializableRelicGrabBag bag)
 {
     Console.WriteLine($"{label} bag");

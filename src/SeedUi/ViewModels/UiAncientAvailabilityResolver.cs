@@ -42,7 +42,8 @@ internal static class UiAncientAvailabilityResolver
         using var stream = File.OpenRead(path);
         using var document = JsonDocument.Parse(stream);
         var revealedEpochIds = ReadRevealedEpochIds(document.RootElement);
-        var availability = Sts2AncientAvailability.FromRevealedEpochIds(revealedEpochIds);
+        var discoveredActIds = ReadDiscoveredActIds(document.RootElement);
+        var availability = Sts2AncientAvailability.FromProgressState(revealedEpochIds, discoveredActIds);
 
         return new ResolvedAncientAvailabilityResult(
             availability,
@@ -76,6 +77,37 @@ internal static class UiAncientAvailabilityResolver
             }
 
             var id = idElement.GetString();
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                continue;
+            }
+
+            result.Add(id.Trim());
+        }
+
+        return result
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(id => id, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+    }
+
+    private static IReadOnlyList<string> ReadDiscoveredActIds(JsonElement root)
+    {
+        if (!root.TryGetProperty("discovered_acts", out var discoveredActs) ||
+            discoveredActs.ValueKind != JsonValueKind.Array)
+        {
+            return Array.Empty<string>();
+        }
+
+        var result = new List<string>();
+        foreach (var act in discoveredActs.EnumerateArray())
+        {
+            if (act.ValueKind != JsonValueKind.String)
+            {
+                continue;
+            }
+
+            var id = act.GetString();
             if (string.IsNullOrWhiteSpace(id))
             {
                 continue;

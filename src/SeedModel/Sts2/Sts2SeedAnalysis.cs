@@ -49,6 +49,8 @@ public sealed class Sts2ActPoolPreview
 
     public required IReadOnlyList<string> EventPool { get; init; }
 
+    public required IReadOnlyList<string> FullEventPool { get; init; }
+
     public required IReadOnlyList<string> MonsterPool { get; init; }
 
     public required IReadOnlyList<string> ElitePool { get; init; }

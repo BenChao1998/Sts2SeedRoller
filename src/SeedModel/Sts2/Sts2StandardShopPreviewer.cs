@@ -38,6 +38,7 @@ internal sealed class Sts2StandardShopPreviewer
 
         var playerSeed = unchecked((uint)GameRng.GetDeterministicHashCode(context.SeedText) + (uint)Math.Max(1, context.PlayerCount));
         var runRng = new RunRngSet(context.RunSeed);
+        var ancientAvailability = context.ResolveAncientAvailability();
 
         var state = new StandardShopState(
             _dataset,
@@ -45,13 +46,14 @@ internal sealed class Sts2StandardShopPreviewer
             context.Character,
             context.PlayerCount,
             context.AscensionLevel,
+            ancientAvailability,
             runRng,
             new GameRng(playerSeed, "rewards"),
             new GameRng(playerSeed, "shops"));
 
         ApplyStandardNeowRule(state, neowOptions);
 
-        var actOne = _world.ResolveActOne(context.RunSeed)
+        var actOne = _world.ResolveActOne(context.RunSeed, ancientAvailability, context.PlayerCount > 1)
             ?? _world.Acts.FirstOrDefault(act => act.ActNumber == 1)
             ?? _world.Acts[0];
         var map = StandardActMapState.Create(actOne, context.PlayerCount > 1, context.AscensionLevel, runRng.Get("act_1_map"));
@@ -87,7 +89,10 @@ internal sealed class Sts2StandardShopPreviewer
         ArgumentNullException.ThrowIfNull(context);
 
         var runRng = new RunRngSet(context.RunSeed);
-        var actOne = world.ResolveActOne(context.RunSeed)
+        var actOne = world.ResolveActOne(
+                context.RunSeed,
+                context.ResolveAncientAvailability(),
+                context.PlayerCount > 1)
             ?? world.Acts.FirstOrDefault(act => act.ActNumber == 1)
             ?? world.Acts[0];
         var map = StandardActMapState.Create(actOne, context.PlayerCount > 1, context.AscensionLevel, runRng.Get("act_1_map"));
@@ -937,6 +942,7 @@ internal sealed class Sts2StandardShopPreviewer
             CharacterId character,
             int playerCount,
             int ascensionLevel,
+            Sts2AncientAvailability ancientAvailability,
             RunRngSet runRng,
             GameRng rewardsRng,
             GameRng shopsRng)
@@ -951,7 +957,12 @@ internal sealed class Sts2StandardShopPreviewer
             UnknownOdds = new StandardUnknownMapPointOdds(runRng.UnknownMapPoint);
             CardRarityOdds = new StandardCardRarityOdds(rewardsRng, ascensionLevel);
             PotionOdds = new StandardPotionRewardOdds(rewardsRng);
-            PlayerRelicBag = StandardRelicGrabBag.CreatePlayerBag(world.RelicPools, character, playerCount, runRng.UpFront);
+            PlayerRelicBag = StandardRelicGrabBag.CreatePlayerBag(
+                world.RelicPools,
+                character,
+                playerCount,
+                ancientAvailability,
+                runRng.UpFront);
 
             var characterPool = dataset.CharacterCardPoolMap.TryGetValue(character, out var cards)
                 ? cards
@@ -1325,21 +1336,18 @@ internal sealed class Sts2StandardShopPreviewer
             Sts2WorldData.RelicPoolInfo pools,
             CharacterId character,
             int playerCount,
+            Sts2AncientAvailability availability,
             GameRng rng)
         {
-            ShuffleBuckets(BuildBuckets(pools.SharedSequence, pools.RarityMap), rng);
-            // Live-save replay shows one additional up_front sample between the
-            // shared grab bag shuffle and the player's combined grab bag shuffle.
-            rng.FastForward(rng.Counter + 1);
+            var sharedSequence = pools.GetSharedSequence(availability);
+            ShuffleBuckets(BuildBuckets(sharedSequence, pools.RarityMap, trackedOnly: false), rng);
 
             Dictionary<RelicRarity, List<string>>? playerBuckets = null;
             var players = Math.Max(1, playerCount);
             for (var i = 0; i < players; i++)
             {
-                var relics = new List<string>(pools.SharedSequence.Count + pools.GetSequenceFor(character).Count);
-                relics.AddRange(pools.SharedSequence);
-                relics.AddRange(pools.GetSequenceFor(character));
-                playerBuckets = BuildBuckets(relics, pools.RarityMap);
+                var relics = pools.GetCombinedSequence(character, availability);
+                playerBuckets = BuildBuckets(relics, pools.RarityMap, trackedOnly: true);
                 ShuffleBuckets(playerBuckets, rng);
             }
 
@@ -1348,7 +1356,8 @@ internal sealed class Sts2StandardShopPreviewer
 
         private static Dictionary<RelicRarity, List<string>> BuildBuckets(
             IEnumerable<string> relics,
-            IReadOnlyDictionary<string, string> rarityMap)
+            IReadOnlyDictionary<string, string> rarityMap,
+            bool trackedOnly)
         {
             var byRarity = new Dictionary<RelicRarity, List<string>>();
             foreach (var relicId in relics)
@@ -1359,7 +1368,8 @@ internal sealed class Sts2StandardShopPreviewer
                     continue;
                 }
 
-                if (rarity is not (RelicRarity.Common or RelicRarity.Uncommon or RelicRarity.Rare or RelicRarity.Shop))
+                if (trackedOnly &&
+                    rarity is not (RelicRarity.Common or RelicRarity.Uncommon or RelicRarity.Rare or RelicRarity.Shop))
                 {
                     continue;
                 }

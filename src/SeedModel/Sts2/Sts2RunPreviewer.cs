@@ -37,18 +37,22 @@ public sealed class Sts2RunPreviewer
     private readonly AncientOptionCatalog _catalog;
     private readonly HashSet<string> _ancientOptionIds;
     private readonly Sts2WorldData _world;
+    private readonly string? _workspaceRoot;
     private readonly Sts2RunSimulator _simulator;
     private readonly Sts2RelicShufflePrimer _primer;
     private readonly Sts2RelicVisibilityAnalyzer _relicVisibilityAnalyzer;
+    private readonly Sts2EventVisibilityAnalyzer _eventVisibilityAnalyzer;
 
-    internal Sts2RunPreviewer(AncientOptionCatalog catalog, Sts2WorldData world)
+    internal Sts2RunPreviewer(AncientOptionCatalog catalog, Sts2WorldData world, string? workspaceRoot = null)
     {
         _catalog = catalog ?? throw new ArgumentNullException(nameof(catalog));
         _ancientOptionIds = _catalog.OptionIds.ToHashSet(StringComparer.OrdinalIgnoreCase);
         _world = world ?? throw new ArgumentNullException(nameof(world));
+        _workspaceRoot = workspaceRoot;
         _simulator = new Sts2RunSimulator(_world);
         _primer = new Sts2RelicShufflePrimer(_world);
         _relicVisibilityAnalyzer = new Sts2RelicVisibilityAnalyzer(_world);
+        _eventVisibilityAnalyzer = new Sts2EventVisibilityAnalyzer(_workspaceRoot);
     }
 
     public static Sts2RunPreviewer CreateFromDataFiles(string optionDataPath, string actDataPath)
@@ -65,7 +69,10 @@ public sealed class Sts2RunPreviewer
 
         using var optionStream = File.OpenRead(optionDataPath);
         using var actStream = File.OpenRead(actDataPath);
-        return Create(optionStream, actStream);
+        return new Sts2RunPreviewer(
+            AncientOptionCatalog.Load(optionStream),
+            Sts2WorldData.Load(actStream),
+            ResolveWorkspaceRoot(optionDataPath, actDataPath));
     }
 
     public static Sts2RunPreviewer Create(Stream optionDataStream, Stream actDataStream)
@@ -93,10 +100,10 @@ public sealed class Sts2RunPreviewer
             return preview;
         }
 
-        var upFrontRng = new GameRng(request.SeedValue, "up_front");
-        _primer.Prime(upFrontRng, request.Character, request.PlayerCount);
         var unlockedCharacters = ResolveUnlockedCharacters(request.Character, request.UnlockedCharacters);
         var ancientAvailability = request.ResolveAncientAvailability();
+        var upFrontRng = new GameRng(request.SeedValue, "up_front");
+        _primer.Prime(upFrontRng, request.Character, request.PlayerCount, ancientAvailability);
 
         var generationContext = new AncientGenerationContext(
             request.SeedValue,
@@ -161,9 +168,9 @@ public sealed class Sts2RunPreviewer
             throw new ArgumentNullException(nameof(request));
         }
 
-        var upFrontRng = new GameRng(request.SeedValue, "up_front");
-        var relicPools = _primer.PrimeAndCapture(upFrontRng, request.Character, playerCount: 1);
         var ancientAvailability = request.ResolveAncientAvailability();
+        var upFrontRng = new GameRng(request.SeedValue, "up_front");
+        var relicPools = _primer.PrimeAndCapture(upFrontRng, request.Character, playerCount: 1, ancientAvailability);
         var actPools = _simulator.Analyze(
             upFrontRng,
             request.SeedValue,
@@ -185,6 +192,8 @@ public sealed class Sts2RunPreviewer
                     EventPool = act.Events
                         .Take(act.EventPreviewLimit)
                         .ToList(),
+                    FullEventPool = act.Events
+                        .ToList(),
                     MonsterPool = act.NormalEncounters,
                     ElitePool = act.EliteEncounters
                 })
@@ -203,6 +212,40 @@ public sealed class Sts2RunPreviewer
         var (ancientActs, rarityMap) = BuildRelicVisibilityInputs(dataset, request);
 
         return _relicVisibilityAnalyzer.Analyze(dataset, request, ancientActs, rarityMap);
+    }
+
+    public Sts2EventVisibilityAnalysis AnalyzeEventVisibility(NeowOptionDataset dataset, Sts2EventVisibilityRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(dataset);
+        if (request is null)
+        {
+            throw new ArgumentNullException(nameof(request));
+        }
+
+        var ancientAvailability = request.ResolveAncientAvailability();
+        var upFrontRng = new GameRng(request.SeedValue, "up_front");
+        _primer.Prime(upFrontRng, request.Character, request.PlayerCount, ancientAvailability);
+
+        var actPools = _simulator.Analyze(
+            upFrontRng,
+            request.SeedValue,
+            ancientAvailability);
+
+        var ancientPreview = Preview(new Sts2RunRequest
+        {
+            SeedText = request.SeedText,
+            SeedValue = request.SeedValue,
+            Character = request.Character,
+            UnlockedCharacters = ResolveUnlockedCharacters(request.Character, request.UnlockedCharacters),
+            AscensionLevel = request.AscensionLevel,
+            PlayerCount = request.PlayerCount,
+            AncientAvailability = ancientAvailability,
+            IncludeDarvSharedAncient = request.IncludeDarvSharedAncient,
+            IncludeAct2 = true,
+            IncludeAct3 = true
+        });
+
+        return _eventVisibilityAnalyzer.Analyze(request, dataset, actPools, ancientPreview);
     }
 
     internal bool MatchesHighProbabilityRelics(
@@ -323,5 +366,31 @@ public sealed class Sts2RunPreviewer
             StringComparer.OrdinalIgnoreCase);
 
         return (ancientActs, rarityMap);
+    }
+
+    private static string? ResolveWorkspaceRoot(string optionDataPath, string actDataPath)
+    {
+        foreach (var candidatePath in new[] { actDataPath, optionDataPath })
+        {
+            if (string.IsNullOrWhiteSpace(candidatePath))
+            {
+                continue;
+            }
+
+            var directory = new DirectoryInfo(Path.GetDirectoryName(candidatePath)!);
+            while (directory != null)
+            {
+                var hasData = Directory.Exists(Path.Combine(directory.FullName, "data"));
+                var hasSrc = Directory.Exists(Path.Combine(directory.FullName, "src"));
+                if (hasData && hasSrc)
+                {
+                    return directory.FullName;
+                }
+
+                directory = directory.Parent;
+            }
+        }
+
+        return null;
     }
 }

@@ -92,10 +92,13 @@ internal sealed class Sts2WorldData
             relicPools);
     }
 
-    public IReadOnlyList<Sts2ActBlueprint> ResolveActs(uint runSeed)
+    public IReadOnlyList<Sts2ActBlueprint> ResolveActs(
+        uint runSeed,
+        Sts2AncientAvailability? availability = null,
+        bool isMultiplayer = false)
     {
         var resolved = new List<Sts2ActBlueprint>(LaterActs.Count + 1);
-        var actOne = ResolveActOne(runSeed);
+        var actOne = ResolveActOne(runSeed, availability, isMultiplayer);
         if (actOne != null)
         {
             resolved.Add(actOne);
@@ -105,7 +108,10 @@ internal sealed class Sts2WorldData
         return resolved;
     }
 
-    public Sts2ActBlueprint? ResolveActOne(uint runSeed)
+    public Sts2ActBlueprint? ResolveActOne(
+        uint runSeed,
+        Sts2AncientAvailability? availability = null,
+        bool isMultiplayer = false)
     {
         if (ActOneChoices.Count == 0)
         {
@@ -121,6 +127,17 @@ internal sealed class Sts2WorldData
         var overgrowth = ActOneChoices.FirstOrDefault(act => string.Equals(act.Name, "Overgrowth", StringComparison.OrdinalIgnoreCase));
         if (underdocks != null && overgrowth != null)
         {
+            availability ??= Sts2AncientAvailability.Default;
+            if (!availability.IsUnderdocksUnlocked)
+            {
+                return overgrowth;
+            }
+
+            if (!isMultiplayer && !availability.HasDiscoveredUnderdocks)
+            {
+                return underdocks;
+            }
+
             var rng = new GameRng(runSeed);
             return rng.NextBool() ? underdocks : overgrowth;
         }
@@ -365,6 +382,42 @@ internal sealed class Sts2WorldData
             }
 
             return SharedSequence;
+        }
+
+        public IReadOnlyList<string> GetSharedSequence(Sts2AncientAvailability? availability)
+        {
+            if (availability == null || ReferenceEquals(availability, Sts2AncientAvailability.Default))
+            {
+                return SharedSequence;
+            }
+
+            return SharedSequence
+                .Where(availability.IsSharedRelicAvailable)
+                .ToList();
+        }
+
+        public IReadOnlyList<string> GetSequenceFor(CharacterId id, Sts2AncientAvailability? availability)
+        {
+            var sequence = GetSequenceFor(id);
+            if (availability == null || ReferenceEquals(availability, Sts2AncientAvailability.Default))
+            {
+                return sequence;
+            }
+
+            return sequence
+                .Where(relicId => availability.IsCharacterRelicAvailable(id, relicId))
+                .ToList();
+        }
+
+        public IReadOnlyList<string> GetCombinedSequence(CharacterId id, Sts2AncientAvailability? availability)
+        {
+            var shared = GetSharedSequence(availability);
+            var character = GetSequenceFor(id, availability);
+
+            var combined = new List<string>(shared.Count + character.Count);
+            combined.AddRange(shared);
+            combined.AddRange(character);
+            return combined;
         }
     }
 }

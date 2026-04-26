@@ -80,6 +80,28 @@ if (args.Length >= 2 &&
     return;
 }
 
+if (args.Length >= 2 &&
+    string.Equals(args[0], "--trace-save", StringComparison.OrdinalIgnoreCase))
+{
+    TraceSaveGeneration(args[1]);
+    return;
+}
+
+if (args.Length >= 3 &&
+    string.Equals(args[0], "--trace-save-primer", StringComparison.OrdinalIgnoreCase))
+{
+    TraceSaveGenerationWithPrimerVariant(args[1], args[2]);
+    return;
+}
+
+if (args.Length >= 2 &&
+    string.Equals(args[0], "--primer-room-compare", StringComparison.OrdinalIgnoreCase))
+{
+    var character = args.Length >= 3 ? ParseCharacterId(args[2]) : CharacterId.Silent;
+    ComparePrimerToggleRoomPools(args[1], character);
+    return;
+}
+
 if (args.Contains("--root-cause", StringComparer.OrdinalIgnoreCase))
 {
     RunRootCauseDiagnostics();
@@ -490,10 +512,11 @@ void SearchSilentUnlockCombinations()
 
     var targetRuns = new[]
     {
-        "1776941711.run",
-        "1776946049.run",
-        "1776950871.run",
-        "1776953063.run"
+        "1777034559.run",
+        "1777041275.run",
+        "1777043531.run",
+        "1777084566.run",
+        "1777102600.run"
     };
 
     var results = new List<(string LockedEpochs, int Matches, int Total)>();
@@ -1846,8 +1869,20 @@ void PrimeAllRarityRelicBuckets(
         .ToList()
         ?? throw new InvalidOperationException("SharedSequence not found.");
 
-    var getSequenceFor = pools.GetType().GetMethod("GetSequenceFor", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-        ?? throw new InvalidOperationException("RelicPools.GetSequenceFor not found.");
+    var getSequenceFor = pools.GetType()
+        .GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+        .FirstOrDefault(method =>
+        {
+            if (!string.Equals(method.Name, "GetSequenceFor", StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            var parameters = method.GetParameters();
+            return parameters.Length == 1 &&
+                   parameters[0].ParameterType == typeof(CharacterId);
+        })
+        ?? throw new InvalidOperationException("RelicPools.GetSequenceFor(CharacterId) not found.");
     var characterSequence = ((System.Collections.IEnumerable?)getSequenceFor.Invoke(pools, [character]))
         ?.Cast<object?>()
         .Select(x => x?.ToString())
@@ -2583,8 +2618,20 @@ void PrimeTrackedGapTracked(
         .ToList()
         ?? throw new InvalidOperationException("SharedSequence not found.");
 
-    var getSequenceFor = pools.GetType().GetMethod("GetSequenceFor", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-        ?? throw new InvalidOperationException("RelicPools.GetSequenceFor not found.");
+    var getSequenceFor = pools.GetType()
+        .GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+        .FirstOrDefault(method =>
+        {
+            if (!string.Equals(method.Name, "GetSequenceFor", StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            var parameters = method.GetParameters();
+            return parameters.Length == 1 &&
+                   parameters[0].ParameterType == typeof(CharacterId);
+        })
+        ?? throw new InvalidOperationException("RelicPools.GetSequenceFor(CharacterId) not found.");
     var characterSequence = ((System.Collections.IEnumerable?)getSequenceFor.Invoke(pools, [character]))
         ?.Cast<object?>()
         .Select(x => x?.ToString())
@@ -2962,6 +3009,78 @@ void TraceSaveGeneration(string relativeRunPath)
             Console.WriteLine($"    {phase.Phase}: {phase.Before} -> {phase.After}{suffix}");
         }
     }
+}
+
+void TraceSaveGenerationWithPrimerVariant(string relativeRunPath, string variant)
+{
+    var (primerLabel, prime) = ResolvePrimerVariant(variant);
+    var runPath = ResolveRunPath(relativeRunPath);
+    var runRoot = JsonNode.Parse(File.ReadAllText(runPath))
+        ?? throw new InvalidOperationException($"Failed to parse run file: {runPath}");
+
+    var seedText = runRoot["seed"]?.GetValue<string>()
+        ?? throw new InvalidOperationException($"Run file missing seed: {runPath}");
+    var character = ParseCharacterId(GetRunCharacterId(runRoot));
+    var traced = TraceOfficialActGenerationWithPrimer(
+        CreateOfficialSeedPreviewer(seedText),
+        seedText,
+        character,
+        prime);
+    var history = runRoot["map_point_history"]?.AsArray() ?? [];
+
+    Console.WriteLine($"绉嶅瓙 {seedText} | primer={primerLabel} | counterAfterPrimer={traced.CounterAfterPrimer}");
+    foreach (var act in traced.Acts)
+    {
+        var actHistory = act.ActNumber - 1 < history.Count
+            ? history[act.ActNumber - 1]?.AsArray() ?? []
+            : [];
+        var actualBoss = ExtractEncounterIds(actHistory, "boss").FirstOrDefault() ?? "(none)";
+        var actualAncient = ExtractEventIdsAtAncients(actHistory).FirstOrDefault() ?? "(none)";
+
+        Console.WriteLine($"  Act {act.ActNumber}: boss predicted={act.BossId} actual={actualBoss} | ancient predicted={act.AncientId} actual={actualAncient}");
+        foreach (var phase in act.Phases)
+        {
+            var suffix = string.IsNullOrWhiteSpace(phase.Value)
+                ? string.Empty
+                : $" | {phase.Value}";
+            Console.WriteLine($"    {phase.Phase}: {phase.Before} -> {phase.After}{suffix}");
+        }
+    }
+}
+
+string ResolveRunPath(string relativeRunPath)
+{
+    var combinedPath = Path.Combine(workspace, relativeRunPath);
+    if (File.Exists(combinedPath))
+    {
+        return combinedPath;
+    }
+
+    if (File.Exists(relativeRunPath))
+    {
+        return Path.GetFullPath(relativeRunPath);
+    }
+
+    var fileName = Path.GetFileName(relativeRunPath);
+    var saveDir = Path.Combine(workspace, "存档");
+    return Directory.GetFiles(saveDir, fileName, SearchOption.AllDirectories).FirstOrDefault()
+        ?? throw new FileNotFoundException($"Could not locate run file {relativeRunPath} under {saveDir}.");
+}
+
+(string Label, Action<Sts2RunPreviewer, GameRng, CharacterId, int> Prime) ResolvePrimerVariant(string variant)
+{
+    return variant.Trim().ToLowerInvariant() switch
+    {
+        "none" => ("none", static (_, _, _, _) => { }),
+        "all" or "all-rarity" => ("all", PrimeAllRarityRelicBuckets),
+        "hybrid" => ("hybrid", (previewer, rng, character, playerCount) =>
+            PrimeHybridRelicBuckets(previewer, rng, character, playerCount)),
+        "current" => ("all-gap-tracked", PrimeAllSharedGapTrackedPlayer),
+        "all-gap-tracked" or "gap-tracked" => ("all-gap-tracked", PrimeAllSharedGapTrackedPlayer),
+        "all-gap-all" or "gap-all" => ("all-gap-all", PrimeAllSharedGapAllPlayer),
+        "tracked-gap-tracked" or "tracked" => ("tracked-gap-tracked", PrimeTrackedGapTracked),
+        _ => throw new ArgumentOutOfRangeException(nameof(variant), variant, "Unknown primer variant.")
+    };
 }
 
 void SearchAct2AncientOffsets(string relativeRunPath)

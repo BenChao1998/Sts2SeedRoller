@@ -80,7 +80,16 @@ internal sealed class Sts2RelicVisibilityAnalyzer
         }
 
         var playerCount = Math.Max(1, request.PlayerCount);
-        var baseline = BaselineState.Create(_world.RelicPools, rarityMap, request.SeedText, request.SeedValue, request.Character, playerCount, request.AscensionLevel);
+        var ancientAvailability = request.ResolveAncientAvailability();
+        var baseline = BaselineState.Create(
+            _world.RelicPools,
+            rarityMap,
+            request.SeedText,
+            request.SeedValue,
+            request.Character,
+            playerCount,
+            request.AscensionLevel,
+            ancientAvailability);
         var rewardModel = RewardSimulationModel.Create(dataset, request.Character, playerCount);
         var ancientMap = ancientActs.ToDictionary(act => act.ActNumber, act => act, EqualityComparer<int>.Default);
 
@@ -134,7 +143,16 @@ internal sealed class Sts2RelicVisibilityAnalyzer
         }
 
         var playerCount = Math.Max(1, request.PlayerCount);
-        var baseline = BaselineState.Create(_world.RelicPools, rarityMap, request.SeedText, request.SeedValue, request.Character, playerCount, request.AscensionLevel);
+        var ancientAvailability = request.ResolveAncientAvailability();
+        var baseline = BaselineState.Create(
+            _world.RelicPools,
+            rarityMap,
+            request.SeedText,
+            request.SeedValue,
+            request.Character,
+            playerCount,
+            request.AscensionLevel,
+            ancientAvailability);
         var rewardModel = RewardSimulationModel.Create(dataset, request.Character, playerCount);
         var ancientMap = ancientActs.ToDictionary(act => act.ActNumber, act => act, EqualityComparer<int>.Default);
         var matchedRelics = targetRelics.ToDictionary(relicId => relicId, _ => false, StringComparer.OrdinalIgnoreCase);
@@ -1022,15 +1040,18 @@ internal sealed class Sts2RelicVisibilityAnalyzer
             uint runSeed,
             CharacterId character,
             int playerCount,
-            int ascensionLevel)
+            int ascensionLevel,
+            Sts2AncientAvailability availability)
         {
             var upFrontRng = new GameRng(runSeed, "up_front");
+            var sharedSequence = pools.GetSharedSequence(availability);
+            var playerSequence = pools.GetCombinedSequence(character, availability);
 
-            var sharedBag = RelicBag.CreateFromSequence(pools.SharedSequence, rarityMap, upFrontRng);
-            var playerSequence = new List<string>(pools.SharedSequence.Count + pools.GetSequenceFor(character).Count);
-            playerSequence.AddRange(pools.SharedSequence);
-            playerSequence.AddRange(pools.GetSequenceFor(character));
-            var playerBag = RelicBag.CreateFromSequence(playerSequence, rarityMap, upFrontRng);
+            // Match the run creation order from the game: shuffle every unlocked
+            // shared relic rarity first, then immediately shuffle only the
+            // tracked gameplay rarities for the player's combined grab bag.
+            var sharedBag = RelicBag.CreateFromSequence(sharedSequence, rarityMap, upFrontRng, trackedOnly: false);
+            var playerBag = RelicBag.CreateFromSequence(playerSequence, rarityMap, upFrontRng, trackedOnly: true);
 
             var playerSeed = unchecked(runSeed + DefaultPlayerNetId);
             return new BaselineState(
@@ -1064,7 +1085,8 @@ internal sealed class Sts2RelicVisibilityAnalyzer
         public static RelicBag CreateFromSequence(
             IReadOnlyList<string> sequence,
             IReadOnlyDictionary<string, string> rarityMap,
-            GameRng rng)
+            GameRng rng,
+            bool trackedOnly)
         {
             var buckets = new Dictionary<RelicRarity, List<string>>();
             foreach (var relicId in sequence)
@@ -1072,6 +1094,12 @@ internal sealed class Sts2RelicVisibilityAnalyzer
                 if (string.IsNullOrWhiteSpace(relicId) ||
                     !rarityMap.TryGetValue(relicId, out var rarityText) ||
                     !Enum.TryParse<RelicRarity>(rarityText, ignoreCase: true, out var rarity))
+                {
+                    continue;
+                }
+
+                if (trackedOnly &&
+                    rarity is not (RelicRarity.Common or RelicRarity.Uncommon or RelicRarity.Rare or RelicRarity.Shop))
                 {
                     continue;
                 }

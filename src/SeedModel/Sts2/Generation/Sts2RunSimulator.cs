@@ -49,7 +49,7 @@ internal sealed class Sts2RunSimulator
         }
 
         ancientAvailability ??= Sts2AncientAvailability.Default;
-        var acts = _world.ResolveActs(runSeed);
+        var acts = _world.ResolveActs(runSeed, ancientAvailability);
         var sharedAssignments = AssignSharedAncients(rng, acts, ancientAvailability);
         var results = new List<ActPoolResult>(acts.Count);
 
@@ -71,7 +71,7 @@ internal sealed class Sts2RunSimulator
         IReadOnlyList<string> sharedAncients,
         Sts2AncientAvailability ancientAvailability)
     {
-        var events = ShuffleEvents(act, rng);
+        var events = ShuffleEvents(act, rng, ancientAvailability);
         var normalEncounters = GenerateNormalEncounters(act, rng);
         var eliteEncounters = GenerateEliteEncounters(act, rng);
         SelectBoss(act, rng);
@@ -87,10 +87,13 @@ internal sealed class Sts2RunSimulator
             chosenAncient);
     }
 
-    private IReadOnlyList<string> ShuffleEvents(Sts2ActBlueprint act, GameRng rng)
+    private IReadOnlyList<string> ShuffleEvents(
+        Sts2ActBlueprint act,
+        GameRng rng,
+        Sts2AncientAvailability ancientAvailability)
     {
         var events = new List<string>(act.Events.Count + _world.SharedEvents.Count);
-        events.AddRange(act.Events);
+        events.AddRange(act.Events.Where(eventId => ancientAvailability.IsActEventAvailable(act.ActNumber, eventId)));
         events.AddRange(_world.SharedEvents);
         rng.Shuffle(events);
         return events;
@@ -187,11 +190,6 @@ internal sealed class Sts2RunSimulator
 
         for (var i = 1; i < acts.Count; i++)
         {
-            if (pool.Count == 0)
-            {
-                break;
-            }
-
             var pullCount = rng.NextInt(pool.Count + 1);
             if (pullCount <= 0)
             {

@@ -112,11 +112,23 @@ internal sealed partial class MainWindowViewModel
                 AncientAvailability = ancientAvailability
             };
             var relicVisibility = _ancientPreviewer.AnalyzeRelicVisibility(seedAnalysisDataset, relicVisibilityRequest);
+            var eventVisibilityRequest = new Sts2EventVisibilityRequest
+            {
+                SeedText = normalizedSeed,
+                SeedValue = seedValue,
+                Character = SelectedCharacter,
+                UnlockedCharacters = unlockedCharacters,
+                AscensionLevel = SelectedAscensionLevel,
+                PlayerCount = 1,
+                AncientAvailability = ancientAvailability
+            };
+            var eventVisibility = _ancientPreviewer.AnalyzeEventVisibility(seedAnalysisDataset, eventVisibilityRequest);
 
             var openingActs = BuildSeedAnalysisOpeningActs(normalizedSeed, seedValue);
             ApplySeedAnalysis(analysis);
             ApplySeedAnalysisOpenings(openingActs);
             ApplySeedAnalysisRelicVisibility(relicVisibility);
+            ApplySeedAnalysisEventVisibility(eventVisibility);
             SeedAnalysisSummary = $"已分析种子 {normalizedSeed}，角色：{GetCharacterDisplayName(SelectedCharacter)}，进阶等级：{SelectedAscensionLevel}";
             SeedAnalysisSeedValueText = $"uint seed: {analysis.SeedValue}";
             StatusMessage = "种子分析完成。";
@@ -162,6 +174,7 @@ internal sealed partial class MainWindowViewModel
         SeedAnalysisActs.Clear();
         SeedAnalysisOpeningActs.Clear();
         ClearSeedAnalysisRelicVisibility();
+        ClearSeedAnalysisEventVisibility();
         HasSeedAnalysisResult = false;
     }
 
