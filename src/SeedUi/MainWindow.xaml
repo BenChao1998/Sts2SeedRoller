@@ -1,4 +1,4 @@
-<hc:Window x:Class="SeedUi.MainWindow"
+﻿<hc:Window x:Class="SeedUi.MainWindow"
            xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
            xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -83,7 +83,7 @@
             </Setter>
         </Style>
 
-        <!-- 筛选标签样式 -->
+        <!-- 筛选标签样�?-->
         <Style x:Key="FilterTagStyle" TargetType="Border">
             <Setter Property="Background" Value="#E3F2FD"/>
             <Setter Property="BorderBrush" Value="#BBDEFB"/>
@@ -129,7 +129,7 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- 左侧导航栏 -->
+        <!-- 左侧导航�?-->
         <Border Grid.Column="0" Grid.Row="0" Background="White" BorderBrush="#E8E8E8" BorderThickness="0 0 1 0">
             <Grid>
                 <Grid.RowDefinitions>
@@ -165,11 +165,14 @@
                                  Content="铺种" Tag="&#xE7C3;"
                                  Checked="NavArchive_Checked"/>
                     <RadioButton x:Name="NavViewer" Style="{StaticResource NavButtonStyle}"
-                                 Content="查看器" Tag="&#xE8A5;"
+                                 Content="&#x67E5;&#x770B;&#x5668;" Tag="&#xE8A5;"
                                  Checked="NavViewer_Checked"/>
+                    <RadioButton x:Name="NavEventPools" Style="{StaticResource NavButtonStyle}"
+                                 Content="事件池信息" Tag="&#xE8D2;"
+                                 Checked="NavEventPools_Checked"/>
                 </StackPanel>
 
-                <!-- 底部数据状态 -->
+                <!-- 底部数据状�?-->
                 <Border Grid.Row="2" Padding="16" BorderBrush="#E8E8E8" BorderThickness="0 1 0 0">
                     <TextBlock Text="{Binding DatasetSummary}" FontSize="11" Foreground="#999" TextWrapping="Wrap"/>
                 </Border>
@@ -183,7 +186,7 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <!-- 顶部标题栏 -->
+            <!-- 顶部标题�?-->
             <Border Grid.Row="0" Background="White" BorderBrush="#E8E8E8" BorderThickness="0 0 0 1" Padding="24 16">
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -215,12 +218,12 @@
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
 
-                        <!-- 左列：事件、角色、遗物、卡牌、药水 -->
+                        <!-- 左列：事件、角色、遗物、卡牌、药�?-->
                         <StackPanel Grid.Column="0" Margin="0 0 12 0">
-                            <!-- 事件与数据 -->
+                            <!-- 事件与数�?-->
                             <Border Style="{StaticResource CardStyle}" Margin="0 0 0 16">
                                 <StackPanel>
-                                    <TextBlock Text="版本与数据" FontSize="16" FontWeight="SemiBold" Margin="0 0 0 16" Foreground="#333"/>
+                                    <TextBlock Text="&#x7248;&#x672C;&#x4E0E;&#x6570;&#x636E;" FontSize="16" FontWeight="SemiBold" Margin="0 0 0 16" Foreground="#333"/>
                                     <TextBlock Text="游戏版本" FontSize="13" Foreground="#666" Margin="0 0 0 8"/>
                                     <ComboBox ItemsSource="{Binding GameVersionOptions}" DisplayMemberPath="DisplayName"
                                               SelectedItem="{Binding SelectedGameVersion}" Margin="0 0 0 12" MinHeight="25" VerticalContentAlignment="Center"/>
@@ -250,10 +253,10 @@
                                 </StackPanel>
                             </Border>
 
-                            <!-- 遗物筛选 -->
+                            <!-- 遗物筛�?-->
                             <Border Style="{StaticResource CardStyle}" Margin="0 0 0 16">
                                 <StackPanel>
-                                    <TextBlock Text="遗物筛选" FontSize="16" FontWeight="SemiBold" Margin="0 0 0 8" Foreground="#333"/>
+                                    <TextBlock Text="&#x9057;&#x7269;&#x7B5B;&#x9009;" FontSize="16" FontWeight="SemiBold" Margin="0 0 0 8" Foreground="#333"/>
                                     <TextBlock Text="选择特定的遗物来筛选符合条件的种子" FontSize="12" Foreground="#999" Margin="0 0 0 16"/>
 
                                     <TextBlock Text="搜索遗物" FontSize="13" Foreground="#666" Margin="0 0 0 8"/>
@@ -271,7 +274,7 @@
                                                 Style="{StaticResource ButtonPrimary}"/>
                                     </Grid>
 
-                                    <TextBlock Text="已选遗物" FontSize="13" Foreground="#666" Margin="0 16 0 8"/>
+                                    <TextBlock Text="&#x5DF2;&#x9009;&#x9057;&#x7269;" FontSize="13" Foreground="#666" Margin="0 16 0 8"/>
                                     <ItemsControl ItemsSource="{Binding RelicFilterChips}">
                                         <ItemsControl.ItemsPanel>
                                             <ItemsPanelTemplate>
@@ -296,10 +299,10 @@
                                 </StackPanel>
                             </Border>
 
-                            <!-- 卡牌筛选 -->
+                            <!-- 卡牌筛�?-->
                             <Border Style="{StaticResource CardStyle}" Margin="0 0 0 16">
                                 <StackPanel>
-                                    <TextBlock Text="卡牌筛选" FontSize="16" FontWeight="SemiBold" Margin="0 0 0 8" Foreground="#333"/>
+                                    <TextBlock Text="&#x5361;&#x724C;&#x7B5B;&#x9009;" FontSize="16" FontWeight="SemiBold" Margin="0 0 0 8" Foreground="#333"/>
                                     <TextBlock Text="可按中文名、拼音或ID过滤卡牌" FontSize="12" Foreground="#999" Margin="0 0 0 16"/>
 
                                     <TextBlock Text="搜索卡牌" FontSize="13" Foreground="#666" Margin="0 0 0 8"/>
@@ -317,7 +320,7 @@
                                                 Style="{StaticResource ButtonPrimary}"/>
                                     </Grid>
 
-                                    <TextBlock Text="已选卡牌" FontSize="13" Foreground="#666" Margin="0 16 0 8"/>
+                                    <TextBlock Text="&#x5DF2;&#x9009;&#x5361;&#x724C;" FontSize="13" Foreground="#666" Margin="0 16 0 8"/>
                                     <ItemsControl ItemsSource="{Binding CardFilterChips}">
                                         <ItemsControl.ItemsPanel>
                                             <ItemsPanelTemplate>
@@ -341,10 +344,10 @@
                                 </StackPanel>
                             </Border>
 
-                            <!-- 药水筛选 -->
+                            <!-- 药水筛�?-->
                             <Border Style="{StaticResource CardStyle}" Margin="0 0 0 16">
                                 <StackPanel>
-                                    <TextBlock Text="药水筛选" FontSize="16" FontWeight="SemiBold" Margin="0 0 0 8" Foreground="#333"/>
+                                    <TextBlock Text="&#x836F;&#x6C34;&#x7B5B;&#x9009;" FontSize="16" FontWeight="SemiBold" Margin="0 0 0 8" Foreground="#333"/>
                                     <TextBlock Text="支持输入药水名称或ID过滤" FontSize="12" Foreground="#999" Margin="0 0 0 16"/>
 
                                     <TextBlock Text="搜索药水" FontSize="13" Foreground="#666" Margin="0 0 0 8"/>
@@ -362,7 +365,7 @@
                                                 Style="{StaticResource ButtonPrimary}"/>
                                     </Grid>
 
-                                    <TextBlock Text="已选药水" FontSize="13" Foreground="#666" Margin="0 16 0 8"/>
+                                    <TextBlock Text="&#x5DF2;&#x9009;&#x836F;&#x6C34;" FontSize="13" Foreground="#666" Margin="0 16 0 8"/>
                                     <ItemsControl ItemsSource="{Binding PotionFilterChips}">
                                         <ItemsControl.ItemsPanel>
                                             <ItemsPanelTemplate>
@@ -386,28 +389,36 @@
                                 </StackPanel>
                             </Border>
 
-                            <!-- 种子分析筛选 -->
+                            <!-- 种子分析筛�?-->
                             <Border Style="{StaticResource CardStyle}" Margin="0 0 0 16">
                                 <StackPanel>
                                     <StackPanel Orientation="Horizontal" Margin="0 0 0 16">
-                                        <TextBlock Text="种子分析筛选" FontSize="16" FontWeight="SemiBold" Foreground="#333"/>
+                                        <TextBlock Text="&#x79CD;&#x5B50;&#x5206;&#x6790;&#x7B5B;&#x9009;" FontSize="16" FontWeight="SemiBold" Foreground="#333"/>
                                         <CheckBox IsChecked="{Binding IncludePoolFilter}" Content="启用" Margin="16 0 0 0" VerticalAlignment="Center"/>
-                                        <TextBlock Text="基于种子分析中的事件池与遗物概率预览进行命中筛选" FontSize="11" Foreground="#888" Margin="8 0 0 0" VerticalAlignment="Center" TextWrapping="Wrap" MaxWidth="300"/>
+                                        <TextBlock Text="&#x57FA;&#x4E8E;&#x201C;&#x79CD;&#x5B50;&#x5206;&#x6790;&#x201D;&#x91CC;&#x7684;&#x4E8B;&#x4EF6;&#x6C60;&#x548C;&#x9057;&#x7269;&#x6982;&#x7387;&#x9884;&#x89C8;&#x6765;&#x8FDB;&#x884C;&#x547D;&#x4E2D;&#x7B5B;&#x9009;&#x3002;" FontSize="11" Foreground="#888" Margin="8 0 0 0" VerticalAlignment="Center" TextWrapping="Wrap" MaxWidth="300"/>
                                     </StackPanel>
 
                                     <TextBlock Text="{Binding PoolFilterSummary}" Foreground="#666" TextWrapping="Wrap" Margin="0 0 0 16"/>
 
                                     <StackPanel IsEnabled="{Binding IncludePoolFilter}">
-                                        <TextBlock Text="事件池" FontSize="13" Foreground="#666" Margin="0 0 0 8"/>
-                                        <Grid Margin="0 0 0 16">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="*"/>
-                                            </Grid.ColumnDefinitions>
-
-                                            <StackPanel Grid.Column="0" Margin="0 0 8 0">
-                                                <TextBlock Text="第一幕事件" FontSize="12" Foreground="#666" Margin="0 0 0 6"/>
+                                        <TextBlock Text="&#x6309;&#x5E55;&#x7B5B;&#x9009;&#x9AD8;&#x6982;&#x7387;&#x4E8B;&#x4EF6;" FontSize="13" Foreground="#666" Margin="0 0 0 4"/>
+                                        <TextBlock Text="&#x540C;&#x4E00;&#x5E55;&#x7684;&#x4E8B;&#x4EF6;&#xFF0C;&#x53EA;&#x6709;&#x80FD;&#x540C;&#x65F6;&#x51FA;&#x73B0;&#x5728;&#x540C;&#x4E00;&#x5957;&#x5730;&#x56FE;&#x5206;&#x652F;&#x91CC;&#x65F6;&#x624D;&#x80FD;&#x4E00;&#x8D77;&#x547D;&#x4E2D;&#x3002;&#x4E0B;&#x65B9;&#x6574;&#x5C40;&#x6982;&#x7387;&#x53C2;&#x6570;&#x4F1A;&#x5BF9;&#x8FD9;&#x4E9B;&#x5DF2;&#x9009;&#x4E8B;&#x4EF6;&#x7EDF;&#x4E00;&#x751F;&#x6548;&#x3002;" FontSize="11" Foreground="#888" Margin="0 0 0 6" TextWrapping="Wrap"/>
+                                        <Border Background="#FFF5F5"
+                                                BorderBrush="#E57373"
+                                                BorderThickness="1"
+                                                CornerRadius="6"
+                                                Padding="10"
+                                                Margin="0 0 0 10"
+                                                Visibility="{Binding HasEventPoolConflictMessage, Converter={StaticResource BooleanVisibilityConverter}}">
+                                            <StackPanel>
+                                                <TextBlock Text="&#x4E8B;&#x4EF6;&#x6C60;&#x51B2;&#x7A81;" FontSize="12" FontWeight="SemiBold" Foreground="#C62828" Margin="0 0 0 4"/>
+                                                <TextBlock Text="{Binding EventPoolConflictMessage}" FontSize="11" Foreground="#C62828" TextWrapping="Wrap"/>
+                                            </StackPanel>
+                                        </Border>
+                                        <StackPanel Margin="0 0 0 16">
+                                            <StackPanel Margin="0 0 0 12">
+                                                <TextBlock Text="&#x7B2C;1&#x5E55;&#x9AD8;&#x6982;&#x7387;&#x4E8B;&#x4EF6;" FontSize="12" Foreground="#666" Margin="0 0 0 2"/>
+                                                <TextBlock Text="&#x7B2C;1&#x5E55;&#x4F1A;&#x5728;&#x201C;&#x6697;&#x6E2F;&#x201D;&#x548C;&#x201C;&#x5BC6;&#x6797;&#x201D;&#x4E24;&#x5957;&#x4E8B;&#x4EF6;&#x6C60;&#x4E2D;&#x4E8C;&#x9009;&#x4E00;&#xFF0C;&#x8DE8;&#x5206;&#x652F;&#x7684;&#x4E8B;&#x4EF6;&#x4E0D;&#x80FD;&#x540C;&#x65F6;&#x51FA;&#x73B0;&#x3002;" FontSize="11" Foreground="#B26A00" Margin="0 0 0 6" TextWrapping="Wrap"/>
                                                 <TextBox Text="{Binding Act1EventPoolCatalogFilter, UpdateSourceTrigger=PropertyChanged}"
                                                          hc:InfoElement.Placeholder="输入文字过滤事件列表..." Margin="0 0 0 6" Height="30"/>
                                                 <Grid Margin="0 0 0 6">
@@ -426,21 +437,26 @@
                                                     <ItemsControl.ItemTemplate>
                                                         <DataTemplate>
                                                             <Border Style="{StaticResource FilterTagStyle}">
-                                                                <StackPanel Orientation="Horizontal">
-                                                                    <TextBlock Text="{Binding Label}" Foreground="#1976D2" FontSize="12"/>
-                                                                    <Button Content="&#xE711;" FontFamily="Segoe MDL2 Assets" FontSize="10"
+                                                                <Grid>
+                                                                    <Grid.ColumnDefinitions>
+                                                                        <ColumnDefinition Width="Auto"/>
+                                                                        <ColumnDefinition Width="Auto"/>
+                                                                    </Grid.ColumnDefinitions>
+                                                                    <TextBlock Grid.Column="0" Text="{Binding Label}" Foreground="#1976D2" FontSize="12" TextWrapping="Wrap" MaxWidth="320" VerticalAlignment="Center"/>
+                                                                    <Button Content="×" FontSize="12"
+                                                                            Grid.Column="1"
                                                                             Command="{Binding DataContext.RemoveAct1EventPoolFilterCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                                                            CommandParameter="{Binding Id}" Margin="6 0 0 0" Padding="2"
-                                                                            Style="{StaticResource GhostButtonStyle}"/>
-                                                                </StackPanel>
+                                                                            CommandParameter="{Binding Id}" Margin="6 0 0 0"
+                                                                            Style="{StaticResource ChipCloseButtonStyle}"/>
+                                                                </Grid>
                                                             </Border>
                                                         </DataTemplate>
                                                     </ItemsControl.ItemTemplate>
                                                 </ItemsControl>
                                             </StackPanel>
 
-                                            <StackPanel Grid.Column="1" Margin="8 0">
-                                                <TextBlock Text="第二幕事件" FontSize="12" Foreground="#666" Margin="0 0 0 6"/>
+                                            <StackPanel Margin="0 0 0 12">
+                                                <TextBlock Text="&#x7B2C;2&#x5E55;&#x9AD8;&#x6982;&#x7387;&#x4E8B;&#x4EF6;" FontSize="12" Foreground="#666" Margin="0 0 0 6"/>
                                                 <TextBox Text="{Binding Act2EventPoolCatalogFilter, UpdateSourceTrigger=PropertyChanged}"
                                                          hc:InfoElement.Placeholder="输入文字过滤事件列表..." Margin="0 0 0 6" Height="30"/>
                                                 <Grid Margin="0 0 0 6">
@@ -459,21 +475,26 @@
                                                     <ItemsControl.ItemTemplate>
                                                         <DataTemplate>
                                                             <Border Style="{StaticResource FilterTagStyle}">
-                                                                <StackPanel Orientation="Horizontal">
-                                                                    <TextBlock Text="{Binding Label}" Foreground="#1976D2" FontSize="12"/>
-                                                                    <Button Content="&#xE711;" FontFamily="Segoe MDL2 Assets" FontSize="10"
+                                                                <Grid>
+                                                                    <Grid.ColumnDefinitions>
+                                                                        <ColumnDefinition Width="Auto"/>
+                                                                        <ColumnDefinition Width="Auto"/>
+                                                                    </Grid.ColumnDefinitions>
+                                                                    <TextBlock Grid.Column="0" Text="{Binding Label}" Foreground="#1976D2" FontSize="12" TextWrapping="Wrap" MaxWidth="320" VerticalAlignment="Center"/>
+                                                                    <Button Content="×" FontSize="12"
+                                                                            Grid.Column="1"
                                                                             Command="{Binding DataContext.RemoveAct2EventPoolFilterCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                                                            CommandParameter="{Binding Id}" Margin="6 0 0 0" Padding="2"
-                                                                            Style="{StaticResource GhostButtonStyle}"/>
-                                                                </StackPanel>
+                                                                            CommandParameter="{Binding Id}" Margin="6 0 0 0"
+                                                                            Style="{StaticResource ChipCloseButtonStyle}"/>
+                                                                </Grid>
                                                             </Border>
                                                         </DataTemplate>
                                                     </ItemsControl.ItemTemplate>
                                                 </ItemsControl>
                                             </StackPanel>
 
-                                            <StackPanel Grid.Column="2" Margin="8 0 0 0">
-                                                <TextBlock Text="第三幕事件" FontSize="12" Foreground="#666" Margin="0 0 0 6"/>
+                                            <StackPanel>
+                                                <TextBlock Text="&#x7B2C;3&#x5E55;&#x9AD8;&#x6982;&#x7387;&#x4E8B;&#x4EF6;" FontSize="12" Foreground="#666" Margin="0 0 0 6"/>
                                                 <TextBox Text="{Binding Act3EventPoolCatalogFilter, UpdateSourceTrigger=PropertyChanged}"
                                                          hc:InfoElement.Placeholder="输入文字过滤事件列表..." Margin="0 0 0 6" Height="30"/>
                                                 <Grid Margin="0 0 0 6">
@@ -492,21 +513,74 @@
                                                     <ItemsControl.ItemTemplate>
                                                         <DataTemplate>
                                                             <Border Style="{StaticResource FilterTagStyle}">
-                                                                <StackPanel Orientation="Horizontal">
-                                                                    <TextBlock Text="{Binding Label}" Foreground="#1976D2" FontSize="12"/>
-                                                                    <Button Content="&#xE711;" FontFamily="Segoe MDL2 Assets" FontSize="10"
+                                                                <Grid>
+                                                                    <Grid.ColumnDefinitions>
+                                                                        <ColumnDefinition Width="Auto"/>
+                                                                        <ColumnDefinition Width="Auto"/>
+                                                                    </Grid.ColumnDefinitions>
+                                                                    <TextBlock Grid.Column="0" Text="{Binding Label}" Foreground="#1976D2" FontSize="12" TextWrapping="Wrap" MaxWidth="320" VerticalAlignment="Center"/>
+                                                                    <Button Content="×" FontSize="12"
+                                                                            Grid.Column="1"
                                                                             Command="{Binding DataContext.RemoveAct3EventPoolFilterCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                                                            CommandParameter="{Binding Id}" Margin="6 0 0 0" Padding="2"
-                                                                            Style="{StaticResource GhostButtonStyle}"/>
-                                                                </StackPanel>
+                                                                            CommandParameter="{Binding Id}" Margin="6 0 0 0"
+                                                                            Style="{StaticResource ChipCloseButtonStyle}"/>
+                                                                </Grid>
                                                             </Border>
                                                         </DataTemplate>
                                                     </ItemsControl.ItemTemplate>
                                                 </ItemsControl>
                                             </StackPanel>
+                                        </StackPanel>
+                                        <TextBlock Text="&#x4E8B;&#x4EF6;&#x547D;&#x4E2D;&#x53C2;&#x6570;" FontSize="13" Foreground="#666" Margin="0 0 0 8"/>
+                                        <Grid Margin="0 0 0 8">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="90"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="整局概率(%)" FontSize="12" Foreground="#666" VerticalAlignment="Center" Margin="0 0 8 0"/>
+                                            <TextBox Grid.Column="1"
+                                                     Text="{Binding HighProbabilityEventSeenThresholdPercentText, UpdateSourceTrigger=PropertyChanged}"
+                                                     Height="28"
+                                                     VerticalContentAlignment="Center"
+                                                     Margin="0 0 8 0"/>
+                                            <TextBlock Grid.Column="2"
+                                                       Text="{Binding HighProbabilityEventSeenThresholdDescription}"
+                                                       FontSize="11"
+                                                       Foreground="#888"
+                                                       TextWrapping="Wrap"
+                                                       VerticalAlignment="Center"/>
                                         </Grid>
+                                        <WrapPanel Margin="0 0 0 8">
+                                            <TextBlock Text="平均首次事件位≤" FontSize="12" Foreground="#666" VerticalAlignment="Center" Margin="0 0 8 8"/>
+                                            <TextBox Text="{Binding HighProbabilityEventAverageFirstOpportunityMaxText, UpdateSourceTrigger=PropertyChanged}"
+                                                     Width="110"
+                                                     Height="28"
+                                                     VerticalContentAlignment="Center"
+                                                     hc:InfoElement.Placeholder="留空"
+                                                     Margin="0 0 16 8"/>
+                                            <TextBlock Text="&#x591A;&#x6765;&#x81EA;" FontSize="12" Foreground="#666" VerticalAlignment="Center" Margin="0 0 8 8"/>
+                                            <ComboBox ItemsSource="{Binding HighProbabilityEventMostCommonSourceOptions}"
+                                                      DisplayMemberPath="DisplayName"
+                                                      SelectedValuePath="Value"
+                                                      SelectedValue="{Binding HighProbabilityEventMostCommonSourceText}"
+                                                      Width="170"
+                                                      MinHeight="28"
+                                                      VerticalContentAlignment="Center"
+                                                      Margin="0 0 0 8"/>
+                                        </WrapPanel>
+                                        <TextBlock Text="&#x8BF4;&#x660E;&#xFF1A;&#x4E0A;&#x9762;&#x4E09;&#x5E55;&#x9009;&#x4E2D;&#x7684;&#x4E8B;&#x4EF6;&#xFF0C;&#x90FD;&#x4F1A;&#x6309;&#x8FD9;&#x91CC;&#x7684;&#x6574;&#x5C40;&#x6982;&#x7387;&#x3001;&#x9996;&#x6B21;&#x4E8B;&#x4EF6;&#x4F4D;&#x3001;&#x591A;&#x6765;&#x81EA;&#x53BB;&#x505A;&#x547D;&#x4E2D;&#x5224;&#x5B9A;&#x3002;&#x7559;&#x7A7A;&#x8868;&#x793A;&#x4E0D;&#x9650;&#x3002;"
+                                                   FontSize="11"
+                                                   Foreground="#888"
+                                                   TextWrapping="Wrap"
+                                                   Margin="0 0 0 8"/>
 
-                                        <TextBlock Text="高概率出现遗物" FontSize="13" Foreground="#666" Margin="0 0 0 8"/>
+                                        <TextBlock Text="&#x9AD8;&#x6982;&#x7387;&#x51FA;&#x73B0;&#x9057;&#x7269;" FontSize="13" Foreground="#666" Margin="0 0 0 8"/>
+                                        <TextBlock Text="{Binding HighProbabilityRelicFilterStatusText}"
+                                                   FontSize="11"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="#C62828"
+                                                   Margin="0 0 0 8"/>
                                         <Grid Margin="0 0 0 8">
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="Auto"/>
@@ -527,7 +601,7 @@
                                                        VerticalAlignment="Center"/>
                                         </Grid>
                                         <WrapPanel Margin="0 0 0 8">
-                                            <TextBlock Text="非商店(%)" FontSize="12" Foreground="#666" VerticalAlignment="Center" Margin="0 0 8 8"/>
+                                            <TextBlock Text="非商�?%)" FontSize="12" Foreground="#666" VerticalAlignment="Center" Margin="0 0 8 8"/>
                                             <TextBox Text="{Binding HighProbabilityNonShopThresholdPercentText, UpdateSourceTrigger=PropertyChanged}"
                                                      Width="80"
                                                      Height="28"
@@ -548,14 +622,14 @@
                                                      VerticalContentAlignment="Center"
                                                      hc:InfoElement.Placeholder="留空"
                                                      Margin="0 0 16 8"/>
-                                            <TextBlock Text="平均首次机会≤" FontSize="12" Foreground="#666" VerticalAlignment="Center" Margin="0 0 8 8"/>
+                                            <TextBlock Text="&#x5E73;&#x5747;&#x9996;&#x6B21;&#x673A;&#x4F1A;&#x2264;" FontSize="12" Foreground="#666" VerticalAlignment="Center" Margin="0 0 8 8"/>
                                             <TextBox Text="{Binding HighProbabilityAverageFirstOpportunityMaxText, UpdateSourceTrigger=PropertyChanged}"
                                                      Width="90"
                                                      Height="28"
                                                      VerticalContentAlignment="Center"
                                                      hc:InfoElement.Placeholder="留空"
                                                      Margin="0 0 16 8"/>
-                                            <TextBlock Text="最常来源" FontSize="12" Foreground="#666" VerticalAlignment="Center" Margin="0 0 8 8"/>
+                                            <TextBlock Text="&#x6700;&#x5E38;&#x6765;&#x6E90;" FontSize="12" Foreground="#666" VerticalAlignment="Center" Margin="0 0 8 8"/>
                                             <ComboBox ItemsSource="{Binding HighProbabilityMostCommonSourceOptions}"
                                                       DisplayMemberPath="DisplayName"
                                                       SelectedValuePath="Value"
@@ -565,7 +639,7 @@
                                                       VerticalContentAlignment="Center"
                                                       Margin="0 0 0 8"/>
                                         </WrapPanel>
-                                        <TextBlock Text="可选项说明：这些条件只对上面已选中的遗物生效；留空表示不限制。命中时，同一个遗物需要在某一条路线画像下同时满足这些条件。"
+                                        <TextBlock Text="&#x53EF;&#x9009;&#x8BF4;&#x660E;&#xFF1A;&#x8FD9;&#x4E9B;&#x6761;&#x4EF6;&#x53EA;&#x5BF9;&#x4E0A;&#x9762;&#x5DF2;&#x9009;&#x4E2D;&#x7684;&#x9057;&#x7269;&#x751F;&#x6548;&#xFF1B;&#x7559;&#x7A7A;&#x8868;&#x793A;&#x4E0D;&#x9650;&#x5236;&#x3002;&#x547D;&#x4E2D;&#x65F6;&#xFF0C;&#x540C;&#x4E00;&#x4E2A;&#x9057;&#x7269;&#x9700;&#x8981;&#x5728;&#x67D0;&#x4E00;&#x6761;&#x8DEF;&#x7EBF;&#x7684;&#x9884;&#x6D4B;&#x91CC;&#x540C;&#x65F6;&#x6EE1;&#x8DB3;&#x8FD9;&#x4E9B;&#x6761;&#x4EF6;&#x3002;"
                                                    FontSize="11"
                                                    Foreground="#888"
                                                    TextWrapping="Wrap"
@@ -606,7 +680,7 @@
                             </Border>
                         </StackPanel>
 
-                        <!-- 右列：种子、输出、古神、开始按钮 -->
+                        <!-- 右列：种子、输出、古神、开始按�?-->
                         <StackPanel Grid.Column="1" Margin="12 0 0 0">
                             <!-- 种子设置 -->
                             <Border Style="{StaticResource CardStyle}" Margin="0 0 0 16">
@@ -648,11 +722,11 @@
                                 </StackPanel>
                             </Border>
 
-                            <!-- 第二幕古神 -->
+                            <!-- 第二幕古�?-->
                             <Border Style="{StaticResource CardStyle}" Margin="0 0 0 16">
                                 <StackPanel>
                                     <StackPanel Orientation="Horizontal" Margin="0 0 0 16">
-                                        <TextBlock Text="第二幕古神" FontSize="16" FontWeight="SemiBold" Foreground="#333"/>
+                                        <TextBlock Text="&#x7B2C;&#x4E8C;&#x5E55;&#x53E4;&#x795E;" FontSize="16" FontWeight="SemiBold" Foreground="#333"/>
                                         <CheckBox IsChecked="{Binding IncludeAct2}" Content="启用" Margin="16 0 0 0" VerticalAlignment="Center"/>
                                     </StackPanel>
 
@@ -698,11 +772,11 @@
                                 </StackPanel>
                             </Border>
 
-                            <!-- 第三幕古神 -->
+                            <!-- 第三幕古�?-->
                             <Border Style="{StaticResource CardStyle}" Margin="0 0 0 16">
                                 <StackPanel>
                                     <StackPanel Orientation="Horizontal" Margin="0 0 0 16">
-                                        <TextBlock Text="第三幕古神" FontSize="16" FontWeight="SemiBold" Foreground="#333"/>
+                                        <TextBlock Text="&#x7B2C;&#x4E09;&#x5E55;&#x53E4;&#x795E;" FontSize="16" FontWeight="SemiBold" Foreground="#333"/>
                                         <CheckBox IsChecked="{Binding IncludeAct3}" Content="启用" Margin="16 0 0 0" VerticalAlignment="Center"/>
                                     </StackPanel>
 
@@ -748,19 +822,19 @@
                                 </StackPanel>
                             </Border>
 
-                            <!-- 商店筛选 -->
+                            <!-- 商店筛�?-->
                             <Border Style="{StaticResource CardStyle}" Margin="0 0 0 16">
                                 <StackPanel>
                                     <StackPanel Orientation="Horizontal" Margin="0 0 0 16">
-                                        <TextBlock Text="商店筛选" FontSize="16" FontWeight="SemiBold" Foreground="#333"/>
+                                        <TextBlock Text="&#x5546;&#x5E97;&#x7B5B;&#x9009;" FontSize="16" FontWeight="SemiBold" Foreground="#333"/>
                                         <CheckBox IsChecked="{Binding IncludeShop}" Content="启用" Margin="16 0 0 0" VerticalAlignment="Center"/>
-                                        <TextBlock Text="模拟第一幕商店，筛选卡牌/遗物/药水" FontSize="11" Foreground="#888" Margin="8 0 0 0" VerticalAlignment="Center" TextWrapping="Wrap" MaxWidth="300"/>
+                                        <TextBlock Text="模拟第一幕商店，筛选卡�?遗物/药水" FontSize="11" Foreground="#888" Margin="8 0 0 0" VerticalAlignment="Center" TextWrapping="Wrap" MaxWidth="300"/>
                                     </StackPanel>
 
                                     <StackPanel IsEnabled="{Binding IncludeShop}">
-                                        <TextBlock Text="第一家商店最远层数" FontSize="13" Foreground="#666" Margin="0 0 0 8"/>
+                                        <TextBlock Text="&#x7B2C;&#x4E00;&#x5BB6;&#x5546;&#x5E97;&#x6700;&#x8FDC;&#x5C42;&#x6570;" FontSize="13" Foreground="#666" Margin="0 0 0 8"/>
                                         <TextBox Text="{Binding ShopMaxFirstRow, UpdateSourceTrigger=PropertyChanged}"
-                                                 hc:InfoElement.Placeholder="留空表示不限，例如 2 表示第一家商店最晚出现在第 2 层" Margin="0 0 0 12" Height="30"/>
+                                                 hc:InfoElement.Placeholder="&#x7559;&#x7A7A;&#x8868;&#x793A;&#x4E0D;&#x9650;&#xFF0C;&#x4F8B;&#x5982; 2 &#x8868;&#x793A;&#x7B2C;&#x4E00;&#x5BB6;&#x5546;&#x5E97;&#x6700;&#x665A;&#x51FA;&#x73B0;&#x5728;&#x7B2C; 2 &#x5C42;" Margin="0 0 0 12" Height="30"/>
                                         <!-- 卡牌 -->
                                         <TextBlock Text="搜索卡牌" FontSize="13" Foreground="#666" Margin="0 0 0 8"/>
                                         <TextBox Text="{Binding ShopCardCatalogFilter, UpdateSourceTrigger=PropertyChanged}"
@@ -775,7 +849,7 @@
                                             <Button Grid.Column="1" Content="添加" Command="{Binding AddShopCardFilterCommand}"
                                                     Style="{StaticResource ButtonPrimary}"/>
                                         </Grid>
-                                        <TextBlock Text="已选卡牌" FontSize="13" Foreground="#666" Margin="0 16 0 8"/>
+                                        <TextBlock Text="&#x5DF2;&#x9009;&#x5361;&#x724C;" FontSize="13" Foreground="#666" Margin="0 16 0 8"/>
                                         <ItemsControl ItemsSource="{Binding ShopCardFilterChips}">
                                             <ItemsControl.ItemsPanel>
                                                 <ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate>
@@ -809,7 +883,7 @@
                                             <Button Grid.Column="1" Content="添加" Command="{Binding AddShopRelicFilterCommand}"
                                                     Style="{StaticResource ButtonPrimary}"/>
                                         </Grid>
-                                        <TextBlock Text="已选遗物" FontSize="13" Foreground="#666" Margin="0 16 0 8"/>
+                                        <TextBlock Text="&#x5DF2;&#x9009;&#x9057;&#x7269;" FontSize="13" Foreground="#666" Margin="0 16 0 8"/>
                                         <ItemsControl ItemsSource="{Binding ShopRelicFilterChips}">
                                             <ItemsControl.ItemsPanel>
                                                 <ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate>
@@ -843,7 +917,7 @@
                                             <Button Grid.Column="1" Content="添加" Command="{Binding AddShopPotionFilterCommand}"
                                                     Style="{StaticResource ButtonPrimary}"/>
                                         </Grid>
-                                        <TextBlock Text="已选药水" FontSize="13" Foreground="#666" Margin="0 16 0 8"/>
+                                        <TextBlock Text="&#x5DF2;&#x9009;&#x836F;&#x6C34;" FontSize="13" Foreground="#666" Margin="0 16 0 8"/>
                                         <ItemsControl ItemsSource="{Binding ShopPotionFilterChips}">
                                             <ItemsControl.ItemsPanel>
                                                 <ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate>
@@ -877,10 +951,10 @@
                                         <TextBlock FontSize="18" FontWeight="SemiBold" Foreground="White">
                                             <TextBlock.Style>
                                                 <Style TargetType="TextBlock">
-                                                    <Setter Property="Text" Value="配置完成？开始Roll种子！"/>
+                                                    <Setter Property="Text" Value="&#x914D;&#x7F6E;&#x5B8C;&#x6210;&#xFF0C;&#x5F00;&#x59CB; Roll &#x79CD;&#x5B50;&#x3002;"/>
                                                     <Style.Triggers>
                                                         <DataTrigger Binding="{Binding IsRolling}" Value="True">
-                                                            <Setter Property="Text" Value="正在扫描中…"/>
+                                                            <Setter Property="Text" Value="&#x6B63;&#x5728;&#x626B;&#x63CF;&#x4E2D;&#x2026;"/>
                                                         </DataTrigger>
                                                     </Style.Triggers>
                                                 </Style>
@@ -889,7 +963,7 @@
                                         <TextBlock FontSize="13" Foreground="#E3F2FD" Margin="0 4 0 0">
                                             <TextBlock.Style>
                                                 <Style TargetType="TextBlock">
-                                                    <Setter Property="Text" Value="系统将扫描符合条件的种子并显示结果"/>
+                                                    <Setter Property="Text" Value="&#x7CFB;&#x7EDF;&#x4F1A;&#x626B;&#x63CF;&#x7B26;&#x5408;&#x6761;&#x4EF6;&#x7684;&#x79CD;&#x5B50;&#x5E76;&#x663E;&#x793A;&#x7ED3;&#x679C;&#x3002;"/>
                                                     <Style.Triggers>
                                                         <DataTrigger Binding="{Binding IsRolling}" Value="True">
                                                             <Setter Property="Text" Value="{Binding RollProgressText}"/>
@@ -933,10 +1007,10 @@
                                             <TextBlock>
                                                 <TextBlock.Style>
                                                     <Style TargetType="TextBlock">
-                                                        <Setter Property="Text" Value="开始 Roll"/>
+                                                        <Setter Property="Text" Value="开始筛种"/>
                                                         <Style.Triggers>
                                                             <DataTrigger Binding="{Binding IsRolling}" Value="True">
-                                                                <Setter Property="Text" Value="Roll 中…"/>
+                                                                <Setter Property="Text" Value="筛种中…"/>
                                                             </DataTrigger>
                                                         </Style.Triggers>
                                                     </Style>
@@ -997,6 +1071,95 @@
                     </Grid>
                 </ScrollViewer>
 
+                <ScrollViewer x:Name="PageEventPoolsScroll" Grid.Row="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="24" Visibility="Collapsed">
+                    <Grid x:Name="PageEventPools" Visibility="Collapsed">
+                        <Border Style="{StaticResource CardStyle}">
+                            <StackPanel>
+                                <TextBlock Text="事件池信息" FontSize="16" FontWeight="SemiBold" Foreground="#333" Margin="0 0 0 8"/>
+                                <TextBlock Text="这里展示游戏内所有分幕事件池，以及每个池中可能出现的事件。悬浮事件名可查看说明和选项。"
+                                           FontSize="12"
+                                           Foreground="#666"
+                                           TextWrapping="Wrap"
+                                           Margin="0 0 0 16"/>
+                                <ItemsControl ItemsSource="{Binding EventPoolCatalogActs}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Background="#FAFAFA"
+                                                    BorderBrush="#E8E8E8"
+                                                    BorderThickness="1"
+                                                    CornerRadius="6"
+                                                    Padding="14"
+                                                    Margin="0 0 0 12">
+                                                <StackPanel>
+                                                    <StackPanel Orientation="Horizontal" Margin="0 0 0 6">
+                                                        <TextBlock Text="{Binding Title}" FontSize="14" FontWeight="SemiBold" Foreground="#1976D2"/>
+                                                        <Border Background="#E3F2FD" CornerRadius="4" Padding="6 2" Margin="10 0 0 0">
+                                                            <TextBlock Text="{Binding EventCountText}" FontSize="11" Foreground="#1976D2"/>
+                                                        </Border>
+                                                    </StackPanel>
+                                                    <TextBlock Text="{Binding AncientSummary}" FontSize="11" Foreground="#8A5A00" Margin="0 0 0 10"/>
+                                                    <ItemsControl ItemsSource="{Binding Events}">
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <Border Padding="0 4 0 4">
+                                                                    <StackPanel>
+                                                                        <TextBlock Style="{StaticResource PoolResultEventNameStyle}">
+                                                                            <Run Text="{Binding Title, Mode=OneWay}"/>
+                                                                            <TextBlock.ToolTip>
+                                                                                <ToolTip Style="{StaticResource PoolResultTooltipStyle}"
+                                                                                         Visibility="{Binding HasTooltipContent, Converter={StaticResource BooleanVisibilityConverter}}">
+                                                                                    <StackPanel MaxWidth="420">
+                                                                                        <TextBlock Text="{Binding Description, Mode=OneWay}"
+                                                                                                   TextWrapping="Wrap"
+                                                                                                   Foreground="#3E2B00"
+                                                                                                   Visibility="{Binding HasDescription, Converter={StaticResource BooleanVisibilityConverter}}"/>
+                                                                                        <Border Height="1"
+                                                                                                Margin="0 8 0 8"
+                                                                                                Background="#C8A24A"
+                                                                                                Visibility="{Binding HasDescriptionAndOptions, Converter={StaticResource BooleanVisibilityConverter}}"/>
+                                                                                        <StackPanel Visibility="{Binding HasOptions, Converter={StaticResource BooleanVisibilityConverter}}">
+                                                                                            <TextBlock Text="可选项"
+                                                                                                       Foreground="#6A4700"
+                                                                                                       FontWeight="SemiBold"
+                                                                                                       Margin="0 0 0 6"/>
+                                                                                            <ItemsControl ItemsSource="{Binding Options}">
+                                                                                                <ItemsControl.ItemTemplate>
+                                                                                                    <DataTemplate>
+                                                                                                        <Border Padding="0 0 0 8">
+                                                                                                            <StackPanel>
+                                                                                                                <TextBlock Text="{Binding Title, Mode=OneWay}"
+                                                                                                                           FontWeight="SemiBold"
+                                                                                                                           Foreground="#3E2B00"
+                                                                                                                           TextWrapping="Wrap"/>
+                                                                                                                <TextBlock Text="{Binding Description, Mode=OneWay}"
+                                                                                                                           Margin="0 2 0 0"
+                                                                                                                           Foreground="#5A4300"
+                                                                                                                           TextWrapping="Wrap"/>
+                                                                                                            </StackPanel>
+                                                                                                        </Border>
+                                                                                                    </DataTemplate>
+                                                                                                </ItemsControl.ItemTemplate>
+                                                                                            </ItemsControl>
+                                                                                        </StackPanel>
+                                                                                    </StackPanel>
+                                                                                </ToolTip>
+                                                                            </TextBlock.ToolTip>
+                                                                        </TextBlock>
+                                                                    </StackPanel>
+                                                                </Border>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                </StackPanel>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </ScrollViewer>
+
                 <!-- ========== 运行结果页面 ========== -->
                 <ScrollViewer x:Name="PageSeedAnalysisScroll" Grid.Row="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="24" Visibility="Collapsed">
                     <views:SeedAnalysisPage x:Name="PageSeedAnalysis"/>
@@ -1023,7 +1186,7 @@
                                 <StackPanel HorizontalAlignment="Center">
                                     <TextBlock Text="&#xE9CE;" FontFamily="Segoe MDL2 Assets" FontSize="28" Foreground="#1976D2" Margin="0 0 0 8"/>
                                     <TextBlock Text="{Binding ScannedSeeds}" FontSize="32" FontWeight="Bold" Foreground="#1976D2" HorizontalAlignment="Center"/>
-                                    <TextBlock Text="已扫描种子" FontSize="13" Foreground="#666" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="&#x5DF2;&#x626B;&#x63CF;&#x79CD;&#x5B50;" FontSize="13" Foreground="#666" HorizontalAlignment="Center"/>
                                 </StackPanel>
                             </Border>
 
@@ -1086,7 +1249,7 @@
                                                         CornerRadius="6" Padding="16" Margin="0 0 0 12"
                                                         HorizontalAlignment="Stretch">
                                                     <StackPanel>
-                                                        <!-- 头部：种子、角色、复制按钮 -->
+                                                        <!-- 头部：种子、角色、复制按�?-->
                                                         <Grid Margin="0 0 0 12">
                                                             <Grid.ColumnDefinitions>
                                                                 <ColumnDefinition Width="Auto"/>
@@ -1163,7 +1326,7 @@
                                                             </ItemsControl.ItemTemplate>
                                                         </ItemsControl>
 
-                                                        <!-- 古神信息（如果有） -->
+                                                        <!-- 古神信息（如果有�?-->
                                                         <ItemsControl ItemsSource="{Binding AncientActs}" Visibility="{Binding HasAncientActs, Converter={StaticResource BooleanVisibilityConverter}}">
                                                             <ItemsControl.ItemTemplate>
                                                                 <DataTemplate>
@@ -1201,104 +1364,178 @@
                                                                     <TextBlock Text="&#xE8B7;" FontFamily="Segoe MDL2 Assets" FontSize="14" Foreground="#7B1FA2" Margin="0 0 6 0"/>
                                                                     <TextBlock Text="种子分析命中" FontWeight="SemiBold" FontSize="13" Foreground="#7B1FA2"/>
                                                                 </StackPanel>
-                                                                <TextBlock Text="说明：这里的事件池是固定候选顺序；遗物部分改为概率预览，用来表示在不同路线画像下更可能实际看到的遗物。"
+                                                                <TextBlock Text="&#x8BF4;&#x660E;&#xFF1A;&#x8FD9;&#x91CC;&#x7684;&#x4E8B;&#x4EF6;&#x6C60;&#x662F;&#x56FA;&#x5B9A;&#x5019;&#x9009;&#x987A;&#x5E8F;&#xFF1B;&#x9057;&#x7269;&#x90E8;&#x5206;&#x6539;&#x4E3A;&#x6982;&#x7387;&#x9884;&#x89C8;&#xFF0C;&#x7528;&#x6765;&#x8868;&#x793A;&#x5728;&#x4E0D;&#x540C;&#x8DEF;&#x7EBF;&#x9884;&#x6D4B;&#x4E0B;&#x66F4;&#x53EF;&#x80FD;&#x5B9E;&#x9645;&#x770B;&#x5230;&#x7684;&#x9057;&#x7269;&#x3002;"
                                                                            FontSize="11"
                                                                            Foreground="#7B1FA2"
                                                                            TextWrapping="Wrap"
                                                                            Margin="0 0 0 8"/>
-                                                                <TextBlock Text="补充：起始遗物、古神遗物，以及部分事件直接发放的固定遗物，不属于随机遗物池；它们会在游戏中出现，但不会参与这里的随机遗物概率预览。"
+                                                                <TextBlock Text="&#x8865;&#x5145;&#xFF1A;&#x8D77;&#x59CB;&#x9057;&#x7269;&#x3001;&#x53E4;&#x795E;&#x9057;&#x7269;&#x4EE5;&#x53CA;&#x90E8;&#x5206;&#x4E8B;&#x4EF6;&#x76F4;&#x63A5;&#x53D1;&#x653E;&#x7684;&#x56FA;&#x5B9A;&#x9057;&#x7269;&#xFF0C;&#x4E0D;&#x5C5E;&#x4E8E;&#x968F;&#x673A;&#x9057;&#x7269;&#x6C60;&#xFF1B;&#x5B83;&#x4EEC;&#x4F1A;&#x5728;&#x6E38;&#x620F;&#x4E2D;&#x51FA;&#x73B0;&#xFF0C;&#x4F46;&#x4E0D;&#x4F1A;&#x53C2;&#x4E0E;&#x8FD9;&#x91CC;&#x7684;&#x968F;&#x673A;&#x9057;&#x7269;&#x6982;&#x7387;&#x9884;&#x89C8;&#x3002;"
                                                                            FontSize="11"
                                                                            Foreground="#7B1FA2"
                                                                            TextWrapping="Wrap"
                                                                            Margin="0 0 0 8"/>
-                                                                <ItemsControl ItemsSource="{Binding PoolActs}">
-                                                                    <ItemsControl.ItemTemplate>
-                                                                        <DataTemplate>
-                                                                            <Expander Header="{Binding Title}" Margin="0 0 0 8">
-                                                                                <ItemsControl ItemsSource="{Binding Events}" Margin="0 6 0 0">
-                                                                                    <ItemsControl.ItemTemplate>
-                                                                                        <DataTemplate>
-                                                                                            <Border Margin="0 2 0 2" Padding="8 4" CornerRadius="4" BorderThickness="1">
-                                                                                                <Border.Style>
-                                                                                                    <Style TargetType="Border">
-                                                                                                        <Setter Property="Background" Value="Transparent"/>
-                                                                                                        <Setter Property="BorderBrush" Value="Transparent"/>
-                                                                                                        <Style.Triggers>
-                                                                                                            <DataTrigger Binding="{Binding IsMatched}" Value="True">
-                                                                                                                <Setter Property="Background" Value="#FFF8E1"/>
-                                                                                                                <Setter Property="BorderBrush" Value="#FFCC80"/>
-                                                                                                            </DataTrigger>
-                                                                                                        </Style.Triggers>
-                                                                                                    </Style>
-                                                                                                </Border.Style>
-                                                                                                <TextBlock Text="{Binding Title}">
-                                                                                                    <TextBlock.Style>
-                                                                                                        <Style TargetType="TextBlock" BasedOn="{StaticResource PoolResultEventNameStyle}">
-                                                                                                            <Style.Triggers>
-                                                                                                                <DataTrigger Binding="{Binding IsMatched}" Value="True">
-                                                                                                                    <Setter Property="Foreground" Value="#C77800"/>
-                                                                                                                    <Setter Property="FontWeight" Value="SemiBold"/>
-                                                                                                                </DataTrigger>
-                                                                                                            </Style.Triggers>
-                                                                                                        </Style>
-                                                                                                    </TextBlock.Style>
-                                                                                                    <TextBlock.ToolTip>
-                                                                                                        <ToolTip Style="{StaticResource PoolResultTooltipStyle}"
-                                                                                                                 Visibility="{Binding HasTooltipContent, Converter={StaticResource BooleanVisibilityConverter}}">
-                                                                                                            <StackPanel MaxWidth="420">
-                                                                                                                <TextBlock Text="{Binding Description}"
-                                                                                                                           TextWrapping="Wrap"
-                                                                                                                           Foreground="#3E2B00"
-                                                                                                                           Visibility="{Binding HasDescription, Converter={StaticResource BooleanVisibilityConverter}}"/>
-                                                                                                                <Border Height="1"
-                                                                                                                        Margin="0 8 0 8"
-                                                                                                                        Background="#C8A24A"
-                                                                                                                        Visibility="{Binding HasDescriptionAndOptions, Converter={StaticResource BooleanVisibilityConverter}}"/>
-                                                                                                                <StackPanel Visibility="{Binding HasOptions, Converter={StaticResource BooleanVisibilityConverter}}">
-                                                                                                                    <TextBlock Text="可选项"
-                                                                                                                               FontWeight="SemiBold"
-                                                                                                                               Margin="0 0 0 6"
-                                                                                                                               Foreground="#6D4900"/>
-                                                                                                                    <ItemsControl ItemsSource="{Binding Options}">
-                                                                                                                        <ItemsControl.ItemTemplate>
-                                                                                                                            <DataTemplate>
-                                                                                                                                <Border Padding="0 0 0 8">
-                                                                                                                                    <StackPanel>
-                                                                                                                                        <TextBlock Text="{Binding Title}"
-                                                                                                                                                   FontWeight="SemiBold"
-                                                                                                                                                   Foreground="#3E2B00"
-                                                                                                                                                   TextWrapping="Wrap"/>
-                                                                                                                                        <TextBlock Text="{Binding Description}"
-                                                                                                                                                   Margin="0 2 0 0"
-                                                                                                                                                   TextWrapping="Wrap"
-                                                                                                                                                   Foreground="#3E2B00"
-                                                                                                                                                   Visibility="{Binding HasDescription, Converter={StaticResource BooleanVisibilityConverter}}"/>
-                                                                                                                                    </StackPanel>
-                                                                                                                                </Border>
-                                                                                                                            </DataTemplate>
-                                                                                                                        </ItemsControl.ItemTemplate>
-                                                                                                                    </ItemsControl>
-                                                                                                                </StackPanel>
-                                                                                                            </StackPanel>
-                                                                                                        </ToolTip>
-                                                                                                    </TextBlock.ToolTip>
-                                                                                                </TextBlock>
-                                                                                            </Border>
-                                                                                        </DataTemplate>
-                                                                                    </ItemsControl.ItemTemplate>
-                                                                                </ItemsControl>
-                                                                            </Expander>
-                                                                        </DataTemplate>
-                                                                    </ItemsControl.ItemTemplate>
-                                                                </ItemsControl>
                                                                 <StackPanel Margin="0 4 0 0">
-                                                                    <TextBlock Text="高概率出现遗物" FontSize="12" FontWeight="SemiBold" Foreground="#666" Margin="0 0 0 6"/>
-                                                                    <TextBlock Text="路线画像说明：均衡 = 精英与商店分布较平均；激进 = 更早、更偏向打精英；商店优先 = 更容易经过商店、精英相对更少。"
+                                                                    <StackPanel Visibility="{Binding HasEventVisibilityProfiles, Converter={StaticResource BooleanVisibilityConverter}}" Margin="0 0 0 8">
+                                                                        <TextBlock Text="&#x9AD8;&#x6982;&#x7387;&#x51FA;&#x73B0;&#x4E8B;&#x4EF6;" FontSize="12" FontWeight="SemiBold" Foreground="#666" Margin="0 0 0 6"/>
+                                                                        <TextBlock Text="&#x5B57;&#x6BB5;&#x8BF4;&#x660E;&#xFF1A;&#x524D;&#x671F; = &#x5728;&#x524D;&#x671F;&#x7A97;&#x53E3;&#x5185;&#x9996;&#x6B21;&#x770B;&#x5230;&#x8BE5;&#x4E8B;&#x4EF6;&#x7684;&#x6982;&#x7387;&#xFF1B;&#x6574;&#x5C40; = &#x6574;&#x5C40;&#x81F3;&#x5C11;&#x89C1;&#x5230;&#x4E00;&#x6B21;&#x7684;&#x6982;&#x7387;&#xFF1B;&#x9996;&#x6B21;&#x7EA6;&#x7B2C; N &#x4E2A;&#x4E8B;&#x4EF6;&#x4F4D; = &#x5E73;&#x5747;&#x7B2C;&#x51E0;&#x6B21;&#x4E8B;&#x4EF6;&#x673A;&#x4F1A;&#x9996;&#x6B21;&#x770B;&#x5230;&#x5B83;&#xFF1B;&#x591A;&#x6765;&#x81EA; = &#x66F4;&#x5E38;&#x6765;&#x81EA;&#x95EE;&#x53F7;&#x623F;&#x8FD8;&#x662F;&#x7B2C;&#x4E8C;&#x3001;&#x7B2C;&#x4E09;&#x5E55;&#x5F00;&#x573A;&#x53E4;&#x795E;&#x3002;"
+                                                                                   Foreground="#666"
+                                                                                   FontSize="11"
+                                                                                   TextWrapping="Wrap"
+                                                                                   Margin="0 0 0 8"/>
+                                                                        <ItemsControl ItemsSource="{Binding EventVisibilityProfiles}">
+                                                                            <ItemsControl.ItemTemplate>
+                                                                                <DataTemplate>
+                                                                                    <Expander Header="{Binding Title, Mode=OneWay}" Margin="0 0 0 8">
+                                                                                        <StackPanel Margin="0 6 0 0">
+                                                                                            <TextBlock Text="{Binding Description}"
+                                                                                                       Foreground="#666"
+                                                                                                       TextWrapping="Wrap"
+                                                                                                       Visibility="{Binding HasDescription, Converter={StaticResource BooleanVisibilityConverter}}"/>
+                                                                                            <Border Background="#F7F9FC"
+                                                                                                    BorderBrush="#D7E3F4"
+                                                                                                    BorderThickness="1"
+                                                                                                    CornerRadius="6"
+                                                                                                    Padding="8"
+                                                                                                    Margin="0 8 0 0"
+                                                                                                    Visibility="{Binding HasSelectedConditions, Converter={StaticResource BooleanVisibilityConverter}}">
+                                                                                                <StackPanel>
+                                                                                                    <TextBlock Text="筛选条件命中情况"
+                                                                                                               FontSize="11"
+                                                                                                               FontWeight="SemiBold"
+                                                                                                               Foreground="#4A5A6A"
+                                                                                                               Margin="0 0 0 6"/>
+                                                                                                    <ItemsControl ItemsSource="{Binding SelectedConditions}">
+                                                                                                        <ItemsControl.ItemTemplate>
+                                                                                                            <DataTemplate>
+                                                                                                                <Border Padding="0 4 0 4">
+                                                                                                                    <StackPanel>
+                                                                                                                        <TextBlock FontSize="12" TextWrapping="Wrap">
+                                                                                                                            <Run Text="{Binding Title, Mode=OneWay}"/>
+                                                                                                                            <Run Text="："/>
+                                                                                                                            <Run Text="{Binding StatusText, Mode=OneWay}">
+                                                                                                                                <Run.Style>
+                                                                                                                                    <Style TargetType="Run">
+                                                                                                                                        <Setter Property="Foreground" Value="#C62828"/>
+                                                                                                                                        <Setter Property="FontWeight" Value="SemiBold"/>
+                                                                                                                                        <Style.Triggers>
+                                                                                                                                            <DataTrigger Binding="{Binding IsMatched}" Value="True">
+                                                                                                                                                <Setter Property="Foreground" Value="#2E7D32"/>
+                                                                                                                                            </DataTrigger>
+                                                                                                                                        </Style.Triggers>
+                                                                                                                                    </Style>
+                                                                                                                                </Run.Style>
+                                                                                                                            </Run>
+                                                                                                                        </TextBlock>
+                                                                                                                        <TextBlock Text="{Binding DetailText, Mode=OneWay}"
+                                                                                                                                   FontSize="11"
+                                                                                                                                   Foreground="#66788A"
+                                                                                                                                   TextWrapping="Wrap"
+                                                                                                                                   Margin="0 2 0 0"/>
+                                                                                                                    </StackPanel>
+                                                                                                                </Border>
+                                                                                                            </DataTemplate>
+                                                                                                        </ItemsControl.ItemTemplate>
+                                                                                                    </ItemsControl>
+                                                                                                </StackPanel>
+                                                                                            </Border>
+                                                                                            <ItemsControl ItemsSource="{Binding Events}" Margin="0 8 0 0">
+                                                                                                <ItemsControl.ItemTemplate>
+                                                                                                    <DataTemplate>
+                                                                                                        <Border Margin="0 2 0 2" Padding="8 4" CornerRadius="4" BorderThickness="1">
+                                                                                                            <Border.Style>
+                                                                                                                <Style TargetType="Border">
+                                                                                                                    <Setter Property="Background" Value="Transparent"/>
+                                                                                                                    <Setter Property="BorderBrush" Value="Transparent"/>
+                                                                                                                    <Style.Triggers>
+                                                                                                                        <DataTrigger Binding="{Binding IsMatched}" Value="True">
+                                                                                                                            <Setter Property="Background" Value="#FFF8E1"/>
+                                                                                                                            <Setter Property="BorderBrush" Value="#FFCC80"/>
+                                                                                                                        </DataTrigger>
+                                                                                                                        <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                                                                                                            <Setter Property="BorderBrush" Value="#90CAF9"/>
+                                                                                                                        </DataTrigger>
+                                                                                                                    </Style.Triggers>
+                                                                                                                </Style>
+                                                                                                            </Border.Style>
+                                                                                                            <StackPanel>
+                                                                                                                <TextBlock FontSize="12" TextWrapping="Wrap">
+                                                                                                                    <TextBlock.Style>
+                                                                                                                        <Style TargetType="TextBlock" BasedOn="{StaticResource PoolResultEventNameStyle}">
+                                                                                                                            <Setter Property="Foreground" Value="#333"/>
+                                                                                                                            <Style.Triggers>
+                                                                                                                                <DataTrigger Binding="{Binding IsMatched}" Value="True">
+                                                                                                                                    <Setter Property="Foreground" Value="#C77800"/>
+                                                                                                                                    <Setter Property="FontWeight" Value="SemiBold"/>
+                                                                                                                                </DataTrigger>
+                                                                                                                                <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                                                                                                                    <Setter Property="FontWeight" Value="SemiBold"/>
+                                                                                                                                </DataTrigger>
+                                                                                                                            </Style.Triggers>
+                                                                                                                        </Style>
+                                                                                                                    </TextBlock.Style>
+                                                                                                                    <Run Text="{Binding RankText, Mode=OneWay}"/>
+                                                                                                                    <Run Text=" "/>
+                                                                                                                    <Run Text="{Binding Title, Mode=OneWay}"/>
+                                                                                                                    <TextBlock.ToolTip>
+                                                                                                                        <ToolTip Style="{StaticResource PoolResultTooltipStyle}"
+                                                                                                                                 Visibility="{Binding HasTooltipContent, Converter={StaticResource BooleanVisibilityConverter}}">
+                                                                                                                            <StackPanel MaxWidth="420">
+                                                                                            <TextBlock Text="{Binding Description, Mode=OneWay}"
+                                                                                                                                           TextWrapping="Wrap"
+                                                                                                                                           Foreground="#3E2B00"
+                                                                                                                                           Visibility="{Binding HasDescription, Converter={StaticResource BooleanVisibilityConverter}}"/>
+                                                                                                                                <Border Height="1"
+                                                                                                                                        Margin="0 8 0 8"
+                                                                                                                                        Background="#C8A24A"
+                                                                                                                                        Visibility="{Binding HasDescriptionAndOptions, Converter={StaticResource BooleanVisibilityConverter}}"/>
+                                                                                                                                <StackPanel Visibility="{Binding HasOptions, Converter={StaticResource BooleanVisibilityConverter}}">
+                                                                                                                                    <TextBlock Text="可选项"
+                                                                                                                                               FontWeight="SemiBold"
+                                                                                                                                               Margin="0 0 0 6"
+                                                                                                                                               Foreground="#6D4900"/>
+                                                                                                                                    <ItemsControl ItemsSource="{Binding Options}">
+                                                                                                                                        <ItemsControl.ItemTemplate>
+                                                                                                                                            <DataTemplate>
+                                                                                                                                                <Border Padding="0 0 0 8">
+                                                                                                                                                    <StackPanel>
+                                                                                                                                                        <TextBlock Text="{Binding Title}"
+                                                                                                                                                                   FontWeight="SemiBold"
+                                                                                                                                                                   Foreground="#3E2B00"
+                                                                                                                                                                   TextWrapping="Wrap"/>
+                                                                                                                                <TextBlock Text="{Binding Description, Mode=OneWay}"
+                                                                                                                                                                   Margin="0 2 0 0"
+                                                                                                                                                                   TextWrapping="Wrap"
+                                                                                                                                                                   Foreground="#3E2B00"
+                                                                                                                                                                   Visibility="{Binding HasDescription, Converter={StaticResource BooleanVisibilityConverter}}"/>
+                                                                                                                                                    </StackPanel>
+                                                                                                                                                </Border>
+                                                                                                                                            </DataTemplate>
+                                                                                                                                        </ItemsControl.ItemTemplate>
+                                                                                                                                    </ItemsControl>
+                                                                                                                                </StackPanel>
+                                                                                                                            </StackPanel>
+                                                                                                                        </ToolTip>
+                                                                                                                    </TextBlock.ToolTip>
+                                                                                                                </TextBlock>
+                                                                                            <TextBlock Text="{Binding MetricsText, Mode=OneWay}" Margin="20 2 0 0" FontSize="11" Foreground="#666" TextWrapping="Wrap"/>
+                                                                                                            </StackPanel>
+                                                                                                        </Border>
+                                                                                                    </DataTemplate>
+                                                                                                </ItemsControl.ItemTemplate>
+                                                                                            </ItemsControl>
+                                                                                        </StackPanel>
+                                                                                    </Expander>
+                                                                                </DataTemplate>
+                                                                            </ItemsControl.ItemTemplate>
+                                                                        </ItemsControl>
+                                                                    </StackPanel>
+                                                                    <TextBlock Text="&#x9AD8;&#x6982;&#x7387;&#x51FA;&#x73B0;&#x9057;&#x7269;" FontSize="12" FontWeight="SemiBold" Foreground="#666" Margin="0 0 0 6"/>
+                                                                    <TextBlock Text="&#x8DEF;&#x7EBF;&#x9884;&#x6D4B;&#x8BF4;&#x660E;&#xFF1A;&#x5747;&#x8861; = &#x7CBE;&#x82F1;&#x4E0E;&#x5546;&#x5E97;&#x5206;&#x5E03;&#x8F83;&#x5E73;&#x5747;&#xFF1B;&#x6FC0;&#x8FDB; = &#x66F4;&#x65E9;&#x3001;&#x66F4;&#x504F;&#x5411;&#x6253;&#x7CBE;&#x82F1;&#xFF1B;&#x5546;&#x5E97;&#x4F18;&#x5148; = &#x66F4;&#x5BB9;&#x6613;&#x7ECF;&#x8FC7;&#x5546;&#x5E97;&#x3001;&#x7CBE;&#x82F1;&#x76F8;&#x5BF9;&#x66F4;&#x5C11;&#x3002;"
                                                                                Foreground="#666"
                                                                                FontSize="11"
                                                                                TextWrapping="Wrap"
                                                                                Margin="0 0 0 4"/>
-                                                                    <TextBlock Text="字段说明：出现 = 任意来源看到该遗物的概率；非商店 = 不通过商店看到的概率；商店 = 在商店货架看到的概率；前期 = 在前期窗口内看到的概率；平均首次机会 = 平均第几次遗物机会首次见到，越小越靠前；最常来源 = 最常出现的来源类型。"
+                                                                    <TextBlock Text="&#x5B57;&#x6BB5;&#x8BF4;&#x660E;&#xFF1A;&#x51FA;&#x73B0; = &#x4EFB;&#x610F;&#x6765;&#x6E90;&#x770B;&#x5230;&#x8BE5;&#x9057;&#x7269;&#x7684;&#x6982;&#x7387;&#xFF1B;&#x975E;&#x5546;&#x5E97; = &#x4E0D;&#x901A;&#x8FC7;&#x5546;&#x5E97;&#x770B;&#x5230;&#x7684;&#x6982;&#x7387;&#xFF1B;&#x5546;&#x5E97; = &#x5728;&#x5546;&#x5E97;&#x8D27;&#x67B6;&#x770B;&#x5230;&#x7684;&#x6982;&#x7387;&#xFF1B;&#x524D;&#x671F; = &#x5728;&#x524D;&#x671F;&#x7A97;&#x53E3;&#x5185;&#x770B;&#x5230;&#x7684;&#x6982;&#x7387;&#xFF1B;&#x5E73;&#x5747;&#x9996;&#x6B21;&#x673A;&#x4F1A; = &#x5E73;&#x5747;&#x7B2C;&#x51E0;&#x6B21;&#x9057;&#x7269;&#x673A;&#x4F1A;&#x9996;&#x6B21;&#x89C1;&#x5230;&#x5B83;&#xFF0C;&#x8D8A;&#x5C0F;&#x8D8A;&#x9760;&#x524D;&#xFF1B;&#x6700;&#x5E38;&#x6765;&#x6E90; = &#x6700;&#x5E38;&#x51FA;&#x73B0;&#x7684;&#x6765;&#x6E90;&#x7C7B;&#x578B;&#x3002;"
                                                                                Foreground="#666"
                                                                                FontSize="11"
                                                                                TextWrapping="Wrap"
@@ -1306,9 +1543,9 @@
                                                                     <ItemsControl ItemsSource="{Binding RelicVisibilityProfiles}">
                                                                         <ItemsControl.ItemTemplate>
                                                                             <DataTemplate>
-                                                                                <Expander Header="{Binding Title}" Margin="0 0 0 8">
+                                                                                <Expander Header="{Binding Title, Mode=OneWay}" Margin="0 0 0 8">
                                                                                     <StackPanel Margin="0 6 0 0">
-                                                                                        <TextBlock Text="{Binding Description}"
+                                                                                    <TextBlock Text="{Binding Description, Mode=OneWay}"
                                                                                                    Foreground="#666"
                                                                                                    TextWrapping="Wrap"
                                                                                                    Visibility="{Binding HasDescription, Converter={StaticResource BooleanVisibilityConverter}}"/>
@@ -1362,10 +1599,10 @@
                                                                     <TextBlock Text="商店" FontWeight="SemiBold" FontSize="13" Foreground="#388E3C"/>
                                                                     <Border Visibility="{Binding ShopFilterMatched, Converter={StaticResource BooleanVisibilityConverter}}"
                                                                             Background="#4CAF50" CornerRadius="3" Padding="6 2" Margin="8 0 0 0">
-                                                                        <TextBlock Text="筛选命中" FontSize="10" Foreground="White" FontWeight="SemiBold"/>
+                                                                        <TextBlock Text="&#x7B5B;&#x9009;&#x547D;&#x4E2D;" FontSize="10" Foreground="White" FontWeight="SemiBold"/>
                                                                     </Border>
                                                                 </StackPanel>
-                                                                <TextBlock Text="角色卡" FontSize="11" Foreground="#666" Margin="0 0 0 2"/>
+                                                                <TextBlock Text="&#x89D2;&#x8272;&#x5361;" FontSize="11" Foreground="#666" Margin="0 0 0 2"/>
                                                                 <ItemsControl ItemsSource="{Binding ShopCardEntries}">
                                                                     <ItemsControl.ItemTemplate>
                                                                         <DataTemplate>
@@ -1377,7 +1614,7 @@
                                                                         </DataTemplate>
                                                                     </ItemsControl.ItemTemplate>
                                                                 </ItemsControl>
-                                                                <TextBlock Text="无色卡" FontSize="11" Foreground="#666" Margin="0 6 0 2"/>
+                                                                <TextBlock Text="&#x65E0;&#x8272;&#x5361;" FontSize="11" Foreground="#666" Margin="0 6 0 2"/>
                                                                 <ItemsControl ItemsSource="{Binding ShopColorlessEntries}">
                                                                     <ItemsControl.ItemTemplate>
                                                                         <DataTemplate>
@@ -1482,3 +1719,4 @@
     </Grid>
 </hc:Window>
                     
+

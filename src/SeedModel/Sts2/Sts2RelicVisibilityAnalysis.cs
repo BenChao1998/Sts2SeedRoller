@@ -128,7 +128,16 @@ public sealed class Sts2RelicVisibilityRankedRelic
 
     public required double AverageFirstOpportunity { get; init; }
 
+    public required IReadOnlyList<Sts2RelicVisibilityActChance> FirstSeenActChances { get; init; }
+
     public required Sts2RelicVisibilitySource MostCommonSource { get; init; }
+}
+
+public sealed class Sts2RelicVisibilityActChance
+{
+    public required int ActNumber { get; init; }
+
+    public required double Probability { get; init; }
 }
 
 public enum Sts2RelicVisibilitySource

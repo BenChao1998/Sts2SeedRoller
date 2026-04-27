@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using SeedModel.Neow;
 using SeedModel.Sts2;
@@ -17,6 +18,7 @@ internal sealed class RollResultViewModel
         string characterName,
         IEnumerable<NeowOptionResult> act1Options,
         Sts2SeedAnalysis? poolAnalysis,
+        Sts2EventVisibilityAnalysis? eventVisibilityAnalysis,
         Sts2RelicVisibilityAnalysis? relicVisibilityAnalysis,
         Sts2PoolFilter? poolFilter,
         Sts2RunPreview? ancientPreview,
@@ -37,9 +39,13 @@ internal sealed class RollResultViewModel
         RawOptions = optionList;
         Options = optionList.Select(o => new OptionDisplayViewModel(o)).ToList();
 
-        var act1EventIds = ToIdSet(poolFilter?.Act1EventIds);
-        var act2EventIds = ToIdSet(poolFilter?.Act2EventIds);
-        var act3EventIds = ToIdSet(poolFilter?.Act3EventIds);
+        var act1EventIds = ToEventIdSet(poolFilter?.Act1EventIds);
+        var act2EventIds = ToEventIdSet(poolFilter?.Act2EventIds);
+        var act3EventIds = ToEventIdSet(poolFilter?.Act3EventIds);
+        var highProbabilityEventSelections = poolFilter?.GetHighProbabilityEventSelections()
+            ?? Array.Empty<Sts2ActScopedEventId>();
+        var highProbabilityEventSeenThreshold = poolFilter?.HighProbabilityEventSeenThreshold
+            ?? Sts2PoolFilter.DefaultHighProbabilityEventSeenThreshold;
         var highProbabilityRelicIds = ToIdSet(poolFilter?.HighProbabilityRelicIds);
         var highProbabilitySeenThreshold = poolFilter?.HighProbabilitySeenThreshold
             ?? Sts2PoolFilter.DefaultHighProbabilitySeenThreshold;
@@ -48,6 +54,14 @@ internal sealed class RollResultViewModel
             ? Array.Empty<PoolActViewModel>()
             : poolAnalysis.Acts
                 .Select(act => new PoolActViewModel(act, GetRequiredEventIds(act.ActNumber, act1EventIds, act2EventIds, act3EventIds)))
+                .ToList();
+
+        EventVisibilityProfiles = eventVisibilityAnalysis == null
+            ? Array.Empty<PoolEventVisibilityProfileViewModel>()
+            : eventVisibilityAnalysis.Profiles
+                .Select(profile => new PoolEventVisibilityProfileViewModel(profile, poolFilter, highProbabilityEventSelections, highProbabilityEventSeenThreshold))
+                .Where(profile => highProbabilityEventSelections.Count == 0 || profile.HasSelectedConditionsMatched)
+                .Where(profile => profile.HasEvents)
                 .ToList();
 
         RelicVisibilityProfiles = relicVisibilityAnalysis == null
@@ -99,9 +113,17 @@ internal sealed class RollResultViewModel
 
     public IReadOnlyList<PoolActViewModel> PoolActs { get; }
 
+    public IReadOnlyList<PoolEventVisibilityProfileViewModel> EventVisibilityProfiles { get; }
+
     public IReadOnlyList<PoolRelicVisibilityProfileViewModel> RelicVisibilityProfiles { get; }
 
-    public bool HasPoolAnalysis => PoolActs.Count > 0 || RelicVisibilityProfiles.Count > 0;
+    public bool HasPoolActs => PoolActs.Count > 0;
+
+    public bool HasEventVisibilityProfiles => EventVisibilityProfiles.Count > 0;
+
+    public bool HasRelicVisibilityProfiles => RelicVisibilityProfiles.Count > 0;
+
+    public bool HasPoolAnalysis => HasPoolActs || HasEventVisibilityProfiles || HasRelicVisibilityProfiles;
 
     public IReadOnlyList<AncientActViewModel> AncientActs { get; }
 
@@ -143,13 +165,137 @@ internal sealed class RollResultViewModel
             Events = act.EventPool
                 .Select((eventId, index) => new PoolEventItemViewModel(
                     MainWindowViewModel.CreateSeedAnalysisEventDisplayItem(eventId, index + 1),
-                    requiredIds.Contains(eventId)))
+                    requiredIds.Contains(NormalizeEventId(eventId))))
+                .ToList();
+            Monsters = act.MonsterPool
+                .Select(MainWindowViewModel.GetSeedAnalysisEncounterDisplayName)
+                .ToList();
+            Elites = act.ElitePool
+                .Select(MainWindowViewModel.GetSeedAnalysisEncounterDisplayName)
                 .ToList();
         }
 
         public string Title { get; }
 
         public IReadOnlyList<PoolEventItemViewModel> Events { get; }
+
+        public IReadOnlyList<string> Monsters { get; }
+
+        public IReadOnlyList<string> Elites { get; }
+
+        public bool HasMonsters => Monsters.Count > 0;
+
+        public bool HasElites => Elites.Count > 0;
+    }
+
+    internal sealed class PoolEventVisibilityProfileViewModel
+    {
+        public PoolEventVisibilityProfileViewModel(
+            Sts2EventVisibilityProfileResult profile,
+            Sts2PoolFilter? poolFilter,
+            IReadOnlyList<Sts2ActScopedEventId> requiredSelections,
+            double seenThreshold)
+        {
+            Title = TranslateEventVisibilityProfileTitle(profile.Id, profile.Title);
+            Description = profile.IsComposite
+                ? $"{TranslateEventVisibilityProfileDescription(profile.Id, profile.Description)} 阅读时建议先看这一栏；Roll 命中仍以具体路线画像为准。"
+                : $"{TranslateEventVisibilityProfileDescription(profile.Id, profile.Description)} 事件整局阈值 >= {seenThreshold:P0}。";
+
+            var thresholdEvents = profile.SeenEvents
+                .Where(item => item.SeenProbability >= seenThreshold)
+                .ToList();
+
+            var selectedEvents = profile.SeenEvents
+                .Where(item => requiredSelections.Any(selection => MatchesScopedEventSelection(item, selection)))
+                .ToList();
+
+            var selectedMatchedEvents = selectedEvents
+                .Where(item => poolFilter?.MatchesHighProbabilityEvent(item) == true)
+                .ToList();
+
+            var selectedUnmatchedEvents = selectedEvents
+                .Where(item => poolFilter?.MatchesHighProbabilityEvent(item) != true)
+                .ToList();
+
+            var selectedSeenEventIds = selectedEvents
+                .Select(item => BuildScopedEventKey(item.ActNumber, item.EventId))
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+            var missingSelectedEventIds = requiredSelections
+                .Where(selection => !selectedSeenEventIds.Contains(BuildScopedEventKey(selection.ActNumber, selection.EventId)))
+                .ToList();
+
+            var visibleEvents = new List<Sts2EventVisibilityRankedEvent>();
+            AppendDistinctEvents(visibleEvents, selectedMatchedEvents);
+            AppendDistinctEvents(visibleEvents, selectedUnmatchedEvents);
+            AppendDistinctEvents(
+                visibleEvents,
+                thresholdEvents.Take(profile.IsRecommended ? 16 : 12));
+
+            var eventItems = new List<PoolEventVisibilityItemViewModel>();
+            foreach (var item in visibleEvents)
+            {
+                eventItems.Add(new PoolEventVisibilityItemViewModel(
+                    rank: eventItems.Count + 1,
+                    item,
+                    isSelected: requiredSelections.Any(selection => MatchesScopedEventSelection(item, selection)),
+                    matchesCriteria: poolFilter?.MatchesHighProbabilityEvent(item) == true));
+            }
+
+            foreach (var missingEvent in missingSelectedEventIds)
+            {
+                eventItems.Add(new PoolEventVisibilityItemViewModel(
+                    rank: eventItems.Count + 1,
+                    missingEvent.ActNumber,
+                    missingEvent.EventId,
+                    "该路线画像下未进入高概率事件结果，可视为未命中。"));
+            }
+
+            var selectedEventLookup = selectedEvents.ToDictionary(
+                item => BuildScopedEventKey(item.ActNumber, item.EventId),
+                item => item,
+                StringComparer.OrdinalIgnoreCase);
+            SelectedConditions = requiredSelections
+                .Select(selection =>
+                {
+                    var eventKey = BuildScopedEventKey(selection.ActNumber, selection.EventId);
+                    if (selectedEventLookup.TryGetValue(eventKey, out var item))
+                    {
+                        var matched = poolFilter?.MatchesHighProbabilityEvent(item) == true;
+                        return new PoolEventVisibilityConditionViewModel(
+                            selection.ActNumber,
+                            selection.EventId,
+                            matched,
+                            matched ? "已命中" : "未命中",
+                            FormatEventMetrics(item));
+                    }
+
+                    return new PoolEventVisibilityConditionViewModel(
+                        selection.ActNumber,
+                        selection.EventId,
+                        false,
+                        "未出现",
+                        "该路线画像下未进入高概率事件结果，可视为未命中。");
+                })
+                .ToList();
+
+            Events = eventItems;
+        }
+
+        public string Title { get; }
+
+        public string Description { get; }
+
+        public IReadOnlyList<PoolEventVisibilityConditionViewModel> SelectedConditions { get; }
+
+        public IReadOnlyList<PoolEventVisibilityItemViewModel> Events { get; }
+
+        public bool HasDescription => !string.IsNullOrWhiteSpace(Description);
+
+        public bool HasSelectedConditions => SelectedConditions.Count > 0;
+
+        public bool HasSelectedConditionsMatched => SelectedConditions.Count == 0 || SelectedConditions.All(item => item.IsMatched);
+
+        public bool HasEvents => Events.Count > 0;
     }
 
     internal sealed class PoolRelicVisibilityProfileViewModel
@@ -222,6 +368,79 @@ internal sealed class RollResultViewModel
         public bool HasTooltipContent => HasDescription || HasOptions;
 
         public bool HasDescriptionAndOptions => HasDescription && HasOptions;
+    }
+
+    internal sealed class PoolEventVisibilityItemViewModel
+    {
+        public PoolEventVisibilityItemViewModel(int rank, Sts2EventVisibilityRankedEvent item, bool isSelected, bool matchesCriteria)
+        {
+            var displayItem = MainWindowViewModel.CreateSeedAnalysisEventDisplayItem(item.EventId);
+            Rank = rank;
+            Title = $"第{item.ActNumber}幕 · {displayItem.Title}";
+            Description = displayItem.Description;
+            Options = displayItem.Options;
+            MetricsText = FormatEventMetrics(item);
+            IsSelected = isSelected;
+            MatchesCriteria = matchesCriteria;
+        }
+
+        public PoolEventVisibilityItemViewModel(int rank, int actNumber, string eventId, string metricsText)
+        {
+            var displayItem = MainWindowViewModel.CreateSeedAnalysisEventDisplayItem(eventId);
+            Rank = rank;
+            Title = $"第{actNumber}幕 · {displayItem.Title}";
+            Description = displayItem.Description;
+            Options = displayItem.Options;
+            MetricsText = metricsText;
+            IsSelected = true;
+            MatchesCriteria = false;
+        }
+
+        public int Rank { get; }
+
+        public string RankText => $"{Rank:D2}.";
+
+        public string Title { get; }
+
+        public string Description { get; }
+
+        public IReadOnlyList<MainWindowViewModel.SeedAnalysisOptionDisplayItemViewModel> Options { get; }
+
+        public string MetricsText { get; }
+
+        public bool IsSelected { get; }
+
+        public bool MatchesCriteria { get; }
+
+        public bool IsMatched => IsSelected && MatchesCriteria;
+
+        public bool HasDescription => !string.IsNullOrWhiteSpace(Description);
+
+        public bool HasOptions => Options.Count > 0;
+
+        public bool HasTooltipContent => HasDescription || HasOptions;
+
+        public bool HasDescriptionAndOptions => HasDescription && HasOptions;
+    }
+
+    internal sealed class PoolEventVisibilityConditionViewModel
+    {
+        public PoolEventVisibilityConditionViewModel(int actNumber, string eventId, bool isMatched, string statusText, string detailText)
+        {
+            var displayItem = MainWindowViewModel.CreateSeedAnalysisEventDisplayItem(eventId);
+            Title = $"第{actNumber}幕 · {displayItem.Title}";
+            IsMatched = isMatched;
+            StatusText = statusText;
+            DetailText = detailText;
+        }
+
+        public string Title { get; }
+
+        public bool IsMatched { get; }
+
+        public string StatusText { get; }
+
+        public string DetailText { get; }
     }
 
     internal sealed class PoolRelicVisibilityItemViewModel
@@ -332,6 +551,17 @@ internal sealed class RollResultViewModel
                 .ToHashSet(StringComparer.OrdinalIgnoreCase);
     }
 
+    private static HashSet<string> ToEventIdSet(IReadOnlyList<string>? values)
+    {
+        return values == null
+            ? new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            : values
+                .Where(value => !string.IsNullOrWhiteSpace(value))
+                .Select(NormalizeEventId)
+                .Where(value => !string.IsNullOrWhiteSpace(value))
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+    }
+
     private static HashSet<string> GetRequiredEventIds(
         int actNumber,
         HashSet<string> act1EventIds,
@@ -345,6 +575,112 @@ internal sealed class RollResultViewModel
             3 => act3EventIds,
             _ => new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         };
+    }
+
+    private static bool MatchesScopedEventSelection(
+        Sts2EventVisibilityRankedEvent item,
+        Sts2ActScopedEventId selection)
+    {
+        return item.ActNumber == selection.ActNumber &&
+               string.Equals(NormalizeEventId(item.EventId), NormalizeEventId(selection.EventId), StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string BuildScopedEventKey(int actNumber, string eventId)
+    {
+        return $"{actNumber}:{NormalizeEventId(eventId)}";
+    }
+
+    private static string NormalizeEventId(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return string.Empty;
+        }
+
+        var builder = new StringBuilder(value.Length * 2);
+        for (var i = 0; i < value.Length; i++)
+        {
+            var current = value[i];
+            if (current is '_' or ' ' or '-')
+            {
+                if (builder.Length > 0 && builder[^1] != '_')
+                {
+                    builder.Append('_');
+                }
+
+                continue;
+            }
+
+            if (i > 0)
+            {
+                var previous = value[i - 1];
+                var next = i + 1 < value.Length ? value[i + 1] : '\0';
+                var shouldInsertUnderscore =
+                    (char.IsUpper(current) && (char.IsLower(previous) || char.IsDigit(previous))) ||
+                    (char.IsUpper(current) && char.IsUpper(previous) && next != '\0' && char.IsLower(next)) ||
+                    (char.IsDigit(current) && char.IsLetter(previous)) ||
+                    (char.IsLetter(current) && char.IsDigit(previous));
+
+                if (shouldInsertUnderscore && builder.Length > 0 && builder[^1] != '_')
+                {
+                    builder.Append('_');
+                }
+            }
+
+            builder.Append(char.ToUpperInvariant(current));
+        }
+
+        return builder.ToString().Trim('_');
+    }
+
+    private static string FormatEventLine(Sts2EventVisibilityRankedEvent item)
+    {
+        var displayName = MainWindowViewModel.GetEventVisibilityDisplayName(item.EventId);
+        if (item.RouteCount > 1)
+        {
+            return $"{displayName} | 前期 {item.EarlyProbability:P1}（区间 {item.MinEarlyProbability:P0}-{item.MaxEarlyProbability:P0}） | 整局 {item.SeenProbability:P1}（区间 {item.MinSeenProbability:P0}-{item.MaxSeenProbability:P0}） | 首次约第 {item.AverageFirstOpportunity:F1} 个事件位 | 多来自 {FormatEventSource(item.MostCommonSource)}";
+        }
+
+        return $"{displayName} | 前期 {item.EarlyProbability:P1} | 整局 {item.SeenProbability:P1} | 首次约第 {item.AverageFirstOpportunity:F1} 个事件位 | 多来自 {FormatEventSource(item.MostCommonSource)}";
+    }
+
+    private static string FormatEventMetrics(Sts2EventVisibilityRankedEvent item)
+    {
+        if (item.RouteCount > 1)
+        {
+            return $"第{item.ActNumber}幕前5事件位 {item.EarlyProbability:P1}（区间 {item.MinEarlyProbability:P0}-{item.MaxEarlyProbability:P0}） | 第{item.ActNumber}幕出现 {item.SeenProbability:P1}（区间 {item.MinSeenProbability:P0}-{item.MaxSeenProbability:P0}） | 第{item.ActNumber}幕首次约第 {item.AverageFirstOpportunity:F1} 个事件位 | 多来自 {FormatEventSource(item.MostCommonSource)}";
+        }
+
+        return $"第{item.ActNumber}幕前5事件位 {item.EarlyProbability:P1} | 第{item.ActNumber}幕出现 {item.SeenProbability:P1} | 第{item.ActNumber}幕首次约第 {item.AverageFirstOpportunity:F1} 个事件位 | 多来自 {FormatEventSource(item.MostCommonSource)}";
+    }
+
+    private static string FormatEventSource(Sts2EventVisibilitySource source)
+    {
+        return source switch
+        {
+            Sts2EventVisibilitySource.Unknown => "问号房",
+            Sts2EventVisibilitySource.AncientAct2 => "第二幕开场古神",
+            Sts2EventVisibilitySource.AncientAct3 => "第三幕开场古神",
+            _ => source.ToString()
+        };
+    }
+
+    private static void AppendDistinctEvents(
+        ICollection<Sts2EventVisibilityRankedEvent> target,
+        IEnumerable<Sts2EventVisibilityRankedEvent> source)
+    {
+        foreach (var item in source)
+        {
+            if (target.Any(existing => string.Equals(
+                    NormalizeEventId(existing.EventId),
+                    NormalizeEventId(item.EventId),
+                    StringComparison.OrdinalIgnoreCase)))
+            {
+                continue;
+            }
+
+            target.Add(item);
+        }
     }
 
     private static string FormatRelicLine(Sts2RelicVisibilityRankedRelic item)
@@ -362,6 +698,32 @@ internal sealed class RollResultViewModel
             Sts2RelicVisibilitySource.AncientAct2 => "第二幕古神",
             Sts2RelicVisibilitySource.AncientAct3 => "第三幕古神",
             _ => source.ToString()
+        };
+    }
+
+    private static string TranslateEventVisibilityProfileTitle(string profileId, string fallbackTitle)
+    {
+        return profileId switch
+        {
+            "consensus" => "综合预测（推荐）",
+            "balanced" => "均衡推进",
+            "aggressive" => "前压打精英",
+            "shopper" => "偏商店补强",
+            "explorer" => "问号优先",
+            _ => fallbackTitle
+        };
+    }
+
+    private static string TranslateEventVisibilityProfileDescription(string profileId, string fallbackDescription)
+    {
+        return profileId switch
+        {
+            "consensus" => "把多条路线画像揉成一份综合结果，用来回答只给种子时大概率会看到什么。",
+            "balanced" => "按普通实战路线估算。",
+            "aggressive" => "按更早打精英、问号更少的路线估算。",
+            "shopper" => "按更愿意进店、事件量略低的路线估算。",
+            "explorer" => "按更愿意绕路踩问号、事件量更高的路线估算。",
+            _ => fallbackDescription
         };
     }
 

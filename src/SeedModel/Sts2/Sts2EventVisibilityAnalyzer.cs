@@ -40,24 +40,7 @@ internal sealed class Sts2EventVisibilityAnalyzer
         }
 
         var playerCount = Math.Max(1, request.PlayerCount);
-        var eventPools = actPools.ToDictionary(
-            act => act.ActNumber,
-            act => (IReadOnlyList<string>)act.Events
-                .Select(Sts2EventIdNormalizer.FromPoolItem)
-                .Where(eventId => !string.IsNullOrWhiteSpace(eventId))
-                .ToList(),
-            EqualityComparer<int>.Default);
-        var ancients = ancientPreview.Acts.ToDictionary(
-            act => act.ActNumber,
-            act => Sts2EventIdNormalizer.FromAny(act.AncientId),
-            EqualityComparer<int>.Default);
-        var simulationModel = Sts2EventVisibilitySimulationModel.Create(
-            dataset,
-            request.Character,
-            request.UnlockedCharacters,
-            playerCount,
-            request.AscensionLevel,
-            _workspaceRoot);
+        var (eventPools, ancients, simulationModel) = BuildInputs(request, dataset, actPools, ancientPreview, playerCount);
 
         var routeRuns = RouteProfile.All
             .Select(profile => new RouteProfileRun(
@@ -82,24 +65,122 @@ internal sealed class Sts2EventVisibilityAnalyzer
         };
     }
 
+    internal bool MatchesHighProbabilityEvents(
+        Sts2EventVisibilityRequest request,
+        NeowOptionDataset dataset,
+        IReadOnlyList<Generation.Sts2RunSimulator.ActPoolResult> actPools,
+        Sts2RunPreview ancientPreview,
+        Sts2PoolFilter filter)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(dataset);
+        ArgumentNullException.ThrowIfNull(actPools);
+        ArgumentNullException.ThrowIfNull(ancientPreview);
+        ArgumentNullException.ThrowIfNull(filter);
+
+        var targetEvents = filter.GetHighProbabilityEventSelections()
+            .Where(selection => !string.IsNullOrWhiteSpace(selection.EventId))
+            .Distinct()
+            .ToList();
+        if (targetEvents.Count == 0)
+        {
+            return true;
+        }
+
+        if (request.Samples <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(request), "Samples must be positive.");
+        }
+
+        if (request.EarlyWindow <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(request), "Early window must be positive.");
+        }
+
+        var playerCount = Math.Max(1, request.PlayerCount);
+        var (eventPools, ancients, simulationModel) = BuildInputs(request, dataset, actPools, ancientPreview, playerCount);
+        var matchedEvents = targetEvents.ToDictionary(eventSelection => eventSelection, _ => false);
+
+        foreach (var profile in RouteProfile.All)
+        {
+            var profileEvents = RunTargetedProfile(
+                request,
+                profile,
+                eventPools,
+                ancients,
+                simulationModel,
+                targetEvents);
+
+            foreach (var eventSelection in targetEvents)
+            {
+                if (matchedEvents[eventSelection])
+                {
+                    continue;
+                }
+
+                if (profileEvents.TryGetValue(new EventAppearanceKey(eventSelection.ActNumber, eventSelection.EventId), out var rankedEvent) &&
+                    filter.MatchesHighProbabilityEvent(rankedEvent))
+                {
+                    matchedEvents[eventSelection] = true;
+                }
+            }
+
+            if (targetEvents.All(eventSelection => matchedEvents[eventSelection]))
+            {
+                return true;
+            }
+        }
+
+        return targetEvents.All(eventSelection => matchedEvents[eventSelection]);
+    }
+
+    private (IReadOnlyDictionary<int, IReadOnlyList<string>> EventPools, IReadOnlyDictionary<int, string> Ancients, Sts2EventVisibilitySimulationModel SimulationModel) BuildInputs(
+        Sts2EventVisibilityRequest request,
+        NeowOptionDataset dataset,
+        IReadOnlyList<Generation.Sts2RunSimulator.ActPoolResult> actPools,
+        Sts2RunPreview ancientPreview,
+        int playerCount)
+    {
+        var eventPools = actPools.ToDictionary(
+            act => act.ActNumber,
+            act => (IReadOnlyList<string>)act.Events
+                .Select(Sts2EventIdNormalizer.FromPoolItem)
+                .Where(eventId => !string.IsNullOrWhiteSpace(eventId))
+                .ToList(),
+            EqualityComparer<int>.Default);
+        var ancients = ancientPreview.Acts.ToDictionary(
+            act => act.ActNumber,
+            act => Sts2EventIdNormalizer.FromAny(act.AncientId),
+            EqualityComparer<int>.Default);
+        var simulationModel = Sts2EventVisibilitySimulationModel.Create(
+            dataset,
+            request.Character,
+            request.UnlockedCharacters,
+            playerCount,
+            request.AscensionLevel,
+            _workspaceRoot);
+
+        return (eventPools, ancients, simulationModel);
+    }
+
     private static Sts2EventVisibilityProfileResult BuildCompositeProfile(
         Sts2EventVisibilityRequest request,
         IReadOnlyList<RouteProfileRun> routeRuns)
     {
         var totalWeight = routeRuns.Sum(run => run.Profile.Weight);
-        var eventIds = routeRuns
-            .SelectMany(run => run.Result.SeenEvents.Select(item => item.EventId))
-            .Distinct(StringComparer.OrdinalIgnoreCase)
+        var eventKeys = routeRuns
+            .SelectMany(run => run.Result.SeenEvents.Select(item => new EventAppearanceKey(item.ActNumber, item.EventId)))
+            .Distinct()
             .ToList();
 
         var itemLookupByProfile = routeRuns
             .ToDictionary(
                 run => run.Profile.Id,
-                run => run.Result.SeenEvents.ToDictionary(item => item.EventId, item => item, StringComparer.OrdinalIgnoreCase),
+                run => run.Result.SeenEvents.ToDictionary(item => new EventAppearanceKey(item.ActNumber, item.EventId), item => item),
                 StringComparer.OrdinalIgnoreCase);
 
-        var aggregatedEvents = eventIds
-            .Select(eventId => AggregateEvent(routeRuns, itemLookupByProfile, totalWeight, eventId))
+        var aggregatedEvents = eventKeys
+            .Select(eventKey => AggregateEvent(routeRuns, itemLookupByProfile, totalWeight, eventKey))
             .ToList();
 
         var earlyRanked = aggregatedEvents
@@ -108,6 +189,7 @@ internal sealed class Sts2EventVisibilityAnalyzer
             .ThenByDescending(item => item.EarlyProbability)
             .ThenBy(item => item.AverageFirstOpportunity)
             .ThenByDescending(item => item.MaxSeenProbability)
+            .ThenBy(item => item.ActNumber)
             .ThenBy(item => item.EventId, StringComparer.OrdinalIgnoreCase)
             .ToList();
 
@@ -117,6 +199,7 @@ internal sealed class Sts2EventVisibilityAnalyzer
             .ThenByDescending(item => item.SeenProbability)
             .ThenBy(item => item.AverageFirstOpportunity)
             .ThenByDescending(item => item.MaxEarlyProbability)
+            .ThenBy(item => item.ActNumber)
             .ThenBy(item => item.EventId, StringComparer.OrdinalIgnoreCase)
             .ToList();
 
@@ -158,20 +241,20 @@ internal sealed class Sts2EventVisibilityAnalyzer
         Sts2EventVisibilitySimulationModel simulationModel)
     {
         var routeRng = new GameRng(request.SeedValue, $"event_visibility_{profile.Id}");
-        var stats = new Dictionary<string, AppearanceStats>(StringComparer.OrdinalIgnoreCase);
+        var stats = new Dictionary<EventAppearanceKey, AppearanceStats>();
         var earlySamples = new List<IReadOnlyList<string>>(capacity: 3);
 
         for (var sample = 0; sample < request.Samples; sample++)
         {
             var state = Sts2EventProgressState.Create(simulationModel, request.Character, request.PlayerCount);
-            var seenThisSample = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            var firstSeen = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-            var firstSource = new Dictionary<string, Sts2EventVisibilitySource>(StringComparer.OrdinalIgnoreCase);
+            var seenThisSample = new HashSet<EventAppearanceKey>();
+            var firstSeen = new Dictionary<EventAppearanceKey, FirstSeenOccurrence>();
             var earlyThisSample = new List<string>();
             var globalIndex = 0;
 
             for (var actNumber = 1; actNumber <= profile.Acts.Count; actNumber++)
             {
+                var actOpportunityIndex = 0;
                 var actProfile = profile.Acts[actNumber - 1];
                 var actOpeningAncientId = ancients.GetValueOrDefault(actNumber);
                 var visitsActOpeningAncient = actNumber > 1 &&
@@ -190,14 +273,16 @@ internal sealed class Sts2EventVisibilityAnalyzer
                     // Ancient rooms are outside the act pool, but still advance the act event visit counter.
                     state.TotalFloor++;
                     globalIndex++;
+                    actOpportunityIndex++;
                     NoteSeen(
+                        actNumber,
                         actOpeningAncientId!,
                         actNumber == 2 ? Sts2EventVisibilitySource.AncientAct2 : Sts2EventVisibilitySource.AncientAct3,
                         globalIndex,
+                        actOpportunityIndex,
                         request.EarlyWindow,
                         seenThisSample,
                         firstSeen,
-                        firstSource,
                         earlyThisSample);
                 }
 
@@ -261,14 +346,16 @@ internal sealed class Sts2EventVisibilityAnalyzer
                     }
 
                     globalIndex++;
+                    actOpportunityIndex++;
                     NoteSeen(
+                        actNumber,
                         eventId,
                         Sts2EventVisibilitySource.Unknown,
                         globalIndex,
+                        actOpportunityIndex,
                         request.EarlyWindow,
                         seenThisSample,
                         firstSeen,
-                        firstSource,
                         earlyThisSample);
                     Sts2EventPullEngine.ConsumeShownEvent(pool, eventId, state);
                     state.ApplyShownEvent(eventId, routeRng);
@@ -280,23 +367,23 @@ internal sealed class Sts2EventVisibilityAnalyzer
                 earlySamples.Add(earlyThisSample);
             }
 
-            foreach (var (eventId, opportunityIndex) in firstSeen)
+            foreach (var (eventKey, occurrence) in firstSeen)
             {
-                if (!stats.TryGetValue(eventId, out var eventStats))
+                if (!stats.TryGetValue(eventKey, out var eventStats))
                 {
                     eventStats = new AppearanceStats();
-                    stats[eventId] = eventStats;
+                    stats[eventKey] = eventStats;
                 }
 
                 eventStats.SeenCount++;
-                eventStats.FirstOpportunityTotal += opportunityIndex;
-                if (opportunityIndex <= request.EarlyWindow)
+                eventStats.FirstOpportunityTotal += occurrence.ActOpportunityIndex;
+                if (occurrence.ActOpportunityIndex <= request.EarlyWindow)
                 {
                     eventStats.EarlyCount++;
                 }
 
-                eventStats.FirstSourceCounts[firstSource[eventId]] =
-                    eventStats.FirstSourceCounts.GetValueOrDefault(firstSource[eventId]) + 1;
+                eventStats.FirstSourceCounts[occurrence.Source] =
+                    eventStats.FirstSourceCounts.GetValueOrDefault(occurrence.Source) + 1;
             }
         }
 
@@ -305,6 +392,7 @@ internal sealed class Sts2EventVisibilityAnalyzer
             .OrderByDescending(item => item.EarlyProbability)
             .ThenByDescending(item => item.SeenProbability)
             .ThenBy(item => item.AverageFirstOpportunity)
+            .ThenBy(item => item.ActNumber)
             .ThenBy(item => item.EventId, StringComparer.OrdinalIgnoreCase)
             .ToList();
 
@@ -312,6 +400,7 @@ internal sealed class Sts2EventVisibilityAnalyzer
             .OrderByDescending(item => item.SeenProbability)
             .ThenByDescending(item => item.EarlyProbability)
             .ThenBy(item => item.AverageFirstOpportunity)
+            .ThenBy(item => item.ActNumber)
             .ThenBy(item => item.EventId, StringComparer.OrdinalIgnoreCase)
             .ToList();
 
@@ -329,6 +418,167 @@ internal sealed class Sts2EventVisibilityAnalyzer
             IsComposite = false,
             IsRecommended = false
         };
+    }
+
+    private static Dictionary<EventAppearanceKey, Sts2EventVisibilityRankedEvent> RunTargetedProfile(
+        Sts2EventVisibilityRequest request,
+        RouteProfile profile,
+        IReadOnlyDictionary<int, IReadOnlyList<string>> eventPools,
+        IReadOnlyDictionary<int, string> ancients,
+        Sts2EventVisibilitySimulationModel simulationModel,
+        IReadOnlyCollection<Sts2ActScopedEventId> targetEvents)
+    {
+        var routeRng = new GameRng(request.SeedValue, $"event_visibility_{profile.Id}");
+        var targetEventSet = targetEvents
+            .Select(target => new EventAppearanceKey(target.ActNumber, target.EventId))
+            .ToHashSet();
+        var stats = new Dictionary<EventAppearanceKey, AppearanceStats>();
+
+        for (var sample = 0; sample < request.Samples; sample++)
+        {
+            var state = Sts2EventProgressState.Create(simulationModel, request.Character, request.PlayerCount);
+            var seenThisSample = new HashSet<EventAppearanceKey>();
+            var firstSeen = new Dictionary<EventAppearanceKey, FirstSeenOccurrence>();
+            var globalIndex = 0;
+
+            for (var actNumber = 1; actNumber <= profile.Acts.Count; actNumber++)
+            {
+                var actOpportunityIndex = 0;
+                var actProfile = profile.Acts[actNumber - 1];
+                var actOpeningAncientId = ancients.GetValueOrDefault(actNumber);
+                var visitsActOpeningAncient = actNumber > 1 &&
+                                              !string.IsNullOrWhiteSpace(actOpeningAncientId) &&
+                                              routeRng.NextDouble() < actProfile.AncientVisitChance;
+                var startsWithEventRoom = actNumber == 1 || visitsActOpeningAncient;
+                state.StartAct(actNumber, startsWithEventRoom ? 1 : 0);
+
+                if (actNumber == 1)
+                {
+                    state.TotalFloor++;
+                }
+                else if (visitsActOpeningAncient)
+                {
+                    state.TotalFloor++;
+                    globalIndex++;
+                    actOpportunityIndex++;
+                    if (targetEventSet.Contains(new EventAppearanceKey(actNumber, actOpeningAncientId!)))
+                    {
+                        NoteSeen(
+                            actNumber,
+                            actOpeningAncientId!,
+                            actNumber == 2 ? Sts2EventVisibilitySource.AncientAct2 : Sts2EventVisibilitySource.AncientAct3,
+                            globalIndex,
+                            actOpportunityIndex,
+                            request.EarlyWindow,
+                            seenThisSample,
+                            firstSeen,
+                            earlyThisSample: null);
+                    }
+                }
+
+                var unknownCount = actProfile.UnknownCounts.Sample(routeRng);
+                var eventCount = Math.Min(actProfile.EventCounts.Sample(routeRng), unknownCount);
+                var eventSlots = PickSlots(routeRng, unknownCount, eventCount);
+                var majorStops = actProfile.BuildMajorStops(routeRng);
+                var gaps = DistributeStopsAcrossGaps(majorStops, unknownCount + 1, biasEarlyUnknowns: actNumber == 1);
+                var pool = eventPools.GetValueOrDefault(actNumber, Array.Empty<string>());
+
+                for (var gap = 0; gap < gaps.Count; gap++)
+                {
+                    foreach (var stop in gaps[gap])
+                    {
+                        switch (stop)
+                        {
+                            case MajorStopKind.Treasure:
+                                state.ConsumeTreasureStop(routeRng);
+                                state.TotalFloor++;
+                                break;
+                            case MajorStopKind.Elite:
+                                state.ConsumeEliteStop(routeRng);
+                                state.TotalFloor++;
+                                break;
+                            case MajorStopKind.Shop:
+                                state.ConsumeShopStop(routeRng);
+                                state.TotalFloor++;
+                                break;
+                        }
+                    }
+
+                    if (gap >= unknownCount)
+                    {
+                        continue;
+                    }
+
+                    var regularCombats = actProfile.BetweenUnknownCombats.Sample(routeRng);
+                    for (var i = 0; i < regularCombats; i++)
+                    {
+                        state.ConsumeRegularCombat(routeRng);
+                        state.TotalFloor++;
+                    }
+
+                    state.TotalFloor++;
+                    if (!eventSlots.Contains(gap))
+                    {
+                        state.ConsumeUnknownNonEvent(routeRng);
+                        continue;
+                    }
+
+                    if (pool.Count == 0)
+                    {
+                        continue;
+                    }
+
+                    Sts2EventPullEngine.EnsureNextEventIsValid(pool, state);
+                    var eventId = Sts2EventPullEngine.PeekNextAllowedEvent(pool, state);
+                    if (string.IsNullOrWhiteSpace(eventId))
+                    {
+                        continue;
+                    }
+
+                    globalIndex++;
+                    actOpportunityIndex++;
+                    if (targetEventSet.Contains(new EventAppearanceKey(actNumber, eventId)))
+                    {
+                        NoteSeen(
+                            actNumber,
+                            eventId,
+                            Sts2EventVisibilitySource.Unknown,
+                            globalIndex,
+                            actOpportunityIndex,
+                            request.EarlyWindow,
+                            seenThisSample,
+                            firstSeen,
+                            earlyThisSample: null);
+                    }
+
+                    Sts2EventPullEngine.ConsumeShownEvent(pool, eventId, state);
+                    state.ApplyShownEvent(eventId, routeRng);
+                }
+            }
+
+            foreach (var (eventKey, occurrence) in firstSeen)
+            {
+                if (!stats.TryGetValue(eventKey, out var eventStats))
+                {
+                    eventStats = new AppearanceStats();
+                    stats[eventKey] = eventStats;
+                }
+
+                eventStats.SeenCount++;
+                eventStats.FirstOpportunityTotal += occurrence.ActOpportunityIndex;
+                if (occurrence.ActOpportunityIndex <= request.EarlyWindow)
+                {
+                    eventStats.EarlyCount++;
+                }
+
+                eventStats.FirstSourceCounts[occurrence.Source] =
+                    eventStats.FirstSourceCounts.GetValueOrDefault(occurrence.Source) + 1;
+            }
+        }
+
+        return stats.ToDictionary(
+            pair => pair.Key,
+            pair => ToRankedEvent(pair.Key, pair.Value, request.Samples));
     }
 
     private static List<List<MajorStopKind>> DistributeStopsAcrossGaps(
@@ -389,30 +639,32 @@ internal sealed class Sts2EventVisibilityAnalyzer
     }
 
     private static void NoteSeen(
+        int actNumber,
         string eventId,
         Sts2EventVisibilitySource source,
-        int opportunityIndex,
+        int globalOpportunityIndex,
+        int actOpportunityIndex,
         int earlyWindow,
-        HashSet<string> seenThisSample,
-        Dictionary<string, int> firstSeen,
-        Dictionary<string, Sts2EventVisibilitySource> firstSource,
-        List<string> earlyThisSample)
+        HashSet<EventAppearanceKey> seenThisSample,
+        Dictionary<EventAppearanceKey, FirstSeenOccurrence> firstSeen,
+        List<string>? earlyThisSample)
     {
-        if (string.IsNullOrWhiteSpace(eventId) || !seenThisSample.Add(eventId))
+        var eventKey = new EventAppearanceKey(actNumber, eventId);
+        if (string.IsNullOrWhiteSpace(eventId) || !seenThisSample.Add(eventKey))
         {
             return;
         }
 
-        firstSeen[eventId] = opportunityIndex;
-        firstSource[eventId] = source;
-        if (opportunityIndex <= earlyWindow)
+        firstSeen[eventKey] = new FirstSeenOccurrence(globalOpportunityIndex, actOpportunityIndex, source);
+        if (earlyThisSample != null &&
+            actOpportunityIndex <= earlyWindow)
         {
-            earlyThisSample.Add(eventId);
+            earlyThisSample.Add(BuildEarlySampleToken(actNumber, eventId));
         }
     }
 
     private static Sts2EventVisibilityRankedEvent ToRankedEvent(
-        string eventId,
+        EventAppearanceKey eventKey,
         AppearanceStats stats,
         int sampleCount)
     {
@@ -426,7 +678,8 @@ internal sealed class Sts2EventVisibilityAnalyzer
 
         return new Sts2EventVisibilityRankedEvent
         {
-            EventId = eventId,
+            ActNumber = eventKey.ActNumber,
+            EventId = eventKey.EventId,
             EarlyProbability = (double)stats.EarlyCount / sampleCount,
             SeenProbability = (double)stats.SeenCount / sampleCount,
             AverageFirstOpportunity = stats.SeenCount == 0 ? double.PositiveInfinity : stats.FirstOpportunityTotal / stats.SeenCount,
@@ -443,9 +696,9 @@ internal sealed class Sts2EventVisibilityAnalyzer
 
     private static Sts2EventVisibilityRankedEvent AggregateEvent(
         IReadOnlyList<RouteProfileRun> routeRuns,
-        IReadOnlyDictionary<string, Dictionary<string, Sts2EventVisibilityRankedEvent>> itemLookupByProfile,
+        IReadOnlyDictionary<string, Dictionary<EventAppearanceKey, Sts2EventVisibilityRankedEvent>> itemLookupByProfile,
         double totalWeight,
-        string eventId)
+        EventAppearanceKey eventKey)
     {
         var weightedEarly = 0.0;
         var weightedSeen = 0.0;
@@ -463,7 +716,7 @@ internal sealed class Sts2EventVisibilityAnalyzer
         {
             var weight = run.Profile.Weight;
             var profileItems = itemLookupByProfile[run.Profile.Id];
-            profileItems.TryGetValue(eventId, out var item);
+            profileItems.TryGetValue(eventKey, out var item);
 
             var early = item?.EarlyProbability ?? 0.0;
             var seen = item?.SeenProbability ?? 0.0;
@@ -506,7 +759,8 @@ internal sealed class Sts2EventVisibilityAnalyzer
 
         return new Sts2EventVisibilityRankedEvent
         {
-            EventId = eventId,
+            ActNumber = eventKey.ActNumber,
+            EventId = eventKey.EventId,
             EarlyProbability = totalWeight <= 0 ? 0.0 : weightedEarly / totalWeight,
             SeenProbability = totalWeight <= 0 ? 0.0 : weightedSeen / totalWeight,
             AverageFirstOpportunity = weightedFirstWeight <= 0 ? double.PositiveInfinity : weightedFirstTotal / weightedFirstWeight,
@@ -519,6 +773,11 @@ internal sealed class Sts2EventVisibilityAnalyzer
             MinSeenProbability = double.IsPositiveInfinity(minSeen) ? 0.0 : minSeen,
             MaxSeenProbability = maxSeen
         };
+    }
+
+    private static string BuildEarlySampleToken(int actNumber, string eventId)
+    {
+        return $"{actNumber}:{eventId}";
     }
 
     private static Sts2EventVisibilityActSummary BuildCompositeActSummary(
@@ -586,6 +845,13 @@ internal sealed class Sts2EventVisibilityAnalyzer
 
         public Dictionary<Sts2EventVisibilitySource, int> FirstSourceCounts { get; } = new();
     }
+
+    private readonly record struct EventAppearanceKey(int ActNumber, string EventId);
+
+    private readonly record struct FirstSeenOccurrence(
+        int GlobalOpportunityIndex,
+        int ActOpportunityIndex,
+        Sts2EventVisibilitySource Source);
 
     private enum MajorStopKind
     {

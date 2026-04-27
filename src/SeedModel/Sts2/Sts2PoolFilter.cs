@@ -1,12 +1,14 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace SeedModel.Sts2;
 
 public sealed record Sts2PoolFilter
 {
     public const double DefaultHighProbabilitySeenThreshold = 0.50;
+    public const double DefaultHighProbabilityEventSeenThreshold = 0.50;
 
     public static Sts2PoolFilter Empty { get; } = new();
 
@@ -15,6 +17,16 @@ public sealed record Sts2PoolFilter
     public IReadOnlyList<string> Act2EventIds { get; init; } = Array.Empty<string>();
 
     public IReadOnlyList<string> Act3EventIds { get; init; } = Array.Empty<string>();
+
+    public IReadOnlyList<string> HighProbabilityEventIds { get; init; } = Array.Empty<string>();
+
+    public double HighProbabilityEventSeenThreshold { get; init; } = DefaultHighProbabilityEventSeenThreshold;
+
+    public double? HighProbabilityEventEarlyThreshold { get; init; }
+
+    public double? HighProbabilityEventAverageFirstOpportunityMax { get; init; }
+
+    public Sts2EventVisibilitySource? HighProbabilityEventMostCommonSource { get; init; }
 
     public IReadOnlyList<string> HighProbabilityRelicIds { get; init; } = Array.Empty<string>();
 
@@ -34,23 +46,30 @@ public sealed record Sts2PoolFilter
         Act1EventIds.Count > 0 ||
         Act2EventIds.Count > 0 ||
         Act3EventIds.Count > 0 ||
+        HighProbabilityEventIds.Count > 0 ||
         HighProbabilityRelicIds.Count > 0;
 
-    public bool Matches(Sts2SeedAnalysis? analysis, Sts2RelicVisibilityAnalysis? relicVisibility)
+    public IReadOnlyList<Sts2ActScopedEventId> GetHighProbabilityEventSelections()
+    {
+        var result = new List<Sts2ActScopedEventId>();
+        AppendScopedEventIds(result, 1, Act1EventIds);
+        AppendScopedEventIds(result, 2, Act2EventIds);
+        AppendScopedEventIds(result, 3, Act3EventIds);
+        return result;
+    }
+
+    public bool Matches(
+        Sts2SeedAnalysis? analysis,
+        Sts2RelicVisibilityAnalysis? relicVisibility,
+        Sts2EventVisibilityAnalysis? eventVisibility = null)
     {
         if (!HasCriteria)
         {
             return true;
         }
 
-        if (!MatchesActEvents(analysis, 1, Act1EventIds) ||
-            !MatchesActEvents(analysis, 2, Act2EventIds) ||
-            !MatchesActEvents(analysis, 3, Act3EventIds))
-        {
-            return false;
-        }
-
-        return MatchesHighProbabilityRelics(relicVisibility, this);
+        return MatchesHighProbabilityEvents(eventVisibility, this) &&
+               MatchesHighProbabilityRelics(relicVisibility, this);
     }
 
     private static bool MatchesActEvents(
@@ -74,7 +93,9 @@ public sealed record Sts2PoolFilter
             return false;
         }
 
-        return MatchesIds(requiredEventIds, act.EventPool.Take(act.PriorityEventCount));
+        return MatchesIds(
+            requiredEventIds.Select(NormalizeIdentifier).ToList(),
+            act.EventPool.Take(act.PriorityEventCount).Select(NormalizeIdentifier));
     }
 
     private static bool MatchesHighProbabilityRelics(
@@ -99,6 +120,65 @@ public sealed record Sts2PoolFilter
             .Distinct(StringComparer.OrdinalIgnoreCase);
 
         return MatchesIds(requiredRelicIds, availableIds);
+    }
+
+    private static bool MatchesHighProbabilityEvents(
+        Sts2EventVisibilityAnalysis? analysis,
+        Sts2PoolFilter filter)
+    {
+        var requiredEventSelections = filter.GetHighProbabilityEventSelections();
+        if (requiredEventSelections.Count == 0)
+        {
+            return true;
+        }
+
+        if (analysis == null)
+        {
+            return false;
+        }
+
+        var availableKeys = analysis.Profiles
+            .Where(profile => !profile.IsComposite)
+            .SelectMany(profile => profile.SeenEvents)
+            .Where(filter.MatchesHighProbabilityEvent)
+            .Select(@event => BuildScopedEventKey(@event.ActNumber, NormalizeIdentifier(@event.EventId)))
+            .Distinct(StringComparer.OrdinalIgnoreCase);
+
+        return MatchesIds(
+            requiredEventSelections
+                .Select(selection => BuildScopedEventKey(selection.ActNumber, NormalizeIdentifier(selection.EventId)))
+                .ToList(),
+            availableKeys);
+    }
+
+    public bool MatchesHighProbabilityEvent(Sts2EventVisibilityRankedEvent @event)
+    {
+        ArgumentNullException.ThrowIfNull(@event);
+
+        if (@event.SeenProbability < HighProbabilityEventSeenThreshold)
+        {
+            return false;
+        }
+
+        if (HighProbabilityEventEarlyThreshold.HasValue &&
+            @event.EarlyProbability < HighProbabilityEventEarlyThreshold.Value)
+        {
+            return false;
+        }
+
+        if (HighProbabilityEventAverageFirstOpportunityMax.HasValue &&
+            @event.AverageFirstOpportunity > HighProbabilityEventAverageFirstOpportunityMax.Value)
+        {
+            return false;
+        }
+
+        if (HighProbabilityEventMostCommonSource.HasValue &&
+            @event.MostCommonSource != HighProbabilityEventMostCommonSource.Value)
+        {
+            return false;
+        }
+
+        return true;
     }
 
     internal bool MatchesHighProbabilityRelic(Sts2RelicVisibilityRankedRelic relic)
@@ -184,4 +264,69 @@ public sealed record Sts2PoolFilter
 
         return true;
     }
+
+    private static string NormalizeIdentifier(string id)
+    {
+        if (string.IsNullOrWhiteSpace(id))
+        {
+            return string.Empty;
+        }
+
+        var builder = new StringBuilder(id.Length * 2);
+        char? previous = null;
+
+        foreach (var ch in id)
+        {
+            if (ch is '_' or '-' || char.IsWhiteSpace(ch))
+            {
+                if (builder.Length > 0 && builder[^1] != '_')
+                {
+                    builder.Append('_');
+                }
+
+                previous = ch;
+                continue;
+            }
+
+            if (char.IsUpper(ch) &&
+                builder.Length > 0 &&
+                builder[^1] != '_' &&
+                previous.HasValue &&
+                (char.IsLower(previous.Value) || char.IsDigit(previous.Value)))
+            {
+                builder.Append('_');
+            }
+
+            builder.Append(char.ToUpperInvariant(ch));
+            previous = ch;
+        }
+
+        return builder.ToString().Trim('_');
+    }
+
+    private static void AppendScopedEventIds(
+        ICollection<Sts2ActScopedEventId> target,
+        int actNumber,
+        IReadOnlyList<string> eventIds)
+    {
+        foreach (var eventId in eventIds)
+        {
+            if (string.IsNullOrWhiteSpace(eventId))
+            {
+                continue;
+            }
+
+            target.Add(new Sts2ActScopedEventId(actNumber, eventId.Trim()));
+        }
+    }
+
+    private static string BuildScopedEventKey(int actNumber, string eventId)
+    {
+        return $"{actNumber}:{eventId}";
+    }
 }
+
+public readonly record struct Sts2ActScopedEventId(int ActNumber, string EventId);
+
+
+

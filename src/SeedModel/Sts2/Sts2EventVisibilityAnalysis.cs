@@ -81,6 +81,8 @@ public sealed class Sts2EventVisibilityActSummary
 
 public sealed class Sts2EventVisibilityRankedEvent
 {
+    public required int ActNumber { get; init; }
+
     public required string EventId { get; init; }
 
     public required double EarlyProbability { get; init; }

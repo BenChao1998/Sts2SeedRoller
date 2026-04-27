@@ -7,7 +7,7 @@ namespace SeedUi.ViewModels;
 
 internal sealed partial class MainWindowViewModel
 {
-    private string _seedAnalysisRelicVisibilitySummary = "遗物概率预览会随种子分析一并生成。";
+    private string _seedAnalysisRelicVisibilitySummary = "遗物概率预览会随种子分析一起生成。";
 
     public ObservableCollection<SeedAnalysisRelicVisibilityProfileViewModel> SeedAnalysisRelicVisibilityProfiles { get; } = new();
 
@@ -25,7 +25,7 @@ internal sealed partial class MainWindowViewModel
         {
             var actSummaries = profile.Acts
                 .Select(act =>
-                    $"第 {act.ActNumber} 幕：宝箱 {FormatChanceList(act.TreasureCounts)} / 精英 {FormatChanceList(act.EliteCounts)} / 商店 {FormatChanceList(act.ShopCounts)} / 古神 {act.AncientVisitChance:P0}")
+                    $"第{act.ActNumber}幕：宝箱 {FormatChanceList(act.TreasureCounts)} / 精英 {FormatChanceList(act.EliteCounts)} / 商店 {FormatChanceList(act.ShopCounts)} / 古神 {act.AncientVisitChance:P0}")
                 .ToList();
 
             var earlyRelics = profile.EarlyRelics
@@ -62,7 +62,7 @@ internal sealed partial class MainWindowViewModel
     private void ClearSeedAnalysisRelicVisibility()
     {
         SeedAnalysisRelicVisibilityProfiles.Clear();
-        SeedAnalysisRelicVisibilitySummary = "遗物概率预览会随种子分析一并生成。";
+        SeedAnalysisRelicVisibilitySummary = "遗物概率预览会随种子分析一起生成。";
     }
 
     private static string FormatChanceList(IReadOnlyList<Sts2WeightedIntChance> entries)
@@ -79,7 +79,20 @@ internal sealed partial class MainWindowViewModel
 
     private static string FormatRelicVisibilityRelicLine(Sts2RelicVisibilityRankedRelic item)
     {
-        return $"{GetRelicDisplayName(item.RelicId)} | 出现 {item.SeenProbability:P1} | 非商店 {item.NonShopSeenProbability:P1} | 商店 {item.ShopSeenProbability:P1} | 前期 {item.EarlyProbability:P1} | 平均首次机会 {item.AverageFirstOpportunity:F2} | 最常来源 {FormatRelicVisibilitySource(item.MostCommonSource)}";
+        return $"{GetRelicDisplayName(item.RelicId)} | 出现 {item.SeenProbability:P1} | 非商店 {item.NonShopSeenProbability:P1} | 商店 {item.ShopSeenProbability:P1} | 前期 {item.EarlyProbability:P1} | 首见幕 {FormatRelicVisibilityActChances(item.FirstSeenActChances)} | 平均首次机会 {item.AverageFirstOpportunity:F2} | 最常来源 {FormatRelicVisibilitySource(item.MostCommonSource)}";
+    }
+
+    internal static string FormatRelicVisibilityActChances(IReadOnlyList<Sts2RelicVisibilityActChance> chances)
+    {
+        var segments = chances
+            .Where(chance => chance.Probability > 0)
+            .OrderBy(chance => chance.ActNumber)
+            .Select(chance => $"第{chance.ActNumber}幕 {chance.Probability:P0}")
+            .ToList();
+
+        return segments.Count == 0
+            ? "-"
+            : string.Join(" / ", segments);
     }
 
     private static string FormatRelicVisibilitySource(Sts2RelicVisibilitySource source)

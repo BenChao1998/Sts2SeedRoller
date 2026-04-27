@@ -199,6 +199,7 @@ internal sealed class Sts2RelicVisibilityAnalyzer
             var state = baseline.Clone();
             var sampleSeen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var sampleFirstSeen = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            var sampleFirstAct = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
             var sampleFirstSource = new Dictionary<string, Sts2RelicVisibilitySource>(StringComparer.OrdinalIgnoreCase);
             var sampleSourcePresence = new Dictionary<string, SourcePresence>(StringComparer.OrdinalIgnoreCase);
             var earliestThisSample = new List<string>();
@@ -253,6 +254,7 @@ internal sealed class Sts2RelicVisibilityAnalyzer
                     }
 
                     sampleFirstSeen[shown.RelicId] = opportunity.GlobalIndex;
+                    sampleFirstAct[shown.RelicId] = opportunity.ActNumber;
                     sampleFirstSource[shown.RelicId] = shown.Source;
                     if (opportunity.GlobalIndex <= request.EarlyWindow)
                     {
@@ -280,6 +282,9 @@ internal sealed class Sts2RelicVisibilityAnalyzer
                 {
                     relicStats.EarlyCount++;
                 }
+
+                relicStats.FirstSeenActCounts[sampleFirstAct[relicId]] =
+                    relicStats.FirstSeenActCounts.GetValueOrDefault(sampleFirstAct[relicId]) + 1;
 
                 if (sampleSourcePresence.TryGetValue(relicId, out var presence))
                 {
@@ -349,6 +354,7 @@ internal sealed class Sts2RelicVisibilityAnalyzer
             var sampleSeen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var sampleSourcePresence = new Dictionary<string, SourcePresence>(StringComparer.OrdinalIgnoreCase);
             var sampleFirstSeen = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            var sampleFirstAct = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
             var sampleFirstSource = new Dictionary<string, Sts2RelicVisibilitySource>(StringComparer.OrdinalIgnoreCase);
             var opportunities = BuildOpportunities(routeRng, profile);
             var currentAct = 0;
@@ -406,6 +412,7 @@ internal sealed class Sts2RelicVisibilityAnalyzer
                     }
 
                     sampleFirstSeen[shown.RelicId] = opportunity.GlobalIndex;
+                    sampleFirstAct[shown.RelicId] = opportunity.ActNumber;
                     sampleFirstSource[shown.RelicId] = shown.Source;
 
                     if (sampleSeen.Count == targetSet.Count)
@@ -432,6 +439,9 @@ internal sealed class Sts2RelicVisibilityAnalyzer
                     {
                         relicStats.EarlyCount++;
                     }
+
+                    relicStats.FirstSeenActCounts[sampleFirstAct[relicId]] =
+                        relicStats.FirstSeenActCounts.GetValueOrDefault(sampleFirstAct[relicId]) + 1;
 
                     var firstSource = sampleFirstSource[relicId];
                     relicStats.FirstSourceCounts[firstSource] =
@@ -842,6 +852,14 @@ internal sealed class Sts2RelicVisibilityAnalyzer
             NonShopSeenProbability = (double)stats.NonShopSeenCount / totalSamples,
             ShopSeenProbability = (double)stats.ShopSeenCount / totalSamples,
             AverageFirstOpportunity = stats.SeenCount == 0 ? double.PositiveInfinity : stats.FirstOpportunityTotal / stats.SeenCount,
+            FirstSeenActChances = stats.FirstSeenActCounts
+                .OrderBy(pair => pair.Key)
+                .Select(pair => new Sts2RelicVisibilityActChance
+                {
+                    ActNumber = pair.Key,
+                    Probability = (double)pair.Value / totalSamples
+                })
+                .ToList(),
             MostCommonSource = mostCommonSource
         };
     }
@@ -857,6 +875,8 @@ internal sealed class Sts2RelicVisibilityAnalyzer
         public int ShopSeenCount { get; set; }
 
         public double FirstOpportunityTotal { get; set; }
+
+        public Dictionary<int, int> FirstSeenActCounts { get; } = new();
 
         public Dictionary<Sts2RelicVisibilitySource, int> FirstSourceCounts { get; } = new();
     }

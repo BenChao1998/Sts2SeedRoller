@@ -122,6 +122,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
     private IReadOnlyList<CatalogItem> _filteredShopRelics = Array.Empty<CatalogItem>();
     private IReadOnlyList<CatalogItem> _filteredShopPotions = Array.Empty<CatalogItem>();
     private IReadOnlyDictionary<string, string> _relicLocalizationTable = EmptyLocalizationTable;
+    private IReadOnlyDictionary<string, string> _cardLocalizationTable = EmptyLocalizationTable;
 
     private RollResultViewModel? _selectedResult;
     private int _selectedTabIndex;
@@ -219,6 +220,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         UpdateAct2RelicOptions();
         UpdateAct3RelicOptions();
         UpdateAncientFilterSummary();
+        InitializeEventPoolCatalog();
         InitializePoolFilter();
         InitializeSeedArchive();
         RefreshAncientAvailabilityStatus("startup", shouldLog: false);
@@ -882,8 +884,8 @@ internal sealed partial class MainWindowViewModel : ObservableObject
             StatusMessage = $"正在加载第一幕数据（{version}）…";
             var dataset = await Task.Run(() => LoadDatasetInternal(neowPath));
             _dataset = dataset;
-            DatasetSummary = $"已加载 {dataset.Options.Count} 条遗物、{dataset.Cards.Count} 张卡牌、{dataset.Potions.Count} 瓶药水（{version}）";
             BuildCatalogs(dataset);
+            DatasetSummary = $"已加载 {dataset.Options.Count} 条遗物、{_cardCatalog.Count} 张卡牌、{dataset.Potions.Count} 瓶药水（{version}）";
             var sourceLabel = File.Exists(neowPath) ? neowPath : "内置数据";
             StatusMessage = $"已从 {sourceLabel} 加载 Neow 数据（{version}）。";
             LogInfo(StatusMessage);
@@ -920,6 +922,8 @@ internal sealed partial class MainWindowViewModel : ObservableObject
     {
         _relicLocalizationTable = LoadSts2LocalizationTable(SelectedGameVersion.Id, "relics.json", "遗物");
         _staticRelicLocalizationTable = _relicLocalizationTable;
+        _cardLocalizationTable = LoadCardLocalizationTable(SelectedGameVersion.Id);
+        _staticCardLocalizationTable = _cardLocalizationTable;
         RefreshPoolRelicCatalog();
     }
 
@@ -944,6 +948,29 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         }
     }
 
+    private IReadOnlyDictionary<string, string> LoadCardLocalizationTable(string version)
+    {
+        var versionedPath = UiDataPathResolver.ResolveVersionedDataFilePath(version, "sts2", "localization", "zhs", "cards.json");
+        return File.Exists(versionedPath)
+            ? LoadLocalizationTableFromPath(versionedPath, "卡牌")
+            : EmptyLocalizationTable;
+    }
+
+    private IReadOnlyDictionary<string, string> LoadLocalizationTableFromPath(string path, string categoryName)
+    {
+        try
+        {
+            LogInfo($"[数据路径] localization-{categoryName}={path}");
+            using var stream = File.OpenRead(path);
+            return JsonSerializer.Deserialize<Dictionary<string, string>>(stream) ?? EmptyLocalizationTable;
+        }
+        catch (Exception ex)
+        {
+            LogWarn($"加载{categoryName}中文数据失败：{path} - {ex.Message}");
+            return EmptyLocalizationTable;
+        }
+    }
+
     private void BuildCatalogs(NeowOptionDataset dataset)
     {
         _relicCatalog = dataset.Options
@@ -957,14 +984,31 @@ internal sealed partial class MainWindowViewModel : ObservableObject
             .OrderBy(item => item.Display, StringComparer.OrdinalIgnoreCase)
             .ToList();
 
-        _cardCatalog = dataset.Cards
-            .Select(card =>
+        var allCardIds = dataset.Cards.Select(card => card.Id)
+            .Concat(dataset.CardPools.Values.SelectMany(pool => pool))
+            .Concat(dataset.ColorlessCardPool)
+            .Concat(dataset.CardMetadata.Select(metadata => metadata.Id))
+            .Where(id => !string.IsNullOrWhiteSpace(id))
+            .Distinct(StringComparer.OrdinalIgnoreCase);
+
+        _cardCatalog = allCardIds
+            .Select(cardId =>
             {
-                var display = $"{card.Name} ({card.Id})";
-                return new CatalogItem(card.Id, display, BuildSearchKey(display, card.Id));
+                var name = GetLocalizedCardTitle(cardId);
+                if (string.IsNullOrWhiteSpace(name) &&
+                    dataset.CardMap.TryGetValue(cardId, out var card) &&
+                    !string.IsNullOrWhiteSpace(card.Name))
+                {
+                    name = card.Name;
+                }
+
+                name ??= cardId;
+                var display = $"{name} ({cardId})";
+                return new CatalogItem(cardId, display, BuildSearchKey(display, name, cardId));
             })
             .OrderBy(item => item.Display, StringComparer.OrdinalIgnoreCase)
             .ToList();
+        LogInfo($"卡牌目录已构建：原始={dataset.Cards.Count}，目录={_cardCatalog.Count}，补全={_cardCatalog.Count - dataset.Cards.Count}");
 
         _potionCatalog = dataset.Potions
             .Select(potion =>
@@ -1297,6 +1341,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
             _ancientPreviewer = InitializeAncientPreviewer();
             ReloadRelicLocalization();
             ReloadSeedAnalysisLocalization();
+            RefreshEventPoolCatalog();
             RefreshPoolEventCatalog();
             UpdateAct2RelicOptions();
             UpdateAct3RelicOptions();
@@ -1432,7 +1477,9 @@ internal sealed partial class MainWindowViewModel : ObservableObject
 
         var quantityText = config.StopOnFirstMatch ? "命中即停" : config.RollCount.ToString(CultureInfo.InvariantCulture);
         StatusMessage = $"正在 Roll（事件：{SelectedEvent.DisplayName}，模式：{GetModeDisplayName(config.Mode)}，数量：{quantityText}）…";
+        WarnIfProbabilitySelectionsAreNotAdded();
         LogInfo($"开始 Roll：事件={SelectedEvent.DisplayName}，模式={GetModeDisplayName(config.Mode)}，数量={quantityText}。");
+        LogInfo($"当前筛选：{DescribeRunFilter(runFilter)}");
 
         try
         {
@@ -2014,6 +2061,11 @@ internal sealed partial class MainWindowViewModel : ObservableObject
                 Act1EventIds = Act1EventPoolFilterChips.Select(chip => chip.Value).ToList(),
                 Act2EventIds = Act2EventPoolFilterChips.Select(chip => chip.Value).ToList(),
                 Act3EventIds = Act3EventPoolFilterChips.Select(chip => chip.Value).ToList(),
+                HighProbabilityEventIds = Act1EventPoolFilterChips.Concat(Act2EventPoolFilterChips).Concat(Act3EventPoolFilterChips).Select(chip => chip.Value).Distinct(StringComparer.OrdinalIgnoreCase).ToList(),
+                HighProbabilityEventSeenThreshold = GetHighProbabilityEventSeenThreshold(),
+                HighProbabilityEventEarlyThreshold = null,
+                HighProbabilityEventAverageFirstOpportunityMax = GetOptionalPositiveDouble(HighProbabilityEventAverageFirstOpportunityMaxText),
+                HighProbabilityEventMostCommonSource = GetHighProbabilityEventMostCommonSource(),
                 HighProbabilityRelicIds = HighProbabilityRelicFilterChips.Select(chip => chip.Value).ToList(),
                 HighProbabilitySeenThreshold = GetHighProbabilitySeenThreshold(),
                 HighProbabilityNonShopThreshold = GetOptionalThresholdPercent(HighProbabilityNonShopThresholdPercentText),
@@ -2031,6 +2083,38 @@ internal sealed partial class MainWindowViewModel : ObservableObject
             ShopFilter = shopFilter,
             PoolFilter = poolFilter
         };
+    }
+
+    private static string DescribeRunFilter(SeedRunFilter filter)
+    {
+        var parts = new List<string>();
+
+        if (filter.NeowFilter.HasCriteria)
+        {
+            parts.Add("Neow=开启");
+        }
+
+        if (filter.AncientFilter.HasCriteria)
+        {
+            parts.Add("古神=开启");
+        }
+
+        if (filter.ShopFilter.HasCriteria)
+        {
+            parts.Add("商店=开启");
+        }
+
+        if (filter.PoolFilter.HasCriteria)
+        {
+            parts.Add(
+                $"事件池=开启(A1:[{string.Join(", ", filter.PoolFilter.Act1EventIds)}]; " +
+                $"A2:[{string.Join(", ", filter.PoolFilter.Act2EventIds)}]; " +
+                $"A3:[{string.Join(", ", filter.PoolFilter.Act3EventIds)}]; " +
+                $"高概率事件:[{string.Join(", ", filter.PoolFilter.HighProbabilityEventIds)}]; " +
+                $"高概率遗物:[{string.Join(", ", filter.PoolFilter.HighProbabilityRelicIds)}])");
+        }
+
+        return parts.Count > 0 ? string.Join(" | ", parts) : "无";
     }
 
     private static IEnumerable<string> SplitTerms(string? value)
@@ -2379,6 +2463,12 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         Act1EventPoolFilterChips.Clear();
         Act2EventPoolFilterChips.Clear();
         Act3EventPoolFilterChips.Clear();
+        HighProbabilityEventSeenThresholdPercentText = (Sts2PoolFilter.DefaultHighProbabilityEventSeenThreshold * 100d)
+            .ToString("0.##", CultureInfo.InvariantCulture);
+        HighProbabilityEventEarlyThresholdPercentText = string.Empty;
+        HighProbabilityEventAverageFirstOpportunityMaxText = string.Empty;
+        HighProbabilityEventMostCommonSourceText = string.Empty;
+        HighProbabilityEventFilterChips.Clear();
         HighProbabilitySeenThresholdPercentText = (Sts2PoolFilter.DefaultHighProbabilitySeenThreshold * 100d)
             .ToString("0.##", CultureInfo.InvariantCulture);
         HighProbabilityNonShopThresholdPercentText = string.Empty;
@@ -2395,6 +2485,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         SelectedAct1EventPoolCatalogItem = null;
         SelectedAct2EventPoolCatalogItem = null;
         SelectedAct3EventPoolCatalogItem = null;
+        SelectedHighProbabilityEventCatalogItem = null;
         SelectedHighProbabilityRelicCatalogItem = null;
         StatusMessage = "配置已重置为默认值。";
         LogInfo(StatusMessage);
@@ -2447,6 +2538,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
             RaisePropertyChanged(nameof(SelectedGameVersion));
             ReloadRelicLocalization();
             ReloadSeedAnalysisLocalization();
+            RefreshEventPoolCatalog();
             RefreshPoolEventCatalog();
         }
 
@@ -2493,6 +2585,12 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         ResetChips(Act1EventPoolFilterChips, config.Act1EventIds, _poolEventCatalog);
         ResetChips(Act2EventPoolFilterChips, config.Act2EventIds, _poolEventCatalog);
         ResetChips(Act3EventPoolFilterChips, config.Act3EventIds, _poolEventCatalog);
+        HighProbabilityEventSeenThresholdPercentText = config.HighProbabilityEventSeenThresholdPercent?.ToString("0.##", CultureInfo.InvariantCulture)
+            ?? "50";
+        HighProbabilityEventEarlyThresholdPercentText = FormatOptionalPercentInput(config.HighProbabilityEventEarlyThresholdPercent);
+        HighProbabilityEventAverageFirstOpportunityMaxText = FormatOptionalNumberInput(config.HighProbabilityEventAverageFirstOpportunityMax);
+        HighProbabilityEventMostCommonSourceText = config.HighProbabilityEventMostCommonSource ?? string.Empty;
+        HighProbabilityEventFilterChips.Clear();
         var highProbabilityRelicIds = config.HighProbabilityRelicIds
             ?? config.SharedRelicIds
                 ?.Concat(config.PlayerRelicIds ?? Enumerable.Empty<string>())
@@ -2584,6 +2682,11 @@ internal sealed partial class MainWindowViewModel : ObservableObject
                 Act1EventIds = Act1EventPoolFilterChips.Select(chip => chip.Value).ToList(),
                 Act2EventIds = Act2EventPoolFilterChips.Select(chip => chip.Value).ToList(),
                 Act3EventIds = Act3EventPoolFilterChips.Select(chip => chip.Value).ToList(),
+                HighProbabilityEventSeenThresholdPercent = GetHighProbabilityEventSeenThreshold() * 100d,
+                HighProbabilityEventEarlyThresholdPercent = null,
+                HighProbabilityEventAverageFirstOpportunityMax = GetOptionalPositiveDouble(HighProbabilityEventAverageFirstOpportunityMaxText),
+                HighProbabilityEventMostCommonSource = GetHighProbabilityEventMostCommonSource()?.ToString(),
+                HighProbabilityEventIds = Act1EventPoolFilterChips.Concat(Act2EventPoolFilterChips).Concat(Act3EventPoolFilterChips).Select(chip => chip.Value).Distinct(StringComparer.OrdinalIgnoreCase).ToList(),
                 HighProbabilitySeenThresholdPercent = GetHighProbabilitySeenThreshold() * 100d,
                 HighProbabilityNonShopThresholdPercent = GetOptionalThresholdPercent(HighProbabilityNonShopThresholdPercentText) * 100d,
                 HighProbabilityShopThresholdPercent = GetOptionalThresholdPercent(HighProbabilityShopThresholdPercentText) * 100d,
@@ -2750,6 +2853,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
     private static IReadOnlyList<CatalogItem> _staticCardCatalog = Array.Empty<CatalogItem>();
     private static IReadOnlyList<CatalogItem> _staticRelicCatalog = Array.Empty<CatalogItem>();
     private static IReadOnlyList<CatalogItem> _staticPotionCatalog = Array.Empty<CatalogItem>();
+    private static IReadOnlyDictionary<string, string> _staticCardLocalizationTable = EmptyLocalizationTable;
     private static IReadOnlyDictionary<string, string> _staticRelicLocalizationTable = EmptyLocalizationTable;
 
     internal static IReadOnlyList<CatalogItem> StaticCardCatalog => _staticCardCatalog;
@@ -2758,6 +2862,11 @@ internal sealed partial class MainWindowViewModel : ObservableObject
 
     internal static string GetCardDisplayName(string cardId)
     {
+        if (TryGetLocalizedTitle(_staticCardLocalizationTable, cardId, out var localizedTitle))
+        {
+            return localizedTitle;
+        }
+
         var catalog = _staticCardCatalog;
         for (int i = 0; i < catalog.Count; i++)
         {
@@ -2786,6 +2895,13 @@ internal sealed partial class MainWindowViewModel : ObservableObject
     private string? GetLocalizedRelicTitle(string relicId)
     {
         return TryGetLocalizedTitle(_relicLocalizationTable, relicId, out var localizedTitle)
+            ? localizedTitle
+            : null;
+    }
+
+    private string? GetLocalizedCardTitle(string cardId)
+    {
+        return TryGetLocalizedTitle(_cardLocalizationTable, cardId, out var localizedTitle)
             ? localizedTitle
             : null;
     }
@@ -2878,7 +2994,9 @@ internal sealed partial class MainWindowViewModel : ObservableObject
 
     private sealed class RollWorkerState
     {
+        private readonly NeowOptionDataset _dataset;
         private readonly SeedRunEvaluator _evaluator;
+        private readonly Sts2RunPreviewer? _previewer;
         private readonly SeedRunFilter _filter;
         private readonly CharacterId _character;
         private readonly string _characterName;
@@ -2904,7 +3022,9 @@ internal sealed partial class MainWindowViewModel : ObservableObject
             bool requireAct2Match,
             bool requireAct3Match)
         {
+            _dataset = dataset;
             _evaluator = new SeedRunEvaluator(dataset, previewer);
+            _previewer = previewer;
             _filter = filter;
             _character = character;
             _characterName = characterName;
@@ -2940,6 +3060,23 @@ internal sealed partial class MainWindowViewModel : ObservableObject
             }
 
             var displayNeow = _filter.NeowFilter.HasCriteria ? match.NeowMatches : match.NeowOptions;
+            var eventVisibilityAnalysis = match.EventVisibilityAnalysis;
+
+            if (eventVisibilityAnalysis == null &&
+                _filter.PoolFilter.HasCriteria &&
+                _previewer != null)
+            {
+                eventVisibilityAnalysis = _previewer.AnalyzeEventVisibility(_dataset, new Sts2EventVisibilityRequest
+                {
+                    SeedText = workItem.SeedText,
+                    SeedValue = workItem.SeedValue,
+                    Character = _character,
+                    UnlockedCharacters = _unlockedCharacters,
+                    AscensionLevel = _ascensionLevel,
+                    PlayerCount = 1,
+                    AncientAvailability = _ancientAvailability
+                });
+            }
 
             var viewModel = new RollResultViewModel(
                 workItem.SeedText,
@@ -2948,6 +3085,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
                 _characterName,
                 displayNeow,
                 match.PoolAnalysis,
+                eventVisibilityAnalysis,
                 match.RelicVisibilityAnalysis,
                 _filter.PoolFilter,
                 match.Sts2Preview,
@@ -3144,6 +3282,16 @@ internal sealed partial class MainWindowViewModel : ObservableObject
 
         public List<string>? Act3EventIds { get; init; }
 
+        public double? HighProbabilityEventSeenThresholdPercent { get; init; }
+
+        public double? HighProbabilityEventEarlyThresholdPercent { get; init; }
+
+        public double? HighProbabilityEventAverageFirstOpportunityMax { get; init; }
+
+        public string? HighProbabilityEventMostCommonSource { get; init; }
+
+        public List<string>? HighProbabilityEventIds { get; init; }
+
         public double? HighProbabilitySeenThresholdPercent { get; init; }
 
         public double? HighProbabilityNonShopThresholdPercent { get; init; }
@@ -3191,3 +3339,5 @@ internal enum SeedRollMode
     Sequential,
     RandomUntilHit
 }
+
+

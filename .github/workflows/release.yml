@@ -2,13 +2,23 @@ name: Release Sts2SeedRoller
 
 on:
   push:
-    tags: ['v*']
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
 
 jobs:
   release:
     runs-on: windows-latest
-    permissions:
-      contents: write
+
+    defaults:
+      run:
+        shell: pwsh
+
+    env:
+      BUILD_CONFIGURATION: Release
+      RUNTIME_IDENTIFIER: win-x64
 
     steps:
       - name: Checkout
@@ -19,211 +29,193 @@ jobs:
         with:
           dotnet-version: "9.0.x"
 
-      - name: Extract version
-        id: version
+      - name: Compute release metadata
+        id: meta
         run: |
           $tag = "${{ github.ref_name }}"
           $version = $tag.TrimStart('v')
-          "version=$version" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-          "versionSuffix=-$version" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          $releaseAssetsDir = Join-Path $env:RUNNER_TEMP 'release-assets'
+
+          "tag=$tag" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          "version=$version" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          "releaseAssetsDir=$releaseAssetsDir" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
 
       - name: Restore
         run: dotnet restore Sts2SeedRoller.sln
 
       - name: Build
-        run: dotnet build Sts2SeedRoller.sln -c Release --no-restore
+        run: dotnet build Sts2SeedRoller.sln -c $env:BUILD_CONFIGURATION --no-restore
 
-      - name: Publish UI (Regular)
+      - name: Publish UI
         run: |
+          $publishDir = Join-Path $env:RUNNER_TEMP 'publish-ui'
+          if (Test-Path $publishDir) {
+            Remove-Item $publishDir -Recurse -Force
+          }
+
           dotnet publish src/SeedUi/SeedUi.csproj `
-            -c Release `
-            -r win-x64 `
+            -c $env:BUILD_CONFIGURATION `
+            -r $env:RUNTIME_IDENTIFIER `
             --self-contained true `
-            -o src/SeedUi/bin/Release/net9.0-windows/win-x64/publish `
+            -o $publishDir `
             /p:DebugType=None `
             /p:DebugSymbols=false
 
-      - name: Publish CLI (Regular)
+      - name: Publish CLI
         run: |
+          $publishDir = Join-Path $env:RUNNER_TEMP 'publish-cli'
+          if (Test-Path $publishDir) {
+            Remove-Item $publishDir -Recurse -Force
+          }
+
           dotnet publish src/SeedCli/SeedCli.csproj `
-            -c Release `
-            -r win-x64 `
+            -c $env:BUILD_CONFIGURATION `
+            -r $env:RUNTIME_IDENTIFIER `
             --self-contained true `
-            -o src/SeedCli/bin/Release/net9.0/win-x64/publish `
+            -o $publishDir `
             /p:DebugType=None `
             /p:DebugSymbols=false
 
-      - name: Copy data files to publish directories
+      - name: Create release packages
+        id: package
         run: |
-          # Regular UI publish: CopySeedData puts data in build output, not publish output
-          $uiBuildOut = Join-Path $env:GITHUB_WORKSPACE 'src/SeedUi/bin/Release/net9.0-windows'
-          $uiPublish = Join-Path $env:GITHUB_WORKSPACE 'src/SeedUi/bin/Release/net9.0-windows/win-x64/publish'
-          if (Test-Path (Join-Path $uiBuildOut 'data')) {
-            $dest = Join-Path $uiPublish 'data'
-            if (Test-Path $dest) { Remove-Item $dest -Recurse -Force }
-            Copy-Item -Recurse -Path (Join-Path $uiBuildOut 'data') -Destination $uiPublish
+          $version = "${{ steps.meta.outputs.version }}"
+          $releaseAssetsDir = "${{ steps.meta.outputs.releaseAssetsDir }}"
+          $uiPublishDir = Join-Path $env:RUNNER_TEMP 'publish-ui'
+          $cliPublishDir = Join-Path $env:RUNNER_TEMP 'publish-cli'
+          $uiPackageDir = Join-Path $env:RUNNER_TEMP 'package-ui'
+          $cliPackageDir = Join-Path $env:RUNNER_TEMP 'package-cli'
+
+          foreach ($dir in @($releaseAssetsDir, $uiPackageDir, $cliPackageDir)) {
+            if (Test-Path $dir) {
+              Remove-Item $dir -Recurse -Force
+            }
           }
 
-          # Regular CLI publish: same issue
-          $cliBuildOut = Join-Path $env:GITHUB_WORKSPACE 'src/SeedCli/bin/Release/net9.0'
-          $cliPublish = Join-Path $env:GITHUB_WORKSPACE 'src/SeedCli/bin/Release/net9.0/win-x64/publish'
-          if (Test-Path (Join-Path $cliBuildOut 'data')) {
-            $dest = Join-Path $cliPublish 'data'
-            if (Test-Path $dest) { Remove-Item $dest -Recurse -Force }
-            Copy-Item -Recurse -Path (Join-Path $cliBuildOut 'data') -Destination $cliPublish
+          New-Item -ItemType Directory -Path $releaseAssetsDir -Force | Out-Null
+
+          $uiAppRoot = Join-Path $uiPackageDir 'Sts2SeedRoller'
+          New-Item -ItemType Directory -Path $uiAppRoot -Force | Out-Null
+          Copy-Item -Path (Join-Path $uiPublishDir '*') -Destination $uiAppRoot -Recurse -Force
+          Copy-Item -Path 'data' -Destination $uiAppRoot -Recurse -Force
+          Copy-Item -Path 'README.md' -Destination $uiAppRoot -Force
+
+          $cliAppRoot = Join-Path $cliPackageDir 'Sts2SeedRoller-CLI'
+          New-Item -ItemType Directory -Path $cliAppRoot -Force | Out-Null
+          Copy-Item -Path (Join-Path $cliPublishDir '*') -Destination $cliAppRoot -Recurse -Force
+          Copy-Item -Path 'data' -Destination $cliAppRoot -Recurse -Force
+          Copy-Item -Path 'README.md' -Destination $cliAppRoot -Force
+
+          $uiZip = Join-Path $releaseAssetsDir "sts2seedroller-win-x64-$version.zip"
+          $cliZip = Join-Path $releaseAssetsDir "sts2seedroller-cli-win-x64-$version.zip"
+
+          Compress-Archive -Path $uiAppRoot -DestinationPath $uiZip -Force
+          Compress-Archive -Path $cliAppRoot -DestinationPath $cliZip -Force
+
+          "uiZip=$uiZip" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          "cliZip=$cliZip" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
+      - name: Upload UI package artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sts2seedroller-win-x64-${{ steps.meta.outputs.version }}
+          path: ${{ steps.package.outputs.uiZip }}
+          retention-days: 14
+
+      - name: Upload CLI package artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sts2seedroller-cli-win-x64-${{ steps.meta.outputs.version }}
+          path: ${{ steps.package.outputs.cliZip }}
+          retention-days: 14
+
+      - name: Create or update GitHub release
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          $headers = @{
+            Accept = 'application/vnd.github+json'
+            Authorization = "Bearer $env:GITHUB_TOKEN"
+            'X-GitHub-Api-Version' = '2022-11-28'
           }
 
-      - name: Publish UI (Single File)
-        run: |
-          $uiDir = Join-Path $env:GITHUB_WORKSPACE 'src/SeedUi/bin/Release/net9.0-windows'
-          # 清理并复制 data
-          if (Test-Path (Join-Path $uiDir 'data')) { Remove-Item (Join-Path $uiDir 'data') -Recurse -Force }
-          Copy-Item -Recurse -Path data -Destination $uiDir
-          # 复制 Assets（图标准备）
-          $assetsSrc = Join-Path $env:GITHUB_WORKSPACE 'src/SeedUi/Assets'
-          if (Test-Path $assetsSrc) {
-            $assetsDest = Join-Path $uiDir 'Assets'
-            if (Test-Path $assetsDest) { Remove-Item $assetsDest -Recurse -Force }
-            Copy-Item -Recurse -Path $assetsSrc -Destination $uiDir
+          $repository = "${{ github.repository }}"
+          $tag = "${{ steps.meta.outputs.tag }}"
+          $version = "${{ steps.meta.outputs.version }}"
+          $releaseName = "Sts2SeedRoller $version"
+          $tagReleaseUri = "https://api.github.com/repos/$repository/releases/tags/$tag"
+
+          try {
+            $release = Invoke-RestMethod -Method Get -Uri $tagReleaseUri -Headers $headers
           }
-          dotnet publish src/SeedUi/SeedUi.csproj `
-            -c Release `
-            -r win-x64 `
-            --self-contained true `
-            -o src/SeedUi/bin/Release/net9.0-windows/win-x64/single-publish `
-            /p:DebugType=None `
-            /p:DebugSymbols=false `
-            /p:PublishSingleFile=true `
-            /p:IncludeAllContentForSelfExtract=true `
-            /p:EnableCompressionInSingleFile=true
+          catch {
+            $statusCode = $_.Exception.Response.StatusCode.value__
+            if ($statusCode -ne 404) {
+              throw
+            }
 
-      - name: Publish CLI (Single File)
-        run: |
-          $cliDir = Join-Path $env:GITHUB_WORKSPACE 'src/SeedCli/bin/Release/net9.0'
-          if (Test-Path (Join-Path $cliDir 'data')) { Remove-Item (Join-Path $cliDir 'data') -Recurse -Force }
-          Copy-Item -Recurse -Path data -Destination $cliDir
-          dotnet publish src/SeedCli/SeedCli.csproj `
-            -c Release `
-            -r win-x64 `
-            --self-contained true `
-            -o src/SeedCli/bin/Release/net9.0/win-x64/single-publish `
-            /p:DebugType=None `
-            /p:DebugSymbols=false `
-            /p:PublishSingleFile=true `
-            /p:IncludeAllContentForSelfExtract=true `
-            /p:EnableCompressionInSingleFile=true
+            $release = $null
+          }
 
-      - name: Package Regular UI artifact
-        id: package-ui
-        shell: pwsh
-        run: |
-          $vs = "${{ steps.version.outputs.versionSuffix }}"
-          $uiPublish = Join-Path $env:GITHUB_WORKSPACE 'src/SeedUi/bin/Release/net9.0-windows/win-x64/publish'
-          if (-not (Test-Path $uiPublish)) { Write-Error "发布目录不存在: $uiPublish" }
+          if ($null -eq $release) {
+            $createBody = @{
+              tag_name = $tag
+              name = $releaseName
+              draft = $false
+              prerelease = $false
+              generate_release_notes = $true
+            } | ConvertTo-Json
 
-          $packageRoot = Join-Path $env:GITHUB_WORKSPACE 'sts2seedroller-package'
-          if (Test-Path $packageRoot) { Remove-Item $packageRoot -Recurse -Force }
-          $uiDest = Join-Path $packageRoot "Sts2SeedRoller"
-          New-Item -ItemType Directory -Path $uiDest -Force | Out-Null
-          Copy-Item -Path (Join-Path $uiPublish '*') -Destination $uiDest -Recurse -Force
+            $release = Invoke-RestMethod `
+              -Method Post `
+              -Uri "https://api.github.com/repos/$repository/releases" `
+              -Headers $headers `
+              -ContentType 'application/json' `
+              -Body $createBody
+          }
+          else {
+            $updateBody = @{
+              name = $releaseName
+              draft = $false
+              prerelease = $false
+            } | ConvertTo-Json
 
-          $shortcutPath = Join-Path $packageRoot "Sts2SeedRoller.lnk"
-          $shell = New-Object -ComObject WScript.Shell
-          $shortcut = $shell.CreateShortcut($shortcutPath)
-          $exePath = Join-Path $uiDest "Sts2SeedRollerUi.exe"
-          $shortcut.TargetPath = $exePath
-          $shortcut.WorkingDirectory = $uiDest
-          $shortcut.IconLocation = "$exePath,0"
-          $shortcut.Save()
+            $release = Invoke-RestMethod `
+              -Method Patch `
+              -Uri "https://api.github.com/repos/$repository/releases/$($release.id)" `
+              -Headers $headers `
+              -ContentType 'application/json' `
+              -Body $updateBody
+          }
 
-          $zipName = "sts2seedroller-win-x64$vs.zip"
-          $zipPath = Join-Path $env:GITHUB_WORKSPACE $zipName
-          Compress-Archive -Path (Join-Path $packageRoot '*') -DestinationPath $zipPath -Force
-          "artifactPath=$zipPath" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          $existingAssets = Invoke-RestMethod `
+            -Method Get `
+            -Uri "https://api.github.com/repos/$repository/releases/$($release.id)/assets?per_page=100" `
+            -Headers $headers
 
-      - name: Package Regular CLI artifact
-        id: package-cli
-        shell: pwsh
-        run: |
-          $vs = "${{ steps.version.outputs.versionSuffix }}"
-          $cliPublish = Join-Path $env:GITHUB_WORKSPACE 'src/SeedCli/bin/Release/net9.0/win-x64/publish'
-          if (-not (Test-Path $cliPublish)) { Write-Error "CLI 发布目录不存在: $cliPublish" }
+          $uploadBaseUrl = $release.upload_url -replace '\{\?name,label\}$', ''
+          $assets = @(
+            "${{ steps.package.outputs.uiZip }}",
+            "${{ steps.package.outputs.cliZip }}"
+          )
 
-          $cliRoot = Join-Path $env:GITHUB_WORKSPACE 'sts2seedroller-cli-package'
-          if (Test-Path $cliRoot) { Remove-Item $cliRoot -Recurse -Force }
-          New-Item -ItemType Directory -Path $cliRoot -Force | Out-Null
-          Copy-Item -Path (Join-Path $cliPublish '*') -Destination $cliRoot -Recurse -Force
+          foreach ($assetPath in $assets) {
+            $assetName = Split-Path $assetPath -Leaf
+            $duplicates = @($existingAssets | Where-Object { $_.name -eq $assetName })
+            foreach ($duplicate in $duplicates) {
+              Invoke-RestMethod `
+                -Method Delete `
+                -Uri "https://api.github.com/repos/$repository/releases/assets/$($duplicate.id)" `
+                -Headers $headers
+            }
 
-          $zipName = "sts2seedroller-cli-win-x64$vs.zip"
-          $zipPath = Join-Path $env:GITHUB_WORKSPACE $zipName
-          Compress-Archive -Path (Join-Path $cliRoot '*') -DestinationPath $zipPath -Force
-          "artifactPath=$zipPath" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            $encodedAssetName = [System.Uri]::EscapeDataString($assetName)
+            $uploadUri = "$uploadBaseUrl?name=$encodedAssetName"
 
-      - name: Package Single-File artifact
-        id: package-single
-        shell: pwsh
-        run: |
-          $vs = "${{ steps.version.outputs.versionSuffix }}"
-          $uiSingle = Join-Path $env:GITHUB_WORKSPACE 'src/SeedUi/bin/Release/net9.0-windows/win-x64/single-publish'
-          $cliSingle = Join-Path $env:GITHUB_WORKSPACE 'src/SeedCli/bin/Release/net9.0/win-x64/single-publish'
-          if (-not (Test-Path $uiSingle)) { Write-Error "单文件发布目录不存在: $uiSingle" }
-          if (-not (Test-Path $cliSingle)) { Write-Error "CLI 单文件发布目录不存在: $cliSingle" }
-
-          # UI 单文件 exe：复制并重命名
-          $uiExe = Join-Path $uiSingle "Sts2SeedRollerUi$vs.exe"
-          if (-not (Test-Path (Join-Path $uiSingle 'Sts2SeedRollerUi.exe'))) { Write-Error "UI 单文件 exe 不存在" }
-          Copy-Item -Path (Join-Path $uiSingle 'Sts2SeedRollerUi.exe') -Destination $uiExe -Force
-          "uiExePath=$uiExe" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-
-          # CLI 单文件 exe：复制并重命名
-          $cliExe = Join-Path $cliSingle "Sts2SeedRoller$vs.exe"
-          if (-not (Test-Path (Join-Path $cliSingle 'Sts2SeedRoller.exe'))) { Write-Error "CLI 单文件 exe 不存在" }
-          Copy-Item -Path (Join-Path $cliSingle 'Sts2SeedRoller.exe') -Destination $cliExe -Force
-          "cliExePath=$cliExe" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-
-      - name: Upload Regular UI artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: sts2seedroller-win-x64${{ steps.version.outputs.versionSuffix }}
-          path: ${{ steps.package-ui.outputs.artifactPath }}
-
-      - name: Upload Regular CLI artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: sts2seedroller-cli-win-x64${{ steps.version.outputs.versionSuffix }}
-          path: ${{ steps.package-cli.outputs.artifactPath }}
-
-      - name: Upload Single-File UI artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: sts2seedroller-single-win-x64${{ steps.version.outputs.versionSuffix }}
-          path: ${{ steps.package-single.outputs.uiExePath }}
-
-      - name: Upload Single-File CLI artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: sts2seedroller-cli-single-win-x64${{ steps.version.outputs.versionSuffix }}
-          path: ${{ steps.package-single.outputs.cliExePath }}
-
-      - name: Create release notes
-        id: create-release-notes
-        run: pwsh -File .github/workflows/generate-release-notes.ps1 "${{ github.ref_name }}" "${{ steps.version.outputs.versionSuffix }}"
-
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: ${{ github.workspace }}
-          merge-multiple: true
-
-      - name: Publish GitHub Release
-        uses: softprops/action-gh-release@v1
-        with:
-          body_path: ${{ steps.create-release-notes.outputs.releaseNotesPath }}
-          tag_name: ${{ github.ref_name }}
-          files: |
-            sts2seedroller-win-x64${{ steps.version.outputs.versionSuffix }}.zip
-            sts2seedroller-cli-win-x64${{ steps.version.outputs.versionSuffix }}.zip
-            Sts2SeedRollerUi${{ steps.version.outputs.versionSuffix }}.exe
-            Sts2SeedRoller${{ steps.version.outputs.versionSuffix }}.exe
-          draft: false
-          prerelease: false
+            Invoke-RestMethod `
+              -Method Post `
+              -Uri $uploadUri `
+              -Headers $headers `
+              -ContentType 'application/zip' `
+              -InFile $assetPath
+          }

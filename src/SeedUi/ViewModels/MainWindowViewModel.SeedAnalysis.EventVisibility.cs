@@ -35,14 +35,14 @@ internal sealed partial class MainWindowViewModel
                 .Take(itemLimit)
                 .Select((item, index) => new SeedAnalysisEventVisibilityItemViewModel(
                     index + 1,
-                    FormatEventVisibilityEventLine(item)))
+                    item))
                 .ToList();
 
             var seenEvents = profile.SeenEvents
                 .Take(itemLimit)
                 .Select((item, index) => new SeedAnalysisEventVisibilityItemViewModel(
                     index + 1,
-                    FormatEventVisibilityEventLine(item)))
+                    item))
                 .ToList();
 
             var samples = profile.EarlySamples
@@ -116,17 +116,46 @@ internal sealed partial class MainWindowViewModel
     {
         return eventIds.Count == 0
             ? "前期窗口内未出现事件"
-            : string.Join(" / ", eventIds.Select(FormatEventVisibilityDisplayName));
+            : string.Join(" / ", eventIds.Select(FormatEventSampleToken));
+    }
+
+    private static string FormatEventSampleToken(string token)
+    {
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            return string.Empty;
+        }
+
+        var separatorIndex = token.IndexOf(':');
+        if (separatorIndex > 0 &&
+            int.TryParse(token[..separatorIndex], out var actNumber) &&
+            separatorIndex + 1 < token.Length)
+        {
+            var eventId = token[(separatorIndex + 1)..];
+            return $"第{actNumber}幕 · {GetEventVisibilityDisplayName(eventId)}";
+        }
+
+        return GetEventVisibilityDisplayName(token);
     }
 
     private static string FormatEventVisibilityEventLine(Sts2EventVisibilityRankedEvent item)
     {
         if (item.RouteCount > 1)
         {
-            return $"{FormatEventVisibilityDisplayName(item.EventId)} | 前期 {item.EarlyProbability:P1}（区间 {item.MinEarlyProbability:P0}-{item.MaxEarlyProbability:P0}，一致 {item.EarlyRouteSupportCount}/{item.RouteCount}） | 整局 {item.SeenProbability:P1}（区间 {item.MinSeenProbability:P0}-{item.MaxSeenProbability:P0}，一致 {item.SeenRouteSupportCount}/{item.RouteCount}） | 首次约第 {item.AverageFirstOpportunity:F1} 个事件位 | 多来自 {FormatEventVisibilitySource(item.MostCommonSource)}";
+            return $"{GetEventVisibilityDisplayName(item.EventId)} | 前期 {item.EarlyProbability:P1}（区间 {item.MinEarlyProbability:P0}-{item.MaxEarlyProbability:P0}，一致 {item.EarlyRouteSupportCount}/{item.RouteCount}） | 整局 {item.SeenProbability:P1}（区间 {item.MinSeenProbability:P0}-{item.MaxSeenProbability:P0}，一致 {item.SeenRouteSupportCount}/{item.RouteCount}） | 首次约第 {item.AverageFirstOpportunity:F1} 个事件位 | 多来自 {FormatEventVisibilitySource(item.MostCommonSource)}";
         }
 
-        return $"{FormatEventVisibilityDisplayName(item.EventId)} | 前期 {item.EarlyProbability:P1} | 整局 {item.SeenProbability:P1} | 首次约第 {item.AverageFirstOpportunity:F1} 个事件位 | 多来自 {FormatEventVisibilitySource(item.MostCommonSource)}";
+        return $"{GetEventVisibilityDisplayName(item.EventId)} | 前期 {item.EarlyProbability:P1} | 整局 {item.SeenProbability:P1} | 首次约第 {item.AverageFirstOpportunity:F1} 个事件位 | 多来自 {FormatEventVisibilitySource(item.MostCommonSource)}";
+    }
+
+    private static string FormatEventVisibilityMetrics(Sts2EventVisibilityRankedEvent item)
+    {
+        if (item.RouteCount > 1)
+        {
+            return $"第{item.ActNumber}幕前5事件位 {item.EarlyProbability:P1}（区间 {item.MinEarlyProbability:P0}-{item.MaxEarlyProbability:P0}，一致 {item.EarlyRouteSupportCount}/{item.RouteCount}） | 第{item.ActNumber}幕出现 {item.SeenProbability:P1}（区间 {item.MinSeenProbability:P0}-{item.MaxSeenProbability:P0}，一致 {item.SeenRouteSupportCount}/{item.RouteCount}） | 第{item.ActNumber}幕首次约第 {item.AverageFirstOpportunity:F1} 个事件位 | 多来自 {FormatEventVisibilitySource(item.MostCommonSource)}";
+        }
+
+        return $"第{item.ActNumber}幕前5事件位 {item.EarlyProbability:P1} | 第{item.ActNumber}幕出现 {item.SeenProbability:P1} | 第{item.ActNumber}幕首次约第 {item.AverageFirstOpportunity:F1} 个事件位 | 多来自 {FormatEventVisibilitySource(item.MostCommonSource)}";
     }
 
     private static string FormatEventVisibilitySource(Sts2EventVisibilitySource source)
@@ -140,7 +169,7 @@ internal sealed partial class MainWindowViewModel
         };
     }
 
-    private static string FormatEventVisibilityDisplayName(string eventId)
+    internal static string GetEventVisibilityDisplayName(string eventId)
     {
         if (IsAncientEventVisibilityId(eventId))
         {
@@ -223,14 +252,34 @@ internal sealed partial class MainWindowViewModel
 
     internal sealed class SeedAnalysisEventVisibilityItemViewModel
     {
-        public SeedAnalysisEventVisibilityItemViewModel(int rank, string text)
+        public SeedAnalysisEventVisibilityItemViewModel(int rank, Sts2EventVisibilityRankedEvent item)
         {
             Rank = rank;
-            Text = text;
+            var displayItem = CreateSeedAnalysisEventDisplayItem(item.EventId);
+            Title = $"第{item.ActNumber}幕 · {displayItem.Title}";
+            Description = displayItem.Description;
+            Options = displayItem.Options;
+            MetricsText = FormatEventVisibilityMetrics(item);
         }
 
         public int Rank { get; }
 
-        public string Text { get; }
+        public string RankText => $"{Rank:D2}.";
+
+        public string Title { get; }
+
+        public string Description { get; }
+
+        public IReadOnlyList<SeedAnalysisOptionDisplayItemViewModel> Options { get; }
+
+        public string MetricsText { get; }
+
+        public bool HasDescription => !string.IsNullOrWhiteSpace(Description);
+
+        public bool HasOptions => Options.Count > 0;
+
+        public bool HasTooltipContent => HasDescription || HasOptions;
+
+        public bool HasDescriptionAndOptions => HasDescription && HasOptions;
     }
 }

@@ -360,7 +360,54 @@
                                             <ItemsControl ItemsSource="{Binding EarlyEvents}">
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate>
-                                                        <TextBlock Text="{Binding Text}" Margin="0 2 0 2" Foreground="#444" TextWrapping="Wrap"/>
+                                                        <StackPanel Margin="0 2 0 6">
+                                                            <TextBlock Style="{StaticResource EventNameStyle}">
+                                                                <Run Text="{Binding RankText, Mode=OneWay}"/>
+                                                                <Run Text=" "/>
+                                                                <Run Text="{Binding Title, Mode=OneWay}"/>
+                                                                <TextBlock.ToolTip>
+                                                                    <ToolTip Style="{StaticResource EventTooltipStyle}"
+                                                                             Visibility="{Binding HasTooltipContent, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                                                        <StackPanel MaxWidth="420">
+                                                                            <TextBlock Text="{Binding Description}"
+                                                                                       TextWrapping="Wrap"
+                                                                                       Foreground="#3E2B00"
+                                                                                       Visibility="{Binding HasDescription, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                                                            <Border Height="1"
+                                                                                    Margin="0 8 0 8"
+                                                                                    Background="#C8A24A"
+                                                                                    Visibility="{Binding HasDescriptionAndOptions, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                                                            <StackPanel Visibility="{Binding HasOptions, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                                                                <TextBlock Text="可选项"
+                                                                                           FontWeight="SemiBold"
+                                                                                           Margin="0 0 0 6"
+                                                                                           Foreground="#6D4900"/>
+                                                                                <ItemsControl ItemsSource="{Binding Options}">
+                                                                                    <ItemsControl.ItemTemplate>
+                                                                                        <DataTemplate>
+                                                                                            <Border Padding="0 0 0 8">
+                                                                                                <StackPanel>
+                                                                                                    <TextBlock Text="{Binding Title}"
+                                                                                                               FontWeight="SemiBold"
+                                                                                                               Foreground="#3E2B00"
+                                                                                                               TextWrapping="Wrap"/>
+                                                                                                    <TextBlock Text="{Binding Description}"
+                                                                                                               Margin="0 2 0 0"
+                                                                                                               TextWrapping="Wrap"
+                                                                                                               Foreground="#3E2B00"
+                                                                                                               Visibility="{Binding HasDescription, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                                                                                </StackPanel>
+                                                                                            </Border>
+                                                                                        </DataTemplate>
+                                                                                    </ItemsControl.ItemTemplate>
+                                                                                </ItemsControl>
+                                                                            </StackPanel>
+                                                                        </StackPanel>
+                                                                    </ToolTip>
+                                                                </TextBlock.ToolTip>
+                                                            </TextBlock>
+                                                            <TextBlock Text="{Binding MetricsText}" Margin="20 2 0 0" Foreground="#666" TextWrapping="Wrap"/>
+                                                        </StackPanel>
                                                     </DataTemplate>
                                                 </ItemsControl.ItemTemplate>
                                             </ItemsControl>
@@ -371,7 +418,54 @@
                                             <ItemsControl ItemsSource="{Binding SeenEvents}">
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate>
-                                                        <TextBlock Text="{Binding Text}" Margin="0 2 0 2" Foreground="#444" TextWrapping="Wrap"/>
+                                                        <StackPanel Margin="0 2 0 6">
+                                                            <TextBlock Style="{StaticResource EventNameStyle}">
+                                                                <Run Text="{Binding RankText, Mode=OneWay}"/>
+                                                                <Run Text=" "/>
+                                                                <Run Text="{Binding Title, Mode=OneWay}"/>
+                                                                <TextBlock.ToolTip>
+                                                                    <ToolTip Style="{StaticResource EventTooltipStyle}"
+                                                                             Visibility="{Binding HasTooltipContent, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                                                        <StackPanel MaxWidth="420">
+                                                                            <TextBlock Text="{Binding Description}"
+                                                                                       TextWrapping="Wrap"
+                                                                                       Foreground="#3E2B00"
+                                                                                       Visibility="{Binding HasDescription, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                                                            <Border Height="1"
+                                                                                    Margin="0 8 0 8"
+                                                                                    Background="#C8A24A"
+                                                                                    Visibility="{Binding HasDescriptionAndOptions, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                                                            <StackPanel Visibility="{Binding HasOptions, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                                                                <TextBlock Text="可选项"
+                                                                                           FontWeight="SemiBold"
+                                                                                           Margin="0 0 0 6"
+                                                                                           Foreground="#6D4900"/>
+                                                                                <ItemsControl ItemsSource="{Binding Options}">
+                                                                                    <ItemsControl.ItemTemplate>
+                                                                                        <DataTemplate>
+                                                                                            <Border Padding="0 0 0 8">
+                                                                                                <StackPanel>
+                                                                                                    <TextBlock Text="{Binding Title}"
+                                                                                                               FontWeight="SemiBold"
+                                                                                                               Foreground="#3E2B00"
+                                                                                                               TextWrapping="Wrap"/>
+                                                                                                    <TextBlock Text="{Binding Description}"
+                                                                                                               Margin="0 2 0 0"
+                                                                                                               TextWrapping="Wrap"
+                                                                                                               Foreground="#3E2B00"
+                                                                                                               Visibility="{Binding HasDescription, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                                                                                </StackPanel>
+                                                                                            </Border>
+                                                                                        </DataTemplate>
+                                                                                    </ItemsControl.ItemTemplate>
+                                                                                </ItemsControl>
+                                                                            </StackPanel>
+                                                                        </StackPanel>
+                                                                    </ToolTip>
+                                                                </TextBlock.ToolTip>
+                                                            </TextBlock>
+                                                            <TextBlock Text="{Binding MetricsText}" Margin="20 2 0 0" Foreground="#666" TextWrapping="Wrap"/>
+                                                        </StackPanel>
                                                     </DataTemplate>
                                                 </ItemsControl.ItemTemplate>
                                             </ItemsControl>

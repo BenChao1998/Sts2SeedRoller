@@ -248,6 +248,46 @@ public sealed class Sts2RunPreviewer
         return _eventVisibilityAnalyzer.Analyze(request, dataset, actPools, ancientPreview);
     }
 
+    internal bool MatchesHighProbabilityEvents(
+        NeowOptionDataset dataset,
+        Sts2EventVisibilityRequest request,
+        Sts2PoolFilter filter)
+    {
+        ArgumentNullException.ThrowIfNull(dataset);
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(filter);
+
+        var ancientAvailability = request.ResolveAncientAvailability();
+        var upFrontRng = new GameRng(request.SeedValue, "up_front");
+        _primer.Prime(upFrontRng, request.Character, request.PlayerCount, ancientAvailability);
+
+        var actPools = _simulator.Analyze(
+            upFrontRng,
+            request.SeedValue,
+            ancientAvailability);
+
+        var ancientPreview = Preview(new Sts2RunRequest
+        {
+            SeedText = request.SeedText,
+            SeedValue = request.SeedValue,
+            Character = request.Character,
+            UnlockedCharacters = ResolveUnlockedCharacters(request.Character, request.UnlockedCharacters),
+            AscensionLevel = request.AscensionLevel,
+            PlayerCount = request.PlayerCount,
+            AncientAvailability = ancientAvailability,
+            IncludeDarvSharedAncient = request.IncludeDarvSharedAncient,
+            IncludeAct2 = true,
+            IncludeAct3 = true
+        });
+
+        return _eventVisibilityAnalyzer.MatchesHighProbabilityEvents(
+            request,
+            dataset,
+            actPools,
+            ancientPreview,
+            filter);
+    }
+
     internal bool MatchesHighProbabilityRelics(
         NeowOptionDataset dataset,
         Sts2RelicVisibilityRequest request,

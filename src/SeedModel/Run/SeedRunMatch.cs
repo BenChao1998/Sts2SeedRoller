@@ -25,5 +25,7 @@ public sealed record SeedRunMatch
 
     public Sts2SeedAnalysis? PoolAnalysis { get; init; }
 
+    public Sts2EventVisibilityAnalysis? EventVisibilityAnalysis { get; init; }
+
     public Sts2RelicVisibilityAnalysis? RelicVisibilityAnalysis { get; init; }
 }

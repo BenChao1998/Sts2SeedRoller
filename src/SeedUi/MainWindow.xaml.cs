@@ -24,6 +24,7 @@ public partial class MainWindow : HandyControl.Controls.Window
         if (NavLogs != null) NavLogs.IsChecked = tabIndex == 3;
         if (NavArchive != null) NavArchive.IsChecked = tabIndex == 4;
         if (NavViewer != null) NavViewer.IsChecked = tabIndex == 5;
+        if (NavEventPools != null) NavEventPools.IsChecked = tabIndex == 6;
 
         if (PageTitle != null)
         {
@@ -35,6 +36,7 @@ public partial class MainWindow : HandyControl.Controls.Window
                 3 => "运行日志",
                 4 => "铺种",
                 5 => "查看器",
+                6 => "事件池信息",
                 _ => PageTitle.Text
             };
         }
@@ -45,6 +47,7 @@ public partial class MainWindow : HandyControl.Controls.Window
         if (PageLogsScroll != null) PageLogsScroll.Visibility = tabIndex == 3 ? Visibility.Visible : Visibility.Collapsed;
         if (PageArchiveScroll != null) PageArchiveScroll.Visibility = tabIndex == 4 ? Visibility.Visible : Visibility.Collapsed;
         if (PageViewerScroll != null) PageViewerScroll.Visibility = tabIndex == 5 ? Visibility.Visible : Visibility.Collapsed;
+        if (PageEventPoolsScroll != null) PageEventPoolsScroll.Visibility = tabIndex == 6 ? Visibility.Visible : Visibility.Collapsed;
 
         if (PageConfig != null) PageConfig.Visibility = tabIndex == 0 ? Visibility.Visible : Visibility.Collapsed;
         if (PageSeedAnalysis != null) PageSeedAnalysis.Visibility = tabIndex == 1 ? Visibility.Visible : Visibility.Collapsed;
@@ -52,6 +55,7 @@ public partial class MainWindow : HandyControl.Controls.Window
         if (PageLogs != null) PageLogs.Visibility = tabIndex == 3 ? Visibility.Visible : Visibility.Collapsed;
         if (PageArchive != null) PageArchive.Visibility = tabIndex == 4 ? Visibility.Visible : Visibility.Collapsed;
         if (PageViewer != null) PageViewer.Visibility = tabIndex == 5 ? Visibility.Visible : Visibility.Collapsed;
+        if (PageEventPools != null) PageEventPools.Visibility = tabIndex == 6 ? Visibility.Visible : Visibility.Collapsed;
     }
 
     private void ResultsListBox_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
@@ -82,6 +86,8 @@ public partial class MainWindow : HandyControl.Controls.Window
     private void NavArchive_Checked(object sender, RoutedEventArgs e) => NavigateToPage(4);
 
     private void NavViewer_Checked(object sender, RoutedEventArgs e) => NavigateToPage(5);
+
+    private void NavEventPools_Checked(object sender, RoutedEventArgs e) => NavigateToPage(6);
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {

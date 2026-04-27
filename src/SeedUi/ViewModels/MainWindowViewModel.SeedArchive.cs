@@ -1221,9 +1221,10 @@ internal sealed partial class MainWindowViewModel
             characterName,
             run.Act1Options,
             poolAnalysis: null,
+            eventVisibilityAnalysis: null,
             relicVisibilityAnalysis: null,
             poolFilter: null,
-            run.Sts2Preview,
+            ancientPreview: run.Sts2Preview,
             requiresAct2: false,
             requiresAct3: false,
             run.Ascension);
