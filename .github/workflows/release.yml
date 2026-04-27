@@ -133,89 +133,42 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
-          $headers = @{
-            Accept = 'application/vnd.github+json'
-            Authorization = "Bearer $env:GITHUB_TOKEN"
-            'X-GitHub-Api-Version' = '2022-11-28'
-          }
-
-          $repository = "${{ github.repository }}"
           $tag = "${{ steps.meta.outputs.tag }}"
           $version = "${{ steps.meta.outputs.version }}"
           $releaseName = "Sts2SeedRoller $version"
-          $tagReleaseUri = "https://api.github.com/repos/$repository/releases/tags/$tag"
 
-          try {
-            $release = Invoke-RestMethod -Method Get -Uri $tagReleaseUri -Headers $headers
+          $releaseExists = $true
+          gh release view $tag --repo "${{ github.repository }}" | Out-Null
+          if ($LASTEXITCODE -ne 0) {
+            $releaseExists = $false
           }
-          catch {
-            $statusCode = $_.Exception.Response.StatusCode.value__
-            if ($statusCode -ne 404) {
-              throw
+
+          if (-not $releaseExists) {
+            gh release create $tag `
+              "${{ steps.package.outputs.uiZip }}" `
+              "${{ steps.package.outputs.cliZip }}" `
+              --repo "${{ github.repository }}" `
+              --title $releaseName `
+              --generate-notes `
+              --verify-tag
+            if ($LASTEXITCODE -ne 0) {
+              throw "gh release create failed."
             }
-
-            $release = $null
+            return
           }
 
-          if ($null -eq $release) {
-            $createBody = @{
-              tag_name = $tag
-              name = $releaseName
-              draft = $false
-              prerelease = $false
-              generate_release_notes = $true
-            } | ConvertTo-Json
-
-            $release = Invoke-RestMethod `
-              -Method Post `
-              -Uri "https://api.github.com/repos/$repository/releases" `
-              -Headers $headers `
-              -ContentType 'application/json' `
-              -Body $createBody
-          }
-          else {
-            $updateBody = @{
-              name = $releaseName
-              draft = $false
-              prerelease = $false
-            } | ConvertTo-Json
-
-            $release = Invoke-RestMethod `
-              -Method Patch `
-              -Uri "https://api.github.com/repos/$repository/releases/$($release.id)" `
-              -Headers $headers `
-              -ContentType 'application/json' `
-              -Body $updateBody
+          gh release edit $tag `
+            --repo "${{ github.repository }}" `
+            --title $releaseName
+          if ($LASTEXITCODE -ne 0) {
+            throw "gh release edit failed."
           }
 
-          $existingAssets = Invoke-RestMethod `
-            -Method Get `
-            -Uri "https://api.github.com/repos/$repository/releases/$($release.id)/assets?per_page=100" `
-            -Headers $headers
-
-          $uploadBaseUrl = $release.upload_url -replace '\{\?name,label\}$', ''
-          $assets = @(
-            "${{ steps.package.outputs.uiZip }}",
-            "${{ steps.package.outputs.cliZip }}"
-          )
-
-          foreach ($assetPath in $assets) {
-            $assetName = Split-Path $assetPath -Leaf
-            $duplicates = @($existingAssets | Where-Object { $_.name -eq $assetName })
-            foreach ($duplicate in $duplicates) {
-              Invoke-RestMethod `
-                -Method Delete `
-                -Uri "https://api.github.com/repos/$repository/releases/assets/$($duplicate.id)" `
-                -Headers $headers
-            }
-
-            $encodedAssetName = [System.Uri]::EscapeDataString($assetName)
-            $uploadUri = "$uploadBaseUrl?name=$encodedAssetName"
-
-            Invoke-RestMethod `
-              -Method Post `
-              -Uri $uploadUri `
-              -Headers $headers `
-              -ContentType 'application/zip' `
-              -InFile $assetPath
+          gh release upload $tag `
+            "${{ steps.package.outputs.uiZip }}" `
+            "${{ steps.package.outputs.cliZip }}" `
+            --repo "${{ github.repository }}" `
+            --clobber
+          if ($LASTEXITCODE -ne 0) {
+            throw "gh release upload failed."
           }
