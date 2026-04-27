@@ -83,7 +83,7 @@
             </Setter>
         </Style>
 
-        <!-- 筛选标签样�?-->
+        <!-- 筛选标签样式 -->
         <Style x:Key="FilterTagStyle" TargetType="Border">
             <Setter Property="Background" Value="#E3F2FD"/>
             <Setter Property="BorderBrush" Value="#BBDEFB"/>
@@ -129,7 +129,7 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- 左侧导航�?-->
+        <!-- 左侧导航栏 -->
         <Border Grid.Column="0" Grid.Row="0" Background="White" BorderBrush="#E8E8E8" BorderThickness="0 0 1 0">
             <Grid>
                 <Grid.RowDefinitions>
@@ -172,7 +172,7 @@
                                  Checked="NavEventPools_Checked"/>
                 </StackPanel>
 
-                <!-- 底部数据状�?-->
+                <!-- 底部数据状态 -->
                 <Border Grid.Row="2" Padding="16" BorderBrush="#E8E8E8" BorderThickness="0 1 0 0">
                     <TextBlock Text="{Binding DatasetSummary}" FontSize="11" Foreground="#999" TextWrapping="Wrap"/>
                 </Border>
@@ -186,7 +186,7 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <!-- 顶部标题�?-->
+        <!-- 顶部标题栏 -->
             <Border Grid.Row="0" Background="White" BorderBrush="#E8E8E8" BorderThickness="0 0 0 1" Padding="24 16">
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -218,9 +218,9 @@
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
 
-                        <!-- 左列：事件、角色、遗物、卡牌、药�?-->
+                        <!-- 左列：事件、角色、遗物、卡牌、药水 -->
                         <StackPanel Grid.Column="0" Margin="0 0 12 0">
-                            <!-- 事件与数�?-->
+                            <!-- 事件与数据 -->
                             <Border Style="{StaticResource CardStyle}" Margin="0 0 0 16">
                                 <StackPanel>
                                     <TextBlock Text="&#x7248;&#x672C;&#x4E0E;&#x6570;&#x636E;" FontSize="16" FontWeight="SemiBold" Margin="0 0 0 16" Foreground="#333"/>
@@ -253,7 +253,7 @@
                                 </StackPanel>
                             </Border>
 
-                            <!-- 遗物筛�?-->
+                            <!-- 遗物筛选 -->
                             <Border Style="{StaticResource CardStyle}" Margin="0 0 0 16">
                                 <StackPanel>
                                     <TextBlock Text="&#x9057;&#x7269;&#x7B5B;&#x9009;" FontSize="16" FontWeight="SemiBold" Margin="0 0 0 8" Foreground="#333"/>
@@ -299,7 +299,7 @@
                                 </StackPanel>
                             </Border>
 
-                            <!-- 卡牌筛�?-->
+                            <!-- 卡牌筛选 -->
                             <Border Style="{StaticResource CardStyle}" Margin="0 0 0 16">
                                 <StackPanel>
                                     <TextBlock Text="&#x5361;&#x724C;&#x7B5B;&#x9009;" FontSize="16" FontWeight="SemiBold" Margin="0 0 0 8" Foreground="#333"/>
@@ -344,7 +344,7 @@
                                 </StackPanel>
                             </Border>
 
-                            <!-- 药水筛�?-->
+                            <!-- 药水筛选 -->
                             <Border Style="{StaticResource CardStyle}" Margin="0 0 0 16">
                                 <StackPanel>
                                     <TextBlock Text="&#x836F;&#x6C34;&#x7B5B;&#x9009;" FontSize="16" FontWeight="SemiBold" Margin="0 0 0 8" Foreground="#333"/>
@@ -389,7 +389,7 @@
                                 </StackPanel>
                             </Border>
 
-                            <!-- 种子分析筛�?-->
+                            <!-- 种子分析筛选 -->
                             <Border Style="{StaticResource CardStyle}" Margin="0 0 0 16">
                                 <StackPanel>
                                     <StackPanel Orientation="Horizontal" Margin="0 0 0 16">
@@ -601,7 +601,7 @@
                                                        VerticalAlignment="Center"/>
                                         </Grid>
                                         <WrapPanel Margin="0 0 0 8">
-                                            <TextBlock Text="非商�?%)" FontSize="12" Foreground="#666" VerticalAlignment="Center" Margin="0 0 8 8"/>
+                                            <TextBlock Text="非商店(%)" FontSize="12" Foreground="#666" VerticalAlignment="Center" Margin="0 0 8 8"/>
                                             <TextBox Text="{Binding HighProbabilityNonShopThresholdPercentText, UpdateSourceTrigger=PropertyChanged}"
                                                      Width="80"
                                                      Height="28"
@@ -680,7 +680,7 @@
                             </Border>
                         </StackPanel>
 
-                        <!-- 右列：种子、输出、古神、开始按�?-->
+                        <!-- 右列：种子、输出、古神、开始按钮 -->
                         <StackPanel Grid.Column="1" Margin="12 0 0 0">
                             <!-- 种子设置 -->
                             <Border Style="{StaticResource CardStyle}" Margin="0 0 0 16">
@@ -722,7 +722,7 @@
                                 </StackPanel>
                             </Border>
 
-                            <!-- 第二幕古�?-->
+                            <!-- 第二幕古神 -->
                             <Border Style="{StaticResource CardStyle}" Margin="0 0 0 16">
                                 <StackPanel>
                                     <StackPanel Orientation="Horizontal" Margin="0 0 0 16">
@@ -772,7 +772,7 @@
                                 </StackPanel>
                             </Border>
 
-                            <!-- 第三幕古�?-->
+                            <!-- 第三幕古神 -->
                             <Border Style="{StaticResource CardStyle}" Margin="0 0 0 16">
                                 <StackPanel>
                                     <StackPanel Orientation="Horizontal" Margin="0 0 0 16">
@@ -822,13 +822,13 @@
                                 </StackPanel>
                             </Border>
 
-                            <!-- 商店筛�?-->
+                            <!-- 商店筛选 -->
                             <Border Style="{StaticResource CardStyle}" Margin="0 0 0 16">
                                 <StackPanel>
                                     <StackPanel Orientation="Horizontal" Margin="0 0 0 16">
                                         <TextBlock Text="&#x5546;&#x5E97;&#x7B5B;&#x9009;" FontSize="16" FontWeight="SemiBold" Foreground="#333"/>
                                         <CheckBox IsChecked="{Binding IncludeShop}" Content="启用" Margin="16 0 0 0" VerticalAlignment="Center"/>
-                                        <TextBlock Text="模拟第一幕商店，筛选卡�?遗物/药水" FontSize="11" Foreground="#888" Margin="8 0 0 0" VerticalAlignment="Center" TextWrapping="Wrap" MaxWidth="300"/>
+                                        <TextBlock Text="模拟第一幕商店，筛选卡牌、遗物和药水" FontSize="11" Foreground="#888" Margin="8 0 0 0" VerticalAlignment="Center" TextWrapping="Wrap" MaxWidth="300"/>
                                     </StackPanel>
 
                                     <StackPanel IsEnabled="{Binding IncludeShop}">
@@ -1249,7 +1249,7 @@
                                                         CornerRadius="6" Padding="16" Margin="0 0 0 12"
                                                         HorizontalAlignment="Stretch">
                                                     <StackPanel>
-                                                        <!-- 头部：种子、角色、复制按�?-->
+                <!-- 头部：种子、角色、复制按钮 -->
                                                         <Grid Margin="0 0 0 12">
                                                             <Grid.ColumnDefinitions>
                                                                 <ColumnDefinition Width="Auto"/>
@@ -1326,7 +1326,7 @@
                                                             </ItemsControl.ItemTemplate>
                                                         </ItemsControl>
 
-                                                        <!-- 古神信息（如果有�?-->
+                        <!-- 古神信息（如果有） -->
                                                         <ItemsControl ItemsSource="{Binding AncientActs}" Visibility="{Binding HasAncientActs, Converter={StaticResource BooleanVisibilityConverter}}">
                                                             <ItemsControl.ItemTemplate>
                                                                 <DataTemplate>

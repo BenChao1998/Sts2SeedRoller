@@ -41,6 +41,14 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         WriteIndented = true,
         Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
     };
+    private static readonly HashSet<string> MerchantRelicBlacklist = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "THE_COURIER",
+        "OLD_COIN",
+        "AMETHYST_AUBERGINE",
+        "BOWLER_HAT",
+        "LUCKY_FYSH"
+    };
 
     private readonly string _configFilePath = Path.Combine(AppContext.BaseDirectory, "config.json");
     private readonly string _debugLogFilePath = Path.Combine(AppContext.BaseDirectory, "logs", "ui-debug.log");
@@ -93,6 +101,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
     private IReadOnlyList<CatalogItem> _relicCatalog = Array.Empty<CatalogItem>();
     private IReadOnlyList<CatalogItem> _cardCatalog = Array.Empty<CatalogItem>();
     private IReadOnlyList<CatalogItem> _potionCatalog = Array.Empty<CatalogItem>();
+    private IReadOnlyList<CatalogItem> _shopRelicCatalog = Array.Empty<CatalogItem>();
     private IReadOnlyList<CatalogItem> _filteredRelics = Array.Empty<CatalogItem>();
     private IReadOnlyList<CatalogItem> _filteredCards = Array.Empty<CatalogItem>();
     private IReadOnlyList<CatalogItem> _filteredPotions = Array.Empty<CatalogItem>();
@@ -1019,6 +1028,26 @@ internal sealed partial class MainWindowViewModel : ObservableObject
             .OrderBy(item => item.Display, StringComparer.OrdinalIgnoreCase)
             .ToList();
 
+        _shopRelicCatalog = dataset.RelicPoolMap.Values
+            .SelectMany(pool => pool)
+            .Where(id => !string.IsNullOrWhiteSpace(id))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Where(id => !MerchantRelicBlacklist.Contains(id))
+            .Where(id =>
+                dataset.RelicMetadataMap.TryGetValue(id, out var metadata) &&
+                metadata.ParsedRarity is RelicRarity.Common or RelicRarity.Uncommon or RelicRarity.Rare or RelicRarity.Shop)
+            .Select(relicId =>
+            {
+                var title = GetLocalizedRelicTitle(relicId) ?? relicId;
+                var rarity = dataset.RelicMetadataMap.TryGetValue(relicId, out var metadata)
+                    ? metadata.ParsedRarity.ToString()
+                    : "Unknown";
+                var display = $"{title} ({relicId})";
+                return new CatalogItem(relicId, display, BuildSearchKey(display, title, relicId, rarity, "商店"));
+            })
+            .OrderBy(item => item.Display, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
         ApplyRelicFilter();
         ApplyCardFilter();
         ApplyPotionFilter();
@@ -1073,7 +1102,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
 
     private void ApplyShopRelicFilter()
     {
-        _filteredShopRelics = FilterCatalog(_relicCatalog, _shopRelicCatalogFilter);
+        _filteredShopRelics = FilterCatalog(_shopRelicCatalog, _shopRelicCatalogFilter);
         RaisePropertyChanged(nameof(ShopRelicCatalogView));
     }
 
@@ -1377,6 +1406,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         _relicCatalog = Array.Empty<CatalogItem>();
         _cardCatalog = Array.Empty<CatalogItem>();
         _potionCatalog = Array.Empty<CatalogItem>();
+        _shopRelicCatalog = Array.Empty<CatalogItem>();
         ApplyRelicFilter();
         ApplyCardFilter();
         ApplyPotionFilter();

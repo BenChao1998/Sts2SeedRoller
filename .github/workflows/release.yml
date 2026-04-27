@@ -100,6 +100,15 @@ jobs:
           Copy-Item -Path 'data' -Destination $uiAppRoot -Recurse -Force
           Copy-Item -Path 'README.md' -Destination $uiAppRoot -Force
 
+          $shortcutPath = Join-Path $uiPackageDir 'Sts2SeedRoller.lnk'
+          $shell = New-Object -ComObject WScript.Shell
+          $shortcut = $shell.CreateShortcut($shortcutPath)
+          $exePath = Join-Path $uiAppRoot 'Sts2SeedRollerUi.exe'
+          $shortcut.TargetPath = $exePath
+          $shortcut.WorkingDirectory = $uiAppRoot
+          $shortcut.IconLocation = "$exePath,0"
+          $shortcut.Save()
+
           $cliAppRoot = Join-Path $cliPackageDir 'Sts2SeedRoller-CLI'
           New-Item -ItemType Directory -Path $cliAppRoot -Force | Out-Null
           Copy-Item -Path (Join-Path $cliPublishDir '*') -Destination $cliAppRoot -Recurse -Force
