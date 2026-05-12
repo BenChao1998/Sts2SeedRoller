@@ -24,6 +24,8 @@ public sealed record Sts2RunRequest
 
     public bool IncludeAct3 { get; init; }
 
+    public int? SeaGlassPreviewSamples { get; init; }
+
     internal Sts2AncientAvailability ResolveAncientAvailability()
     {
         return AncientAvailability ?? Sts2AncientAvailability.FromLegacyDarvFlag(IncludeDarvSharedAncient);

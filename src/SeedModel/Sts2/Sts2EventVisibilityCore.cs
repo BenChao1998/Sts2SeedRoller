@@ -20,7 +20,7 @@ internal static class Sts2EventPullEngine
         for (var offset = 0; offset < fullPool.Count; offset++)
         {
             var index = (state.EventsVisitedInAct + offset) % fullPool.Count;
-            var candidate = fullPool[index];
+            var candidate = Sts2EventIdNormalizer.FromPoolItem(fullPool[index]);
             if (state.VisitedEvents.Contains(candidate))
             {
                 continue;
@@ -34,7 +34,7 @@ internal static class Sts2EventPullEngine
             return candidate;
         }
 
-        return fullPool[state.EventsVisitedInAct % fullPool.Count];
+        return Sts2EventIdNormalizer.FromPoolItem(fullPool[state.EventsVisitedInAct % fullPool.Count]);
     }
 
     public static void EnsureNextEventIsValid(IReadOnlyList<string> fullPool, Sts2EventProgressState state)
@@ -47,7 +47,7 @@ internal static class Sts2EventPullEngine
         for (var offset = 0; offset < fullPool.Count; offset++)
         {
             var index = state.EventsVisitedInAct % fullPool.Count;
-            var candidate = fullPool[index];
+            var candidate = Sts2EventIdNormalizer.FromPoolItem(fullPool[index]);
             if (!state.VisitedEvents.Contains(candidate) &&
                 Sts2EventRuleRegistry.IsAllowed(candidate, state))
             {
@@ -65,20 +65,23 @@ internal static class Sts2EventPullEngine
             return;
         }
 
+        var normalizedEventId = Sts2EventIdNormalizer.FromPoolItem(eventId);
+
         for (var offset = 0; offset < fullPool.Count; offset++)
         {
             var index = (state.EventsVisitedInAct + offset) % fullPool.Count;
-            if (!string.Equals(fullPool[index], eventId, StringComparison.OrdinalIgnoreCase))
+            var candidate = Sts2EventIdNormalizer.FromPoolItem(fullPool[index]);
+            if (!string.Equals(candidate, normalizedEventId, StringComparison.OrdinalIgnoreCase))
             {
                 continue;
             }
 
             state.EventsVisitedInAct += offset + 1;
-            state.VisitedEvents.Add(eventId);
+            state.VisitedEvents.Add(normalizedEventId);
             return;
         }
 
-        state.VisitedEvents.Add(eventId);
+        state.VisitedEvents.Add(normalizedEventId);
     }
 }
 
@@ -86,7 +89,8 @@ internal static class Sts2EventRuleRegistry
 {
     public static bool IsAllowed(string eventId, Sts2EventProgressState state)
     {
-        return eventId switch
+        var normalizedEventId = Sts2EventIdNormalizer.FromPoolItem(eventId);
+        return normalizedEventId switch
         {
             "AMALGAMATOR" => state.BasicStrikeCount >= 2 && state.BasicDefendCount >= 2,
             "BRAIN_LEECH" => state.CurrentActIndex < 2,
@@ -131,6 +135,13 @@ internal static class Sts2EventRuleRegistry
             _ => true
         };
     }
+}
+
+internal enum Sts2SelfHelpBookBranch
+{
+    ReadTheBack = 0,
+    ReadPassage = 1,
+    ReadEntireBook = 2
 }
 
 internal sealed class Sts2EventVisibilitySimulationModel
@@ -322,6 +333,12 @@ internal sealed class Sts2EventVisibilitySimulationModel
     public string? RollEliteRewardCard(GameRng rng, ref float rareOffset, int ascensionLevel)
     {
         var rarity = RollCardRarity(rng, ref rareOffset, ascensionLevel, CardRarityOddsType.EliteEncounter);
+        return RollCardByRarity(rng, rarity);
+    }
+
+    public string? RollBossRewardCard(GameRng rng, ref float rareOffset, int ascensionLevel)
+    {
+        var rarity = RollCardRarity(rng, ref rareOffset, ascensionLevel, CardRarityOddsType.BossEncounter);
         return RollCardByRarity(rng, rarity);
     }
 
@@ -589,10 +606,23 @@ internal sealed class Sts2EventVisibilitySimulationModel
                 return null;
             }
 
-            var preferred = Directory.EnumerateDirectories(workspaceRoot, "*", SearchOption.TopDirectoryOnly)
-                .Where(path => string.IsNullOrWhiteSpace(version) || Path.GetFileName(path).Contains(version, StringComparison.OrdinalIgnoreCase))
-                .Concat(Directory.EnumerateDirectories(workspaceRoot, "*", SearchOption.TopDirectoryOnly))
-                .Distinct(StringComparer.OrdinalIgnoreCase);
+            // Only opt into official source scanning from explicit, dedicated folders.
+            // Avoid letting arbitrary workspace subdirectories silently change event logic.
+            var preferredNames = new List<string>
+            {
+                "official-data-models",
+                ".official-data-models"
+            };
+
+            if (!string.IsNullOrWhiteSpace(version))
+            {
+                preferredNames.Add($"official-data-models-{version}");
+                preferredNames.Add($".official-data-models-{version}");
+            }
+
+            var preferred = preferredNames
+                .Select(name => Path.Combine(workspaceRoot, name))
+                .Where(Directory.Exists);
 
             foreach (var directory in preferred)
             {
@@ -618,6 +648,7 @@ internal sealed class Sts2EventProgressState
     private readonly Sts2EventVisibilitySimulationModel _model;
     private readonly List<DeckCard> _deck = [];
     private readonly List<string> _potions = [];
+    private readonly HashSet<string> _ownedRelics = new(StringComparer.OrdinalIgnoreCase);
 
     private Sts2EventProgressState(
         Sts2EventVisibilitySimulationModel model,
@@ -689,6 +720,16 @@ internal sealed class Sts2EventProgressState
 
     public bool HasSoulsPowerTarget => _deck.Any(card => !card.HasEnchantment && _model.CanReceiveSoulsPower(card.CardId));
 
+    public bool HasByrdonisEgg => _deck.Any(card => string.Equals(card.CardId, "BYRDONIS_EGG", StringComparison.OrdinalIgnoreCase));
+
+    public bool ContainsCard(string cardId) =>
+        !string.IsNullOrWhiteSpace(cardId) &&
+        _deck.Any(card => string.Equals(card.CardId, cardId, StringComparison.OrdinalIgnoreCase));
+
+    public bool IsTradableRelic(string relicId) => _model.IsTradableRelic(relicId);
+
+    public IReadOnlyList<string> GetPotionIds() => _potions.ToArray();
+
     public int BasicStrikeCount => _deck.Count(card => card.CardId.StartsWith("STRIKE_", StringComparison.OrdinalIgnoreCase) && IsRemovableCard(card.CardId));
 
     public int BasicDefendCount => _deck.Count(card => card.CardId.StartsWith("DEFEND_", StringComparison.OrdinalIgnoreCase) && IsRemovableCard(card.CardId));
@@ -735,55 +776,261 @@ internal sealed class Sts2EventProgressState
         EventsVisitedInAct = Math.Max(0, initialEventsVisited);
     }
 
+    public Sts2EventProgressState Clone()
+    {
+        var clone = new Sts2EventProgressState(_model, Character, PlayerCount, CurrentGold, CurrentHp, MaxHp)
+        {
+            CurrentActNumber = CurrentActNumber,
+            TotalFloor = TotalFloor,
+            EventsVisitedInAct = EventsVisitedInAct,
+            TradableRelicCount = TradableRelicCount,
+            HasEventPet = HasEventPet,
+            PotionChance = PotionChance,
+            CardRareOffset = CardRareOffset
+        };
+
+        foreach (var card in _deck)
+        {
+            clone._deck.Add(new DeckCard(card.CardId)
+            {
+                HasEnchantment = card.HasEnchantment
+            });
+        }
+
+        foreach (var potionId in _potions)
+        {
+            clone._potions.Add(potionId);
+        }
+
+        foreach (var relicId in _ownedRelics)
+        {
+            clone._ownedRelics.Add(relicId);
+        }
+
+        foreach (var eventId in VisitedEvents)
+        {
+            clone.VisitedEvents.Add(eventId);
+        }
+
+        return clone;
+    }
+
+    public IReadOnlyList<Sts2SelfHelpBookBranch> GetAvailableSelfHelpBookBranches()
+    {
+        var branches = new List<Sts2SelfHelpBookBranch>(3);
+        if (HasEnchantableCardOfType(CardType.Attack))
+        {
+            branches.Add(Sts2SelfHelpBookBranch.ReadTheBack);
+        }
+
+        if (HasEnchantableCardOfType(CardType.Skill))
+        {
+            branches.Add(Sts2SelfHelpBookBranch.ReadPassage);
+        }
+
+        if (HasEnchantableCardOfType(CardType.Power))
+        {
+            branches.Add(Sts2SelfHelpBookBranch.ReadEntireBook);
+        }
+
+        return branches;
+    }
+
+    public void ApplySelfHelpBook(Sts2SelfHelpBookBranch branch)
+    {
+        _ = branch switch
+        {
+            Sts2SelfHelpBookBranch.ReadTheBack => EnchantFirstEligibleCardByType(CardType.Attack),
+            Sts2SelfHelpBookBranch.ReadPassage => EnchantFirstEligibleCardByType(CardType.Skill),
+            Sts2SelfHelpBookBranch.ReadEntireBook => EnchantFirstEligibleCardByType(CardType.Power),
+            _ => EnchantFirstEligibleCardByType(CardType.Attack)
+        };
+    }
+
+    public void ApplyAct1OpeningOption(NeowOptionResult? selectedOption)
+    {
+        if (selectedOption == null)
+        {
+            return;
+        }
+
+        var isLeafyPoultice = string.Equals(
+            selectedOption.RelicId,
+            NeowOptionIds.LeafyPoultice,
+            StringComparison.OrdinalIgnoreCase);
+        var leafyTransformCards = isLeafyPoultice
+            ? selectedOption.Details
+                .Where(detail => detail.Type == RewardDetailType.Card && !string.IsNullOrWhiteSpace(detail.ModelId))
+                .Select(detail => detail.ModelId!)
+                .ToList()
+            : null;
+
+        GainRelic(selectedOption.RelicId);
+        foreach (var detail in selectedOption.Details)
+        {
+            switch (detail.Type)
+            {
+                case RewardDetailType.Card when !string.IsNullOrWhiteSpace(detail.ModelId):
+                    if (!isLeafyPoultice)
+                    {
+                        GainCard(detail.ModelId);
+                    }
+                    break;
+                case RewardDetailType.Potion when !string.IsNullOrWhiteSpace(detail.ModelId):
+                    GainPotion(detail.ModelId);
+                    break;
+                case RewardDetailType.Relic when !string.IsNullOrWhiteSpace(detail.ModelId):
+                    GainRelic(detail.ModelId);
+                    break;
+                case RewardDetailType.Gold when detail.Amount is > 0:
+                    GainGold(detail.Amount.Value);
+                    break;
+            }
+        }
+
+        switch (selectedOption.RelicId.ToUpperInvariant())
+        {
+            case NeowOptionIds.LeafyPoultice:
+                ApplyLeafyPoulticeOpeningOption(leafyTransformCards);
+                break;
+            case NeowOptionIds.GoldenPearl:
+                GainGold(150);
+                break;
+            case NeowOptionIds.NeowsTorment:
+                GainCard("NEOWS_FURY");
+                break;
+        }
+    }
+
+    public void ApplyNeowStartHeal()
+    {
+        CurrentHp = 0;
+        ApplyAncientActStartHeal();
+    }
+
     public void ConsumeRegularCombat(GameRng rng)
     {
+        ConsumeRegularCombat(rng, rng);
+    }
+
+    public void ConsumeRegularCombat(GameRng rng, GameRng rewardsRng)
+    {
         ArgumentNullException.ThrowIfNull(rng);
+        ArgumentNullException.ThrowIfNull(rewardsRng);
 
         SpendHp(rng.NextInt(GetRegularCombatDamageMin(), GetRegularCombatDamageMax() + 1));
-        GainGold(rng.NextInt(10, 21));
-        if (RollPotionRewardChance(rng, isElite: false) &&
+        var hasPotionReward = RollPotionRewardChance(rewardsRng, isElite: false);
+        GainGold(rewardsRng.NextInt(10, 21));
+        if (hasPotionReward &&
             rng.NextDouble() < _model.PotionPickChance)
         {
-            GainPotion(_model.RollPotion(rng));
+            GainPotion(_model.RollPotion(rewardsRng));
         }
 
         if (rng.NextDouble() < _model.CombatCardPickChance)
         {
             var rareOffset = CardRareOffset;
-            GainCard(_model.RollCombatRewardCard(rng, ref rareOffset, _model.Defaults.AscensionLevel));
+            GainCard(_model.RollCombatRewardCard(rewardsRng, ref rareOffset, _model.Defaults.AscensionLevel));
             CardRareOffset = rareOffset;
         }
+
+        ApplyCombatRewardRelicEffects(isBoss: false);
 
         ApplyPostCombatHeal();
     }
 
     public void ConsumeEliteStop(GameRng rng)
     {
+        ConsumeEliteStop(rng, rng);
+    }
+
+    public void ConsumeEliteStop(GameRng rng, GameRng rewardsRng)
+    {
         ArgumentNullException.ThrowIfNull(rng);
+        ArgumentNullException.ThrowIfNull(rewardsRng);
 
         SpendHp(rng.NextInt(GetEliteDamageMin(), GetEliteDamageMax() + 1));
-        GainGold(rng.NextInt(25, 36));
-        if (RollPotionRewardChance(rng, isElite: true) &&
+        var hasPotionReward = RollPotionRewardChance(rewardsRng, isElite: true);
+        GainGold(rewardsRng.NextInt(25, 36));
+        if (hasPotionReward &&
             rng.NextDouble() < _model.PotionPickChance)
         {
-            GainPotion(_model.RollPotion(rng));
+            GainPotion(_model.RollPotion(rewardsRng));
         }
 
         if (rng.NextDouble() < _model.EliteCardPickChance)
         {
             var rareOffset = CardRareOffset;
-            GainCard(_model.RollEliteRewardCard(rng, ref rareOffset, _model.Defaults.AscensionLevel));
+            GainCard(_model.RollEliteRewardCard(rewardsRng, ref rareOffset, _model.Defaults.AscensionLevel));
             CardRareOffset = rareOffset;
         }
 
-        GainAbstractRelic(rng, tradableChance: 0.84, petChance: 0.02);
+        ApplyCombatRewardRelicEffects(isBoss: false);
+
         ApplyPostCombatHeal();
+    }
+
+    public void ConsumeBossStop(GameRng rng)
+    {
+        ConsumeBossStop(rng, rng);
+    }
+
+    public void ConsumeBossStop(GameRng rng, GameRng rewardsRng)
+    {
+        ArgumentNullException.ThrowIfNull(rng);
+        ArgumentNullException.ThrowIfNull(rewardsRng);
+
+        var goldAmount = HasAscension(3) ? 75 : 100;
+        GainGold(rewardsRng.NextInt(goldAmount, goldAmount + 1));
+        if (RollPotionRewardChance(rewardsRng, isElite: false) &&
+            rng.NextDouble() < _model.PotionPickChance)
+        {
+            GainPotion(_model.RollPotion(rewardsRng));
+        }
+
+        var rareOffset = CardRareOffset;
+        var bossCard = _model.RollBossRewardCard(rewardsRng, ref rareOffset, _model.Defaults.AscensionLevel);
+        CardRareOffset = rareOffset;
+        if (!string.IsNullOrWhiteSpace(bossCard))
+        {
+            GainCard(bossCard);
+        }
+
+        ApplyCombatRewardRelicEffects(isBoss: CurrentActIndex >= 2);
+
+        ApplyPostCombatHeal();
+    }
+
+    public void ApplyAncientActStartHeal()
+    {
+        var missingHp = Math.Max(0, MaxHp - CurrentHp);
+        if (missingHp <= 0)
+        {
+            return;
+        }
+
+        var healAmount = HasAscension(2)
+            ? (int)(missingHp * 0.8f)
+            : missingHp;
+        Heal(healAmount);
+    }
+
+    public void ConsumeTreasureStop(GameRng rng, GameRng rewardsRng)
+    {
+        ArgumentNullException.ThrowIfNull(rng);
+        ArgumentNullException.ThrowIfNull(rewardsRng);
+        var gold = rewardsRng.NextInt(42, 53);
+        if (HasAscension(3))
+        {
+            gold = (int)(gold * 0.75);
+        }
+
+        GainGold(gold);
     }
 
     public void ConsumeTreasureStop(GameRng rng)
     {
-        ArgumentNullException.ThrowIfNull(rng);
-        GainAbstractRelic(rng, tradableChance: 0.81, petChance: 0.01);
+        ConsumeTreasureStop(rng, rng);
     }
 
     public void ConsumeShopStop(GameRng rng)
@@ -856,10 +1103,14 @@ internal sealed class Sts2EventProgressState
             return;
         }
 
-        switch (eventId)
+        switch (Sts2EventIdNormalizer.FromPoolItem(eventId))
         {
             case "BYRDONIS_NEST":
                 HasEventPet = true;
+                GainCard("BYRDONIS_EGG");
+                break;
+            case "SELF_HELP_BOOK":
+                EnchantFirstEligibleCard();
                 break;
             case "WOOD_CARVINGS":
                 RemoveFirstRemovableBasicCard();
@@ -879,6 +1130,16 @@ internal sealed class Sts2EventProgressState
                 break;
             case "RELIC_TRADER":
                 LoseTradableRelic();
+                break;
+            case "SUNKEN_TREASURY":
+                // The live event always rolls both chest previews first:
+                // small chest = 60 + (NextInt(16) - 8)
+                // large chest = 333 + (NextInt(61) - 30)
+                // Even on the no-curse branch we must still consume the
+                // large-chest preview roll to keep later event RNG aligned.
+                var smallChestGold = 60 + (rng.NextInt(16) - 8);
+                _ = rng.NextInt(61);
+                GainGold(smallChestGold);
                 break;
             case "RANWID_THE_ELDER":
                 SpendGold(100);
@@ -977,6 +1238,8 @@ internal sealed class Sts2EventProgressState
             return;
         }
 
+        _ownedRelics.Add(normalizedId);
+
         if (_model.PetRelics.Contains(normalizedId))
         {
             HasEventPet = true;
@@ -1058,12 +1321,66 @@ internal sealed class Sts2EventProgressState
         }
     }
 
+    private void LoseMaxHp(int amount)
+    {
+        if (amount <= 0)
+        {
+            return;
+        }
+
+        MaxHp = Math.Max(1, MaxHp - amount);
+        CurrentHp = Math.Min(CurrentHp, MaxHp);
+    }
+
     private void ApplyPostCombatHeal()
     {
         if (Character == CharacterId.Ironclad)
         {
             Heal(6);
         }
+    }
+
+    private void ApplyCombatRewardRelicEffects(bool isBoss)
+    {
+        if (_ownedRelics.Contains("AMETHYST_AUBERGINE") && !isBoss)
+        {
+            GainGold(15);
+        }
+    }
+
+    public void ApplyGoldSpend(int amount)
+    {
+        SpendGold(amount);
+    }
+
+    public void ApplyLoseTradableRelic()
+    {
+        LoseTradableRelic();
+    }
+
+    public void ApplyLosePotion(string? preferredPotionId = null)
+    {
+        LosePotion(preferredPotionId);
+    }
+
+    public void ApplyObtainedRelic(string relicId)
+    {
+        GainRelic(relicId);
+    }
+
+    public void ApplyObtainedRelics(IEnumerable<string> relicIds)
+    {
+        ArgumentNullException.ThrowIfNull(relicIds);
+
+        foreach (var relicId in relicIds)
+        {
+            GainRelic(relicId);
+        }
+    }
+
+    private bool HasAscension(int level)
+    {
+        return _model.Defaults.AscensionLevel >= level;
     }
 
     private int GetRegularCombatDamageMin() =>
@@ -1123,6 +1440,113 @@ internal sealed class Sts2EventProgressState
         {
             _deck.RemoveAt(index);
         }
+    }
+
+    private void RemoveFirstCard(Func<DeckCard, bool> predicate)
+    {
+        var index = _deck.FindIndex(card => predicate(card));
+        if (index >= 0)
+        {
+            _deck.RemoveAt(index);
+        }
+    }
+
+    private void ApplyLeafyPoulticeOpeningOption(IReadOnlyList<string>? transformedCardIds)
+    {
+        LoseMaxHp(12);
+        RemoveFirstCard(card => card.CardId.StartsWith("STRIKE_", StringComparison.OrdinalIgnoreCase) && IsTransformableCard(card.CardId));
+        RemoveFirstCard(card => card.CardId.StartsWith("DEFEND_", StringComparison.OrdinalIgnoreCase) && IsTransformableCard(card.CardId));
+
+        if (transformedCardIds == null)
+        {
+            return;
+        }
+
+        foreach (var transformedCardId in transformedCardIds)
+        {
+            GainCard(transformedCardId);
+        }
+    }
+
+    public void ApplyShopRelicPurchase(string relicId, int price)
+    {
+        SpendGold(price);
+        GainRelic(relicId);
+    }
+
+    public void ApplyShopCardRemoval(int price)
+    {
+        SpendGold(price);
+        RemoveFirstRemovableBasicCard();
+    }
+
+    public void ApplyShopCardPurchase(string cardId, int price)
+    {
+        SpendGold(price);
+        GainCard(cardId);
+    }
+
+    public void ApplyShopPotionPurchase(string potionId, int price)
+    {
+        SpendGold(price);
+        GainPotion(potionId);
+    }
+
+    public void ApplyAnonymousShopSpend(int amount)
+    {
+        SpendGold(amount);
+    }
+
+    public void ApplyHatchRestSite()
+    {
+        var eggIndex = _deck.FindIndex(card => string.Equals(card.CardId, "BYRDONIS_EGG", StringComparison.OrdinalIgnoreCase));
+        if (eggIndex < 0)
+        {
+            return;
+        }
+
+        _deck.RemoveAt(eggIndex);
+        GainCard("BYRD_SWOOP");
+        GainRelic("BYRDPIP");
+    }
+
+    private void EnchantFirstEligibleCard()
+    {
+        var card = _deck.FirstOrDefault(candidate => !candidate.HasEnchantment &&
+                                                     _model.CanReceivePerfectFit(candidate.CardId));
+        if (card != null)
+        {
+            card.HasEnchantment = true;
+        }
+    }
+
+    private bool EnchantFirstEligibleCardByType(CardType cardType)
+    {
+        var card = _deck.FirstOrDefault(candidate => !candidate.HasEnchantment &&
+                                                     HasCardType(candidate.CardId, cardType) &&
+                                                     _model.CanReceivePerfectFit(candidate.CardId));
+        if (card == null)
+        {
+            return false;
+        }
+
+        card.HasEnchantment = true;
+        return true;
+    }
+
+    private bool HasEnchantableCardOfType(CardType cardType)
+    {
+        return _deck.Any(candidate => !candidate.HasEnchantment &&
+                                      HasCardType(candidate.CardId, cardType) &&
+                                      _model.CanReceivePerfectFit(candidate.CardId));
+    }
+
+    private bool HasCardType(string cardId, CardType cardType)
+    {
+        var normalizedId = Sts2EventIdNormalizer.FromAny(cardId);
+        return _model.CardMetadata.TryGetValue(normalizedId, out var metadata)
+            ? metadata.ParsedType == cardType
+            : false;
     }
 
     private bool IsRemovableBasicCard(string cardId)

@@ -24,6 +24,8 @@ public sealed class Sts2RelicVisibilityRequest
 
     public bool IncludeDarvSharedAncient { get; init; } = true;
 
+    public bool UseExactRouteCoverage { get; init; }
+
     internal Sts2AncientAvailability ResolveAncientAvailability()
     {
         return AncientAvailability ?? Sts2AncientAvailability.FromLegacyDarvFlag(IncludeDarvSharedAncient);
@@ -49,6 +51,8 @@ public sealed class Sts2RelicVisibilityAnalysis
     public required int PlayerBagSize { get; init; }
 
     public required int Act3OnlyGateTrackedRelics { get; init; }
+
+    public bool UsesExactRouteCoverage { get; init; }
 
     public required IReadOnlyList<Sts2RelicVisibilityAncientAct> AncientActs { get; init; }
 

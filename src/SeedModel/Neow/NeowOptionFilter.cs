@@ -14,6 +14,7 @@ public sealed class NeowOptionFilter
         IReadOnlyList<string> relicIds,
         IReadOnlyList<string> cardIds,
         IReadOnlyList<string> potionIds,
+        IReadOnlyList<NeowDerivedBindingFilter> derivedBindingFilters,
         bool hasCriteria)
     {
         Kind = kind;
@@ -21,6 +22,7 @@ public sealed class NeowOptionFilter
         RelicIds = relicIds;
         CardIds = cardIds;
         PotionIds = potionIds;
+        DerivedBindingFilters = derivedBindingFilters;
         HasCriteria = hasCriteria;
     }
 
@@ -36,24 +38,29 @@ public sealed class NeowOptionFilter
 
     private IReadOnlyList<string> PotionIds { get; }
 
+    private IReadOnlyList<NeowDerivedBindingFilter> DerivedBindingFilters { get; }
+
     public static NeowOptionFilter Create(
         NeowOptionKind? kind,
         IEnumerable<string>? relicTerms,
         IEnumerable<string>? relicIds,
         IEnumerable<string>? cardIds,
-        IEnumerable<string>? potionIds)
+        IEnumerable<string>? potionIds,
+        IEnumerable<NeowDerivedBindingFilter>? derivedBindingFilters = null)
     {
         var normalizedRelicTerms = NormalizeTerms(relicTerms);
         var normalizedRelicIds = NormalizeTerms(relicIds);
         var normalizedCardIds = NormalizeTerms(cardIds, deduplicate: false);
         var normalizedPotionIds = NormalizeTerms(potionIds, deduplicate: false);
+        var normalizedDerivedBindingFilters = NormalizeDerivedBindingFilters(derivedBindingFilters);
 
         var hasCriteria =
             kind.HasValue ||
             normalizedRelicTerms.Count > 0 ||
             normalizedRelicIds.Count > 0 ||
             normalizedCardIds.Count > 0 ||
-            normalizedPotionIds.Count > 0;
+            normalizedPotionIds.Count > 0 ||
+            normalizedDerivedBindingFilters.Count > 0;
 
         return new NeowOptionFilter(
             kind,
@@ -61,6 +68,7 @@ public sealed class NeowOptionFilter
             normalizedRelicIds,
             normalizedCardIds,
             normalizedPotionIds,
+            normalizedDerivedBindingFilters,
             hasCriteria);
     }
 
@@ -100,7 +108,166 @@ public sealed class NeowOptionFilter
             return false;
         }
 
+        if (DerivedBindingFilters.Count > 0 &&
+            !DerivedBindingFilters.All(filter => MatchesDerivedBinding(option, filter)))
+        {
+            return false;
+        }
+
         return true;
+    }
+
+    private static bool MatchesDerivedBinding(NeowOptionResult option, NeowDerivedBindingFilter filter)
+    {
+        if (!string.Equals(option.RelicId, filter.PrimarySourceRelicId, Comparison))
+        {
+            return false;
+        }
+
+        var sourcePath = filter.GetSourcePath();
+        var scopedDetails = option.Details
+            .Where(detail => string.Equals(detail.SourcePath, sourcePath, Comparison))
+            .ToList();
+
+        if (filter.RelicIds.Count > 0 &&
+            !MatchesDetailIds(scopedDetails, RewardDetailType.Relic, filter.RelicIds))
+        {
+            return false;
+        }
+
+        if (filter.CardIds.Count > 0 &&
+            !MatchesDerivedCardIds(option, filter, scopedDetails))
+        {
+            return false;
+        }
+
+        if (filter.PotionIds.Count > 0 &&
+            !MatchesDetailIds(scopedDetails, RewardDetailType.Potion, filter.PotionIds))
+        {
+            return false;
+        }
+
+        return filter.HasCriteria;
+    }
+
+    private static bool MatchesDerivedCardIds(
+        NeowOptionResult option,
+        NeowDerivedBindingFilter filter,
+        IReadOnlyList<RewardDetail> scopedDetails)
+    {
+        if (IsKaleidoscopeSource(filter) &&
+            filter.CardIds.Count > 1)
+        {
+            return MatchesKaleidoscopeCardsInDistinctBundles(scopedDetails, filter.CardIds);
+        }
+
+        return MatchesDetailIds(scopedDetails, RewardDetailType.Card, filter.CardIds);
+    }
+
+    private static bool IsKaleidoscopeSource(NeowDerivedBindingFilter filter)
+    {
+        if (string.Equals(filter.PrimarySourceRelicId, NeowOptionIds.Kaleidoscope, Comparison))
+        {
+            return true;
+        }
+
+        return string.Equals(filter.SecondarySourceRelicId, NeowOptionIds.Kaleidoscope, Comparison);
+    }
+
+    private static bool MatchesKaleidoscopeCardsInDistinctBundles(
+        IReadOnlyList<RewardDetail> scopedDetails,
+        IReadOnlyList<string> requiredCardIds)
+    {
+        var requiredOccurrences = requiredCardIds
+            .Where(id => !string.IsNullOrWhiteSpace(id))
+            .Select(id => id.Trim())
+            .ToList();
+
+        if (requiredOccurrences.Count == 0)
+        {
+            return true;
+        }
+
+        var bundleLookup = scopedDetails
+            .Where(detail => detail.Type == RewardDetailType.Card &&
+                             !string.IsNullOrWhiteSpace(detail.ModelId))
+            .Select(detail => new
+            {
+                BundleKey = TryGetKaleidoscopeBundleKey(detail.Label),
+                ModelId = detail.ModelId!
+            })
+            .Where(entry => entry.BundleKey is not null)
+            .GroupBy(entry => entry.BundleKey!, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(
+                group => group.Key,
+                group => group.Select(entry => entry.ModelId).ToHashSet(StringComparer.OrdinalIgnoreCase),
+                StringComparer.OrdinalIgnoreCase);
+
+        if (bundleLookup.Count == 0 || requiredOccurrences.Count > bundleLookup.Count)
+        {
+            return false;
+        }
+
+        return TryMatchRequiredCardsToDistinctBundles(
+            requiredOccurrences,
+            0,
+            bundleLookup,
+            new HashSet<string>(StringComparer.OrdinalIgnoreCase));
+    }
+
+    private static bool TryMatchRequiredCardsToDistinctBundles(
+        IReadOnlyList<string> requiredOccurrences,
+        int index,
+        IReadOnlyDictionary<string, HashSet<string>> bundleLookup,
+        HashSet<string> usedBundles)
+    {
+        if (index >= requiredOccurrences.Count)
+        {
+            return true;
+        }
+
+        var requiredCardId = requiredOccurrences[index];
+        foreach (var bundle in bundleLookup)
+        {
+            if (usedBundles.Contains(bundle.Key) ||
+                !bundle.Value.Contains(requiredCardId))
+            {
+                continue;
+            }
+
+            usedBundles.Add(bundle.Key);
+            if (TryMatchRequiredCardsToDistinctBundles(requiredOccurrences, index + 1, bundleLookup, usedBundles))
+            {
+                return true;
+            }
+
+            usedBundles.Remove(bundle.Key);
+        }
+
+        return false;
+    }
+
+    private static string? TryGetKaleidoscopeBundleKey(string? label)
+    {
+        if (string.IsNullOrWhiteSpace(label))
+        {
+            return null;
+        }
+
+        const string prefix = "卡牌包选项";
+        if (!label.StartsWith(prefix, Comparison))
+        {
+            return null;
+        }
+
+        var suffix = label[prefix.Length..];
+        var separatorIndex = suffix.IndexOf('-');
+        if (separatorIndex <= 0)
+        {
+            return null;
+        }
+
+        return suffix[..separatorIndex].Trim();
     }
 
     private bool MatchesText(NeowOptionResult option)
@@ -207,6 +374,19 @@ public sealed class NeowOptionFilter
         return true;
     }
 
+    private static List<NeowDerivedBindingFilter> NormalizeDerivedBindingFilters(IEnumerable<NeowDerivedBindingFilter>? filters)
+    {
+        if (filters == null)
+        {
+            return new List<NeowDerivedBindingFilter>();
+        }
+
+        return filters
+            .Select(filter => filter.Normalize())
+            .Where(filter => filter.HasCriteria)
+            .ToList();
+    }
+
     private static List<string> NormalizeTerms(IEnumerable<string>? terms, bool deduplicate = true)
     {
         if (terms == null)
@@ -234,4 +414,40 @@ public sealed class NeowOptionFilter
 
         return text.IndexOf(term, Comparison) >= 0;
     }
+}
+
+public sealed record NeowDerivedBindingFilter(
+    string PrimarySourceRelicId,
+    string? SecondarySourceRelicId,
+    IReadOnlyList<string> RelicIds,
+    IReadOnlyList<string> CardIds,
+    IReadOnlyList<string> PotionIds)
+{
+    public bool HasCriteria =>
+        !string.IsNullOrWhiteSpace(PrimarySourceRelicId);
+
+    public string GetSourcePath() =>
+        string.IsNullOrWhiteSpace(SecondarySourceRelicId)
+            ? PrimarySourceRelicId
+            : $"{PrimarySourceRelicId}>{SecondarySourceRelicId}";
+
+    public NeowDerivedBindingFilter Normalize()
+    {
+        return new NeowDerivedBindingFilter(
+            NormalizeValue(PrimarySourceRelicId) ?? string.Empty,
+            NormalizeValue(SecondarySourceRelicId),
+            NormalizeList(RelicIds),
+            NormalizeList(CardIds),
+            NormalizeList(PotionIds));
+    }
+
+    private static string? NormalizeValue(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private static IReadOnlyList<string> NormalizeList(IReadOnlyList<string> values) =>
+        values
+            .Where(value => !string.IsNullOrWhiteSpace(value))
+            .Select(value => value.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
 }

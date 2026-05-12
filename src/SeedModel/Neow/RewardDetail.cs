@@ -5,4 +5,5 @@ public sealed record RewardDetail(
     string Label,
     string Value,
     string? ModelId = null,
-    int? Amount = null);
+    int? Amount = null,
+    string? SourcePath = null);

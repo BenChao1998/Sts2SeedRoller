@@ -17,6 +17,9 @@ public sealed record NeowCardMetadata
     [JsonPropertyName("multiplayerConstraint")]
     public string MultiplayerConstraint { get; init; } = nameof(CardMultiplayerConstraint.None);
 
+    [JsonPropertyName("canBeGeneratedInCombat")]
+    public bool CanBeGeneratedInCombat { get; init; } = true;
+
     [JsonIgnore]
     public CardRarity ParsedRarity =>
         Enum.TryParse(Rarity, ignoreCase: true, out CardRarity rarity)

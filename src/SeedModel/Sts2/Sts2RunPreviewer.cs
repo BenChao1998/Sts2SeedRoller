@@ -42,6 +42,7 @@ public sealed class Sts2RunPreviewer
     private readonly Sts2RelicShufflePrimer _primer;
     private readonly Sts2RelicVisibilityAnalyzer _relicVisibilityAnalyzer;
     private readonly Sts2EventVisibilityAnalyzer _eventVisibilityAnalyzer;
+    private readonly Sts2ExactRouteAnalyzer _exactRouteAnalyzer;
 
     internal Sts2RunPreviewer(AncientOptionCatalog catalog, Sts2WorldData world, string? workspaceRoot = null)
     {
@@ -53,6 +54,7 @@ public sealed class Sts2RunPreviewer
         _primer = new Sts2RelicShufflePrimer(_world);
         _relicVisibilityAnalyzer = new Sts2RelicVisibilityAnalyzer(_world);
         _eventVisibilityAnalyzer = new Sts2EventVisibilityAnalyzer(_workspaceRoot);
+        _exactRouteAnalyzer = new Sts2ExactRouteAnalyzer(_world, _workspaceRoot);
     }
 
     public static Sts2RunPreviewer CreateFromDataFiles(string optionDataPath, string actDataPath)
@@ -82,7 +84,7 @@ public sealed class Sts2RunPreviewer
         return new Sts2RunPreviewer(catalog, world);
     }
 
-    public Sts2RunPreview Preview(Sts2RunRequest request)
+    public Sts2RunPreview Preview(Sts2RunRequest request, NeowOptionDataset? dataset = null)
     {
         if (request is null)
         {
@@ -111,10 +113,17 @@ public sealed class Sts2RunPreviewer
             ActIndex: 0,
             unlockedCharacters);
 
+        IReadOnlyList<Generation.Sts2RunSimulator.ActPoolResult>? actPoolResults = null;
         var actResults = _simulator.Simulate(
             upFrontRng,
             request.SeedValue,
             ancientAvailability);
+        if (dataset != null && (request.SeaGlassPreviewSamples ?? 0) > 0)
+        {
+            var analysisRng = new GameRng(request.SeedValue, "up_front");
+            actPoolResults = _simulator.Analyze(analysisRng, request.SeedValue, ancientAvailability);
+        }
+
         foreach (var result in actResults)
         {
             var shouldInclude = (result.ActNumber == 2 && request.IncludeAct2) ||
@@ -145,13 +154,42 @@ public sealed class Sts2RunPreviewer
             foreach (var option in optionResults)
             {
                 var metadata = _catalog.Get(option.OptionId);
+                var contextCharacterId = TryParseSeaGlassCharacterId(option.Note);
+                Sts2SeaGlassPreview? seaGlassPreview = null;
+                var previewCardIds = new List<string>();
+                if (string.Equals(metadata.Id, "SEA_GLASS", StringComparison.OrdinalIgnoreCase) &&
+                    dataset != null &&
+                    contextCharacterId.HasValue)
+                {
+                    if ((request.SeaGlassPreviewSamples ?? 0) > 0 && actPoolResults != null)
+                    {
+                        seaGlassPreview = _exactRouteAnalyzer.AnalyzeSeaGlassPreview(
+                            dataset,
+                            request,
+                            actPoolResults,
+                            contextCharacterId.Value,
+                            unlockedCharacters);
+                        previewCardIds = seaGlassPreview.RankedCards
+                            .Take(12)
+                            .Select(card => card.CardId)
+                            .ToList();
+                    }
+                    else
+                    {
+                        previewCardIds = BuildSeaGlassPreviewCardIds(dataset, contextCharacterId.Value, request.PlayerCount, eventRng);
+                    }
+                }
+
                 actPreview.AncientOptions.Add(new Sts2AncientOption
                 {
                     OptionId = metadata.Id,
                     Title = metadata.Title,
                     Description = metadata.Description,
                     RelicId = metadata.Id,
-                    Note = option.Note
+                    Note = option.Note,
+                    ContextCharacterId = contextCharacterId?.ToString(),
+                    PreviewCardIds = previewCardIds,
+                    SeaGlassPreview = seaGlassPreview
                 });
             }
 
@@ -159,6 +197,84 @@ public sealed class Sts2RunPreviewer
         }
 
         return preview;
+    }
+
+    private static CharacterId? TryParseSeaGlassCharacterId(string? note)
+    {
+        if (string.IsNullOrWhiteSpace(note))
+        {
+            return null;
+        }
+
+        const string prefix = "Character:";
+        var value = note.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)
+            ? note[prefix.Length..].Trim()
+            : note.Trim();
+
+        return value switch
+        {
+            "Ironclad" => CharacterId.Ironclad,
+            "Silent Huntress" => CharacterId.Silent,
+            "Defect" => CharacterId.Defect,
+            "Necrobinder" => CharacterId.Necrobinder,
+            "Regent" => CharacterId.Regent,
+            _ => null
+        };
+    }
+
+    private static List<string> BuildSeaGlassPreviewCardIds(
+        NeowOptionDataset dataset,
+        CharacterId character,
+        int playerCount,
+        GameRng rng)
+    {
+        if (!dataset.CharacterCardPoolMap.TryGetValue(character, out var pool) || pool.Count == 0)
+        {
+            return new List<string>();
+        }
+
+        var candidates = pool
+            .Where(cardId => dataset.CardMetadataMap.TryGetValue(cardId, out var metadata) &&
+                             metadata.ParsedRarity is CardRarity.Common or CardRarity.Uncommon or CardRarity.Rare &&
+                             IsCardAllowedForReward(metadata, playerCount))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        var result = new List<string>(15);
+        AppendSeaGlassRarityCards(dataset, rng, candidates, CardRarity.Common, 5, result);
+        AppendSeaGlassRarityCards(dataset, rng, candidates, CardRarity.Uncommon, 5, result);
+        AppendSeaGlassRarityCards(dataset, rng, candidates, CardRarity.Rare, 5, result);
+        return result;
+    }
+
+    private static void AppendSeaGlassRarityCards(
+        NeowOptionDataset dataset,
+        GameRng rng,
+        IReadOnlyList<string> candidates,
+        CardRarity rarity,
+        int count,
+        List<string> result)
+    {
+        var pool = candidates
+            .Where(cardId => dataset.CardMetadataMap.TryGetValue(cardId, out var metadata) && metadata.ParsedRarity == rarity)
+            .ToList();
+
+        for (var i = 0; i < count && pool.Count > 0; i++)
+        {
+            var index = rng.NextInt(pool.Count);
+            result.Add(pool[index]);
+            pool.RemoveAt(index);
+        }
+    }
+
+    private static bool IsCardAllowedForReward(NeowCardMetadata metadata, int playerCount)
+    {
+        if (metadata.ParsedConstraint == CardMultiplayerConstraint.MultiplayerOnly)
+        {
+            return playerCount > 1;
+        }
+
+        return metadata.ParsedRarity is CardRarity.Common or CardRarity.Uncommon or CardRarity.Rare;
     }
 
     public Sts2SeedAnalysis AnalyzePools(Sts2SeedAnalysisRequest request)
@@ -210,8 +326,47 @@ public sealed class Sts2RunPreviewer
         }
 
         var (ancientActs, rarityMap) = BuildRelicVisibilityInputs(dataset, request);
+        IReadOnlyList<Sts2ActPoolPreview>? actPools = null;
+        Sts2RunPreview? ancientPreview = null;
+        if (request.UseExactRouteCoverage)
+        {
+            var ancientAvailability = request.ResolveAncientAvailability();
+            var upFrontRng = new GameRng(request.SeedValue, "up_front");
+            _primer.Prime(upFrontRng, request.Character, request.PlayerCount, ancientAvailability);
 
-        return _relicVisibilityAnalyzer.Analyze(dataset, request, ancientActs, rarityMap);
+            actPools = _simulator.Analyze(
+                upFrontRng,
+                request.SeedValue,
+                ancientAvailability)
+                .Select(act => new Sts2ActPoolPreview
+                {
+                    ActNumber = act.ActNumber,
+                    ActName = act.ActName,
+                    PriorityEventCount = Math.Min(act.EventPreviewLimit, act.Events.Count),
+                    TotalEventCount = act.Events.Count,
+                    EventPool = act.Events.Take(act.EventPreviewLimit).ToList(),
+                    FullEventPool = act.Events.ToList(),
+                    MonsterPool = act.NormalEncounters,
+                    ElitePool = act.EliteEncounters
+                })
+                .ToList();
+
+            ancientPreview = Preview(new Sts2RunRequest
+            {
+                SeedText = request.SeedText,
+                SeedValue = request.SeedValue,
+                Character = request.Character,
+                UnlockedCharacters = ResolveUnlockedCharacters(request.Character, request.UnlockedCharacters),
+                AscensionLevel = request.AscensionLevel,
+                PlayerCount = request.PlayerCount,
+                AncientAvailability = ancientAvailability,
+                IncludeDarvSharedAncient = request.IncludeDarvSharedAncient,
+                IncludeAct2 = true,
+                IncludeAct3 = true
+            });
+        }
+
+        return _relicVisibilityAnalyzer.Analyze(dataset, request, ancientActs, rarityMap, actPools, ancientPreview);
     }
 
     public Sts2EventVisibilityAnalysis AnalyzeEventVisibility(NeowOptionDataset dataset, Sts2EventVisibilityRequest request)
@@ -246,6 +401,48 @@ public sealed class Sts2RunPreviewer
         });
 
         return _eventVisibilityAnalyzer.Analyze(request, dataset, actPools, ancientPreview);
+    }
+
+    public Sts2ExactRouteAnalysis AnalyzeExactRoutes(NeowOptionDataset dataset, Sts2ExactRouteAnalysisRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(dataset);
+        if (request is null)
+        {
+            throw new ArgumentNullException(nameof(request));
+        }
+
+        var unlockedCharacters = ResolveUnlockedCharacters(request.Character, request.UnlockedCharacters);
+        var poolAnalysis = AnalyzePools(new Sts2SeedAnalysisRequest
+        {
+            SeedText = request.SeedText,
+            SeedValue = request.SeedValue,
+            Character = request.Character,
+            UnlockedCharacters = unlockedCharacters,
+            AscensionLevel = request.AscensionLevel,
+            AncientAvailability = request.AncientAvailability,
+            IncludeDarvSharedAncient = request.IncludeDarvSharedAncient
+        });
+
+        var ancientPreview = Preview(new Sts2RunRequest
+        {
+            SeedText = request.SeedText,
+            SeedValue = request.SeedValue,
+            Character = request.Character,
+            UnlockedCharacters = unlockedCharacters,
+            AscensionLevel = request.AscensionLevel,
+            PlayerCount = request.PlayerCount,
+            AncientAvailability = request.AncientAvailability,
+            IncludeDarvSharedAncient = request.IncludeDarvSharedAncient,
+            IncludeAct2 = true,
+            IncludeAct3 = true
+        });
+
+        return _exactRouteAnalyzer.Analyze(
+            dataset,
+            request,
+            poolAnalysis.Acts,
+            ancientPreview,
+            unlockedCharacters);
     }
 
     internal bool MatchesHighProbabilityEvents(
@@ -300,11 +497,53 @@ public sealed class Sts2RunPreviewer
         var requiredRelicIds = filter.HighProbabilityRelicIds;
         var needsAncientPreview = requiredRelicIds.Any(relicId => _ancientOptionIds.Contains(relicId));
         var (ancientActs, rarityMap) = BuildRelicVisibilityInputs(dataset, request, includeAncientPreview: needsAncientPreview);
+        IReadOnlyList<Sts2ActPoolPreview>? actPools = null;
+        Sts2RunPreview? ancientPreview = null;
+        if (requiredRelicIds.Count > 0)
+        {
+            var ancientAvailability = request.ResolveAncientAvailability();
+            var upFrontRng = new GameRng(request.SeedValue, "up_front");
+            _primer.Prime(upFrontRng, request.Character, request.PlayerCount, ancientAvailability);
+
+            actPools = _simulator.Analyze(
+                upFrontRng,
+                request.SeedValue,
+                ancientAvailability)
+                .Select(act => new Sts2ActPoolPreview
+                {
+                    ActNumber = act.ActNumber,
+                    ActName = act.ActName,
+                    PriorityEventCount = Math.Min(act.EventPreviewLimit, act.Events.Count),
+                    TotalEventCount = act.Events.Count,
+                    EventPool = act.Events.Take(act.EventPreviewLimit).ToList(),
+                    FullEventPool = act.Events.ToList(),
+                    MonsterPool = act.NormalEncounters,
+                    ElitePool = act.EliteEncounters
+                })
+                .ToList();
+
+            ancientPreview = Preview(new Sts2RunRequest
+            {
+                SeedText = request.SeedText,
+                SeedValue = request.SeedValue,
+                Character = request.Character,
+                UnlockedCharacters = ResolveUnlockedCharacters(request.Character, request.UnlockedCharacters),
+                AscensionLevel = request.AscensionLevel,
+                PlayerCount = request.PlayerCount,
+                AncientAvailability = ancientAvailability,
+                IncludeDarvSharedAncient = request.IncludeDarvSharedAncient,
+                IncludeAct2 = true,
+                IncludeAct3 = true
+            });
+        }
+
         return _relicVisibilityAnalyzer.MatchesHighProbabilityRelics(
             dataset,
             request,
             ancientActs,
             rarityMap,
+            actPools,
+            ancientPreview,
             filter);
     }
 

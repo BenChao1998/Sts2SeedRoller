@@ -109,6 +109,7 @@ internal sealed partial class MainWindowViewModel
                 UnlockedCharacters = unlockedCharacters,
                 AscensionLevel = SelectedAscensionLevel,
                 PlayerCount = 1,
+                Samples = GetVisibilitySampleCount(),
                 AncientAvailability = ancientAvailability
             };
             var relicVisibility = _ancientPreviewer.AnalyzeRelicVisibility(seedAnalysisDataset, relicVisibilityRequest);
@@ -120,6 +121,7 @@ internal sealed partial class MainWindowViewModel
                 UnlockedCharacters = unlockedCharacters,
                 AscensionLevel = SelectedAscensionLevel,
                 PlayerCount = 1,
+                Samples = GetVisibilitySampleCount(),
                 AncientAvailability = ancientAvailability
             };
             var eventVisibility = _ancientPreviewer.AnalyzeEventVisibility(seedAnalysisDataset, eventVisibilityRequest);
@@ -175,6 +177,7 @@ internal sealed partial class MainWindowViewModel
         SeedAnalysisOpeningActs.Clear();
         ClearSeedAnalysisRelicVisibility();
         ClearSeedAnalysisEventVisibility();
+        ClearSeedAnalysisRouteResults();
         HasSeedAnalysisResult = false;
     }
 
@@ -183,6 +186,7 @@ internal sealed partial class MainWindowViewModel
         SeedAnalysisSummary = "输入种子后点击分析。";
         SeedAnalysisSeedValueText = string.Empty;
         ClearSeedAnalysisResults();
+        ResetSeedAnalysisRoutes();
     }
 
     private void ReloadSeedAnalysisLocalization()
@@ -255,11 +259,12 @@ internal sealed partial class MainWindowViewModel
             PlayerCount = 1,
             AncientAvailability = ancientAvailability,
             IncludeAct2 = true,
-            IncludeAct3 = true
+            IncludeAct3 = true,
+            SeaGlassPreviewSamples = GetSeaGlassSampleCount()
         };
         LogInfo(
             $"[种子分析] Preview 请求: seed={previewRequest.SeedText}, seedValue={previewRequest.SeedValue}, character={previewRequest.Character}, ascension={previewRequest.AscensionLevel}, unlocked={FormatCharacterList(previewRequest.UnlockedCharacters)}, {FormatAncientAvailability(ancientAvailability)}");
-        var preview = _ancientPreviewer?.Preview(previewRequest);
+        var preview = _ancientPreviewer?.Preview(previewRequest, EnsureSeedAnalysisDataset());
 
         if (preview != null)
         {
@@ -276,7 +281,7 @@ internal sealed partial class MainWindowViewModel
                             SanitizeAncientText(option.Title ?? option.OptionId),
                             SanitizeAncientText(option.Description ?? string.Empty),
                             SanitizeAncientText(option.Note ?? string.Empty),
-                            Array.Empty<string>()))
+                            BuildAncientOptionDetails(option)))
                         .ToList()));
             }
         }
@@ -311,22 +316,7 @@ internal sealed partial class MainWindowViewModel
 
     private IReadOnlyList<SeedAnalysisOpeningOptionViewModel> BuildAct1OpeningOptions(uint seedValue)
     {
-        var dataset = EnsureSeedAnalysisDataset();
-        if (dataset == null)
-        {
-            return Array.Empty<SeedAnalysisOpeningOptionViewModel>();
-        }
-
-        var generator = new NeowGenerator(dataset);
-        var options = generator.Generate(NeowGenerationContext.Create(
-            seed: seedValue,
-            playerCount: 1,
-            scrollBoxesEligible: true,
-            hasRunModifiers: false,
-            character: SelectedCharacter,
-            ascensionLevel: SelectedAscensionLevel));
-
-        return options
+        return BuildAct1OpeningOptionResults(seedValue)
             .Select(option => new SeedAnalysisOpeningOptionViewModel(
                 SanitizeLocalizationText(option.Title ?? option.RelicId),
                 SanitizeLocalizationText(option.Description ?? string.Empty),
@@ -335,11 +325,29 @@ internal sealed partial class MainWindowViewModel
             .ToList();
     }
 
+    private IReadOnlyList<NeowOptionResult> BuildAct1OpeningOptionResults(uint seedValue)
+    {
+        var dataset = EnsureSeedAnalysisDataset();
+        if (dataset == null)
+        {
+            return Array.Empty<NeowOptionResult>();
+        }
+
+        var generator = new NeowGenerator(dataset);
+        return generator.Generate(NeowGenerationContext.Create(
+            seed: seedValue,
+            playerCount: 1,
+            scrollBoxesEligible: true,
+            hasRunModifiers: false,
+            character: SelectedCharacter,
+            ascensionLevel: SelectedAscensionLevel));
+    }
+
     private NeowOptionDataset? EnsureSeedAnalysisDataset()
     {
-        if (_dataset != null)
+        if (_seedAnalysisDataset != null)
         {
-            return _dataset;
+            return _seedAnalysisDataset;
         }
 
         try
@@ -348,14 +356,15 @@ internal sealed partial class MainWindowViewModel
             var neowPath = UiDataPathResolver.ResolveVersionedDataFilePath(version, "neow", "options.json");
             if (!File.Exists(neowPath))
             {
-                neowPath = UiDataPathResolver.ResolveVersionedDataFilePath("0.99.1", "neow", "options.json");
+                neowPath = UiDataPathResolver.ResolveVersionedDataFilePath(
+                    UiDataPathResolver.GetPreferredVersionOrDefault(),
+                    "neow",
+                    "options.json");
             }
 
             LogInfo($"[数据路径] seed-analysis-neow={neowPath}");
-            _dataset = LoadDatasetInternal(neowPath);
-            BuildCatalogs(_dataset);
-            _rollCommand?.RaiseCanExecuteChanged();
-            return _dataset;
+            _seedAnalysisDataset = LoadDatasetInternal(neowPath);
+            return _seedAnalysisDataset;
         }
         catch (Exception ex)
         {
@@ -372,6 +381,36 @@ internal sealed partial class MainWindowViewModel
             "Negative" => "负面池",
             _ => option.Pool
         };
+    }
+
+    private IReadOnlyList<string> BuildAncientOptionDetails(Sts2AncientOption option)
+    {
+        var details = new List<string>();
+        if (!string.Equals(option.OptionId, "SEA_GLASS", StringComparison.OrdinalIgnoreCase))
+        {
+            return details;
+        }
+
+        if (!string.IsNullOrWhiteSpace(option.ContextCharacterId) &&
+            Enum.TryParse<CharacterId>(option.ContextCharacterId, ignoreCase: true, out var characterId))
+        {
+            details.Add($"目标角色：{GetCharacterDisplayName(characterId)}");
+        }
+
+        if (option.SeaGlassPreview is { RankedCards.Count: > 0 } preview)
+        {
+            details.Add($"海玻璃卡牌采样：{preview.Samples} 次");
+            foreach (var card in preview.RankedCards.Take(10))
+            {
+                details.Add($"{GetCardDisplayName(card.CardId)}：{card.SeenProbability:P1}");
+            }
+        }
+        else if (option.PreviewCardIds.Count > 0)
+        {
+            details.Add($"卡牌预览：{string.Join("、", option.PreviewCardIds.Select(GetCardDisplayName))}");
+        }
+
+        return details;
     }
 
     private static string FormatRewardDetail(RewardDetail detail)

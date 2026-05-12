@@ -1,10 +1,16 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace SeedUi.ViewModels;
 
 internal static class UiDataPathResolver
 {
+    private static readonly Regex VersionDirectoryRegex = new(@"^\d+\.\d+\.\d+$", RegexOptions.Compiled);
+    private const string LegacyDefaultVersion = "0.99.1";
+
     public static string ResolveVersionedDataFilePath(string version, params string[] segments)
     {
         if (string.IsNullOrWhiteSpace(version))
@@ -52,6 +58,65 @@ internal static class UiDataPathResolver
         }
 
         return Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, normalized));
+    }
+
+    public static IReadOnlyList<string> GetAvailableVersionDirectories()
+    {
+        var results = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var workspaceRoot = TryFindWorkspaceRoot();
+        if (!string.IsNullOrWhiteSpace(workspaceRoot))
+        {
+            CollectVersionDirectories(Path.Combine(workspaceRoot, "data"), results);
+        }
+
+        CollectVersionDirectories(Path.Combine(AppContext.BaseDirectory, "data"), results);
+
+        return results
+            .OrderByDescending(ParseVersionForSort)
+            .ThenByDescending(static version => version, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+    }
+
+    public static string GetPreferredVersionOrDefault(string? preferredVersion = null)
+    {
+        if (!string.IsNullOrWhiteSpace(preferredVersion))
+        {
+            return preferredVersion;
+        }
+
+        var discoveredVersions = GetAvailableVersionDirectories();
+        return discoveredVersions.Count > 0
+            ? discoveredVersions[0]
+            : LegacyDefaultVersion;
+    }
+
+    private static void CollectVersionDirectories(string dataRoot, HashSet<string> results)
+    {
+        if (!Directory.Exists(dataRoot))
+        {
+            return;
+        }
+
+        foreach (var directory in Directory.EnumerateDirectories(dataRoot))
+        {
+            var name = Path.GetFileName(directory);
+            if (string.IsNullOrWhiteSpace(name) || !VersionDirectoryRegex.IsMatch(name))
+            {
+                continue;
+            }
+
+            if (File.Exists(Path.Combine(directory, "neow", "options.json")))
+            {
+                results.Add(name);
+            }
+        }
+    }
+
+    private static Version ParseVersionForSort(string version)
+    {
+        return Version.TryParse(version, out var parsed)
+            ? parsed
+            : new Version(0, 0, 0);
     }
 
     private static string? TryFindWorkspaceRoot()

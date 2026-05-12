@@ -275,14 +275,29 @@ static string ResolveDataPath(string? overrideValue, string fallback)
     }
 
     var normalized = raw.Replace('/', Path.DirectorySeparatorChar);
-    return Path.IsPathRooted(normalized)
-        ? normalized
-        : Path.Combine(AppContext.BaseDirectory, normalized);
+    if (Path.IsPathRooted(normalized))
+    {
+        return normalized;
+    }
+
+    var workspaceCandidate = TryResolveFromWorkspaceRoot(normalized);
+    if (!string.IsNullOrWhiteSpace(workspaceCandidate))
+    {
+        return workspaceCandidate;
+    }
+
+    var parentCandidate = TryResolveByWalkingParents(normalized);
+    if (!string.IsNullOrWhiteSpace(parentCandidate))
+    {
+        return parentCandidate;
+    }
+
+    return Path.Combine(AppContext.BaseDirectory, normalized);
 }
 
 static string ResolveAncientDataPath(string? overrideValue)
 {
-    var baseDirectory = Path.Combine(AppContext.BaseDirectory, "data", "0.99.1", "ancients");
+    var baseDirectory = ResolveBundledVersionDirectory("ancients");
     var localized = Path.Combine(baseDirectory, "options.zhs.json");
     var defaultPath = File.Exists(localized)
         ? localized
@@ -292,8 +307,93 @@ static string ResolveAncientDataPath(string? overrideValue)
 
 static string ResolveActDataPath(string? overrideValue)
 {
-    var defaultPath = Path.Combine(AppContext.BaseDirectory, "data", "0.99.1", "sts2", "acts.json");
+    var defaultPath = Path.Combine(ResolveBundledVersionDirectory("sts2"), "acts.json");
     return ResolveDataPath(overrideValue, defaultPath);
+}
+
+static string ResolveBundledVersionDirectory(string featureDirectory)
+{
+    var dataRoot = ResolveDataRoot();
+    if (Directory.Exists(dataRoot))
+    {
+        var versionDirectory = Directory
+            .EnumerateDirectories(dataRoot)
+            .Where(path =>
+            {
+                var name = Path.GetFileName(path);
+                return Version.TryParse(name, out _) &&
+                       Directory.Exists(Path.Combine(path, featureDirectory));
+            })
+            .OrderByDescending(path => Version.Parse(Path.GetFileName(path)!))
+            .FirstOrDefault();
+
+        if (!string.IsNullOrWhiteSpace(versionDirectory))
+        {
+            return Path.Combine(versionDirectory, featureDirectory);
+        }
+    }
+
+    return Path.Combine(dataRoot, "0.99.1", featureDirectory);
+}
+
+static string ResolveDataRoot()
+{
+    var workspaceRoot = TryFindWorkspaceRoot();
+    if (!string.IsNullOrWhiteSpace(workspaceRoot))
+    {
+        return Path.Combine(workspaceRoot, "data");
+    }
+
+    return Path.Combine(AppContext.BaseDirectory, "data");
+}
+
+static string? TryResolveFromWorkspaceRoot(string normalizedRelativePath)
+{
+    var workspaceRoot = TryFindWorkspaceRoot();
+    if (string.IsNullOrWhiteSpace(workspaceRoot))
+    {
+        return null;
+    }
+
+    var candidate = Path.GetFullPath(Path.Combine(workspaceRoot, normalizedRelativePath));
+    return File.Exists(candidate) ? candidate : null;
+}
+
+static string? TryResolveByWalkingParents(string normalizedRelativePath)
+{
+    string? lastMatch = null;
+    var current = new DirectoryInfo(AppContext.BaseDirectory);
+    while (current != null)
+    {
+        var candidate = Path.GetFullPath(Path.Combine(current.FullName, normalizedRelativePath));
+        if (File.Exists(candidate))
+        {
+            lastMatch = candidate;
+        }
+
+        current = current.Parent;
+    }
+
+    return lastMatch;
+}
+
+static string? TryFindWorkspaceRoot()
+{
+    var current = new DirectoryInfo(AppContext.BaseDirectory);
+    while (current != null)
+    {
+        var candidate = current.FullName;
+        if (Directory.Exists(Path.Combine(candidate, ".git")) ||
+            (Directory.Exists(Path.Combine(candidate, "src")) &&
+             Directory.Exists(Path.Combine(candidate, "data"))))
+        {
+            return candidate;
+        }
+
+        current = current.Parent;
+    }
+
+    return null;
 }
 
 static bool ParseBool(string? value)

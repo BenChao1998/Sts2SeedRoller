@@ -68,7 +68,7 @@ public sealed class SeedRunEvaluator
             }
             else
             {
-                actPreview = PreviewActs(context);
+                actPreview = PreviewActs(context, filter);
                 ancientMatched = filter.AncientFilter.Matches(actPreview);
             }
 
@@ -130,6 +130,7 @@ public sealed class SeedRunEvaluator
                         UnlockedCharacters = context.UnlockedCharacters,
                         AscensionLevel = context.AscensionLevel,
                         PlayerCount = context.PlayerCount,
+                        Samples = filter.PoolFilter.VisibilitySamples,
                         AncientAvailability = context.ResolveAncientAvailability(),
                         IncludeDarvSharedAncient = context.IncludeDarvSharedAncient
                     });
@@ -152,6 +153,7 @@ public sealed class SeedRunEvaluator
                             UnlockedCharacters = context.UnlockedCharacters,
                             AscensionLevel = context.AscensionLevel,
                             PlayerCount = context.PlayerCount,
+                            Samples = filter.PoolFilter.VisibilitySamples,
                             AncientAvailability = context.ResolveAncientAvailability(),
                             IncludeDarvSharedAncient = context.IncludeDarvSharedAncient
                         },
@@ -242,7 +244,7 @@ public sealed class SeedRunEvaluator
             actPreview == null &&
             (context.IncludeAct2 || context.IncludeAct3))
         {
-            actPreview = PreviewActs(context);
+            actPreview = PreviewActs(context, filter);
         }
 
         if (_ancientPreviewer != null &&
@@ -257,6 +259,7 @@ public sealed class SeedRunEvaluator
                 UnlockedCharacters = context.UnlockedCharacters,
                 AscensionLevel = context.AscensionLevel,
                 PlayerCount = context.PlayerCount,
+                Samples = filter.PoolFilter.VisibilitySamples,
                 AncientAvailability = context.ResolveAncientAvailability(),
                 IncludeDarvSharedAncient = context.IncludeDarvSharedAncient
             });
@@ -273,6 +276,7 @@ public sealed class SeedRunEvaluator
                 UnlockedCharacters = context.UnlockedCharacters,
                 AscensionLevel = context.AscensionLevel,
                 PlayerCount = context.PlayerCount,
+                Samples = filter.PoolFilter.VisibilitySamples,
                 AncientAvailability = context.ResolveAncientAvailability(),
                 IncludeDarvSharedAncient = context.IncludeDarvSharedAncient
             });
@@ -308,7 +312,7 @@ public sealed class SeedRunEvaluator
             relicVisibilityAnalysis: relicVisibilityAnalysis);
     }
 
-    private Sts2RunPreview? PreviewActs(SeedRunEvaluationContext context)
+    private Sts2RunPreview? PreviewActs(SeedRunEvaluationContext context, SeedRunFilter filter)
     {
         if (_ancientPreviewer == null)
         {
@@ -326,10 +330,13 @@ public sealed class SeedRunEvaluator
             AncientAvailability = context.ResolveAncientAvailability(),
             IncludeDarvSharedAncient = context.IncludeDarvSharedAncient,
             IncludeAct2 = context.IncludeAct2,
-            IncludeAct3 = context.IncludeAct3
+            IncludeAct3 = context.IncludeAct3,
+            SeaGlassPreviewSamples = filter.AncientFilter.Act2SeaGlassCardIds.Count > 0
+                ? filter.AncientFilter.SeaGlassPreviewSamples
+                : null
         };
 
-        return _ancientPreviewer.Preview(request);
+        return _ancientPreviewer.Preview(request, _neowDataset);
     }
 
     private static SeedRunMatch CreateMatch(

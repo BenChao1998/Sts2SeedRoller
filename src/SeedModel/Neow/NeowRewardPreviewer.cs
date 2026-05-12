@@ -34,6 +34,11 @@ internal sealed class NeowRewardPreviewer
     private const string AddedCardLabel = "\u6dfb\u52a0\u5361\u724c";
     private const string TransformCardLabel = "\u53d8\u6362\u5361\u724c";
     private const string AddedCurseLabel = "\u6dfb\u52a0\u8bc5\u5492";
+    private const string UpgradeDeckLabel = "\u5361\u7ec4\u5347\u7ea7";
+    private const string RewardModifierLabel = "\u5956\u52b1\u6548\u679c";
+    private const string MovementLabel = "\u8def\u7ebf\u6548\u679c";
+    private const string MaxHpLabel = "\u6700\u5927\u751f\u547d";
+    private const string BundleChoiceLabelPrefix = "\u5361\u724c\u5305\u9009\u9879";
     private const string InjuryCardId = "INJURY";
     private const string ClawCardId = "CLAW";
     private const int ScarcityAscensionLevel = 7;
@@ -49,13 +54,16 @@ internal sealed class NeowRewardPreviewer
         NeowOptionIds.NeowsBones,
         NeowOptionIds.ArcaneScroll,
         NeowOptionIds.BoomingConch,
+        NeowOptionIds.FishingRod,
         NeowOptionIds.GoldenPearl,
+        NeowOptionIds.Kaleidoscope,
         NeowOptionIds.LeadPaperweight,
         NeowOptionIds.LostCoffer,
         NeowOptionIds.NeowsTorment,
         NeowOptionIds.NewLeaf,
         NeowOptionIds.PreciseScissors,
         NeowOptionIds.PhialHolster,
+        NeowOptionIds.SilkenTress,
         NeowOptionIds.WingedBoots,
         NeowOptionIds.MassiveScroll,
         NeowOptionIds.LavaRock,
@@ -137,12 +145,12 @@ internal sealed class NeowRewardPreviewer
 
         if (string.Equals(relicId, NeowOptionIds.NeowsTorment, StringComparison.OrdinalIgnoreCase))
         {
-            return new[] { CreateCardDetail(AddedCardLabel, "NEOWS_FURY") };
+            return ApplyDefaultSourcePath([CreateCardDetail(AddedCardLabel, "NEOWS_FURY")], relicId);
         }
 
         if (string.Equals(relicId, NeowOptionIds.CursedPearl, StringComparison.OrdinalIgnoreCase))
         {
-            return new[] { CreateCardDetail(AddedCurseLabel, "GREED") };
+            return ApplyDefaultSourcePath([CreateCardDetail(AddedCurseLabel, "GREED")], relicId);
         }
 
         if (string.Equals(relicId, NeowOptionIds.HeftyTablet, StringComparison.OrdinalIgnoreCase))
@@ -150,7 +158,7 @@ internal sealed class NeowRewardPreviewer
             var heftyTablet = BuildHeftyTabletPreview(context);
             if (heftyTablet.Count > 0)
             {
-                return heftyTablet;
+                return ApplyDefaultSourcePath(heftyTablet, relicId);
             }
         }
 
@@ -159,7 +167,7 @@ internal sealed class NeowRewardPreviewer
             var largeCapsule = BuildLargeCapsulePreview(context, character);
             if (largeCapsule.Count > 0)
             {
-                return largeCapsule;
+                return ApplyDefaultSourcePath(largeCapsule, relicId);
             }
         }
 
@@ -168,7 +176,7 @@ internal sealed class NeowRewardPreviewer
             var arcaneScroll = BuildArcaneScrollPreview(context);
             if (arcaneScroll.Count > 0)
             {
-                return arcaneScroll;
+                return ApplyDefaultSourcePath(arcaneScroll, relicId);
             }
         }
 
@@ -177,7 +185,7 @@ internal sealed class NeowRewardPreviewer
             var paperweight = BuildLeadPaperweightPreview(context);
             if (paperweight.Count > 0)
             {
-                return paperweight;
+                return ApplyDefaultSourcePath(paperweight, relicId);
             }
         }
 
@@ -186,7 +194,7 @@ internal sealed class NeowRewardPreviewer
             var massiveScroll = BuildMassiveScrollPreview(context);
             if (massiveScroll.Count > 0)
             {
-                return massiveScroll;
+                return ApplyDefaultSourcePath(massiveScroll, relicId);
             }
         }
 
@@ -195,7 +203,7 @@ internal sealed class NeowRewardPreviewer
             var lostCoffer = BuildLostCofferPreview(context);
             if (lostCoffer.Count > 0)
             {
-                return lostCoffer;
+                return ApplyDefaultSourcePath(lostCoffer, relicId);
             }
         }
 
@@ -204,7 +212,7 @@ internal sealed class NeowRewardPreviewer
             var scrollBoxes = BuildScrollBoxesPreview(context);
             if (scrollBoxes.Count > 0)
             {
-                return scrollBoxes;
+                return ApplyDefaultSourcePath(scrollBoxes, relicId);
             }
         }
 
@@ -213,7 +221,7 @@ internal sealed class NeowRewardPreviewer
             var phialHolster = BuildPhialHolsterPreview(context);
             if (phialHolster.Count > 0)
             {
-                return phialHolster;
+                return ApplyDefaultSourcePath(phialHolster, relicId);
             }
         }
 
@@ -222,13 +230,13 @@ internal sealed class NeowRewardPreviewer
             var talisman = BuildNeowsTalismanPreview(character);
             if (talisman.Count > 0)
             {
-                return talisman;
+                return ApplyDefaultSourcePath(talisman, relicId);
             }
         }
 
         if (string.Equals(relicId, NeowOptionIds.Pomander, StringComparison.OrdinalIgnoreCase))
         {
-            return BuildPomanderPreview();
+            return ApplyDefaultSourcePath(BuildPomanderPreview(), relicId);
         }
 
         if (string.Equals(relicId, NeowOptionIds.SmallCapsule, StringComparison.OrdinalIgnoreCase))
@@ -236,7 +244,7 @@ internal sealed class NeowRewardPreviewer
             var smallCapsule = BuildSmallCapsulePreview(context);
             if (smallCapsule.Count > 0)
             {
-                return smallCapsule;
+                return ApplyDefaultSourcePath(smallCapsule, relicId);
             }
         }
 
@@ -245,7 +253,7 @@ internal sealed class NeowRewardPreviewer
             var bones = BuildNeowsBonesPreview(context);
             if (bones.Count > 0)
             {
-                return bones;
+                return ApplyDefaultSourcePath(bones, relicId);
             }
         }
 
@@ -254,8 +262,76 @@ internal sealed class NeowRewardPreviewer
             var leafyDetails = BuildLeafyPreview(context, character);
             if (leafyDetails.Count > 0)
             {
-                return leafyDetails;
+                return ApplyDefaultSourcePath(leafyDetails, relicId);
             }
+        }
+
+        if (string.Equals(relicId, NeowOptionIds.Kaleidoscope, StringComparison.OrdinalIgnoreCase))
+        {
+            var kaleidoscopeDetails = BuildKaleidoscopePreview(context);
+            if (kaleidoscopeDetails.Count > 0)
+            {
+                return ApplyDefaultSourcePath(kaleidoscopeDetails, relicId);
+            }
+        }
+
+        if (string.Equals(relicId, NeowOptionIds.FishingRod, StringComparison.OrdinalIgnoreCase))
+        {
+            return ApplyDefaultSourcePath(
+                [CreateTextDetail(UpgradeDeckLabel, "每进行3次普通战斗，随机升级牌组中的1张可升级卡牌。")],
+                relicId);
+        }
+
+        if (string.Equals(relicId, NeowOptionIds.SilkenTress, StringComparison.OrdinalIgnoreCase))
+        {
+            return ApplyDefaultSourcePath(
+                [CreateTextDetail(RewardModifierLabel, "首次卡牌奖励中的可附魔卡牌会改为附魔版。")],
+                relicId);
+        }
+
+        if (string.Equals(relicId, NeowOptionIds.WingedBoots, StringComparison.OrdinalIgnoreCase))
+        {
+            return ApplyDefaultSourcePath(
+                [CreateTextDetail(MovementLabel, "单人模式下可免费跨线移动3次。")],
+                relicId);
+        }
+
+        if (string.Equals(relicId, NeowOptionIds.SilverCrucible, StringComparison.OrdinalIgnoreCase))
+        {
+            return ApplyDefaultSourcePath(
+                [CreateTextDetail(RewardModifierLabel, "单人模式下，接下来3次卡牌奖励中的可升级卡牌会改为升级版。")],
+                relicId);
+        }
+
+        if (string.Equals(relicId, NeowOptionIds.LavaRock, StringComparison.OrdinalIgnoreCase))
+        {
+            return ApplyDefaultSourcePath(
+                [CreateTextDetail(RelicRewardLabel, "第一幕Boss奖励额外获得2个遗物奖励。")],
+                relicId);
+        }
+
+        if (string.Equals(relicId, NeowOptionIds.NutritiousOyster, StringComparison.OrdinalIgnoreCase))
+        {
+            return ApplyDefaultSourcePath(
+                [CreateTextDetail(MaxHpLabel, "+11")],
+                relicId);
+        }
+
+        if (string.Equals(relicId, NeowOptionIds.StoneHumidifier, StringComparison.OrdinalIgnoreCase))
+        {
+            return ApplyDefaultSourcePath(
+                [CreateTextDetail(MaxHpLabel, "每次火堆回复后额外获得5点最大生命。")],
+                relicId);
+        }
+
+        if (string.Equals(relicId, NeowOptionIds.PrecariousShears, StringComparison.OrdinalIgnoreCase))
+        {
+            return ApplyDefaultSourcePath(
+                [
+                    CreateTextDetail(TransformCardLabel, "移除牌组中的2张牌。"),
+                    CreateTextDetail(EffectLabel, "受到16点伤害。")
+                ],
+                relicId);
         }
 
         return Array.Empty<RewardDetail>();
@@ -425,6 +501,72 @@ internal sealed class NeowRewardPreviewer
         var rng = CreatePlayerRewardsRng(context);
         return BuildHeftyTabletPreview(context, rng);
     }
+
+    private IReadOnlyList<RewardDetail> BuildKaleidoscopePreview(NeowGenerationContext context)
+    {
+        var nicheRng = CreateRunRng(context, "niche");
+        var rewardsRng = CreatePlayerRewardsRng(context);
+        return BuildKaleidoscopePreview(context, nicheRng, rewardsRng);
+    }
+
+    private IReadOnlyList<RewardDetail> BuildKaleidoscopePreview(
+        NeowGenerationContext context,
+        GameRng nicheRng,
+        GameRng rewardsRng)
+    {
+        var otherCharacters = _cardPools.Keys
+            .Where(character => character != context.Character)
+            .OrderBy(GetKaleidoscopeStableSortKey, StringComparer.Ordinal)
+            .ToList();
+        if (otherCharacters.Count == 0)
+        {
+            return Array.Empty<RewardDetail>();
+        }
+
+        var scarcityActive = IsScarcityActive(context.AscensionLevel);
+        var details = new List<RewardDetail>(6);
+        for (var bundleIndex = 0; bundleIndex < 2; bundleIndex++)
+        {
+            var shuffledCharacters = otherCharacters.ToList();
+            nicheRng.Shuffle(shuffledCharacters);
+            var selectedCharacters = shuffledCharacters.Take(3).ToList();
+            for (var optionIndex = 0; optionIndex < selectedCharacters.Count; optionIndex++)
+            {
+                if (!_cardPools.TryGetValue(selectedCharacters[optionIndex], out var pool) || pool.Count == 0)
+                {
+                    continue;
+                }
+
+                var cards = RollCards(
+                    rewardsRng,
+                    pool,
+                    CardRarityOddsType.RegularEncounter,
+                    1,
+                    context.PlayerCount,
+                    scarcityActive,
+                    simulateUpgradeRoll: true);
+                if (cards.Count == 0)
+                {
+                    continue;
+                }
+
+                details.Add(CreateCardDetail($"{BundleChoiceLabelPrefix}{bundleIndex + 1}-{optionIndex + 1}", cards[0]));
+            }
+        }
+
+        return details;
+    }
+
+    private static string GetKaleidoscopeStableSortKey(CharacterId character) =>
+        character switch
+        {
+            CharacterId.Defect => "DEFECT",
+            CharacterId.Ironclad => "IRONCLAD",
+            CharacterId.Necrobinder => "NECROBINDER",
+            CharacterId.Regent => "REGENT",
+            CharacterId.Silent => "SILENT",
+            _ => character.ToString().ToUpperInvariant()
+        };
 
     private IReadOnlyList<RewardDetail> BuildHeftyTabletPreview(NeowGenerationContext context, GameRng rng)
     {
@@ -751,54 +893,108 @@ internal sealed class NeowRewardPreviewer
                 return;
 
             case NeowOptionIds.HeftyTablet:
-                details.AddRange(BuildHeftyTabletPreview(state.Context, state.RewardsRng));
+                details.AddRange(ApplyDefaultSourcePath(BuildHeftyTabletPreview(state.Context, state.RewardsRng), BuildSourcePath(NeowOptionIds.NeowsBones, relicId)));
                 return;
 
             case NeowOptionIds.LargeCapsule:
-                details.AddRange(BuildLargeCapsulePreview(state.Context, state.Context.Character, state.RelicBag, state.RewardsRng));
+                details.AddRange(ApplyDefaultSourcePath(BuildLargeCapsulePreview(state.Context, state.Context.Character, state.RelicBag, state.RewardsRng), BuildSourcePath(NeowOptionIds.NeowsBones, relicId)));
                 return;
 
             case NeowOptionIds.ArcaneScroll:
-                details.AddRange(BuildArcaneScrollPreview(state.Context, state.RewardsRng));
+                details.AddRange(ApplyDefaultSourcePath(BuildArcaneScrollPreview(state.Context, state.RewardsRng), BuildSourcePath(NeowOptionIds.NeowsBones, relicId)));
                 return;
 
             case NeowOptionIds.LeadPaperweight:
-                details.AddRange(BuildLeadPaperweightPreview(state.Context, state.RewardsRng));
+                details.AddRange(ApplyDefaultSourcePath(BuildLeadPaperweightPreview(state.Context, state.RewardsRng), BuildSourcePath(NeowOptionIds.NeowsBones, relicId)));
                 return;
 
             case NeowOptionIds.MassiveScroll:
-                details.AddRange(BuildMassiveScrollPreview(state.Context, state.RewardsRng));
+                details.AddRange(ApplyDefaultSourcePath(BuildMassiveScrollPreview(state.Context, state.RewardsRng), BuildSourcePath(NeowOptionIds.NeowsBones, relicId)));
                 return;
 
             case NeowOptionIds.LostCoffer:
-                details.AddRange(BuildLostCofferPreview(state.Context, state.RewardsRng));
+                details.AddRange(ApplyDefaultSourcePath(BuildLostCofferPreview(state.Context, state.RewardsRng), BuildSourcePath(NeowOptionIds.NeowsBones, relicId)));
                 return;
 
             case NeowOptionIds.ScrollBoxes:
-                details.AddRange(BuildScrollBoxesPreview(state.Context, state.RewardsRng));
+                details.AddRange(ApplyDefaultSourcePath(BuildScrollBoxesPreview(state.Context, state.RewardsRng), BuildSourcePath(NeowOptionIds.NeowsBones, relicId)));
                 return;
 
             case NeowOptionIds.PhialHolster:
-                details.AddRange(BuildPhialHolsterPreview(state.Context, state.CombatPotionGenerationRng));
+                details.AddRange(ApplyDefaultSourcePath(BuildPhialHolsterPreview(state.Context, state.CombatPotionGenerationRng), BuildSourcePath(NeowOptionIds.NeowsBones, relicId)));
                 return;
 
             case NeowOptionIds.NeowsTalisman:
-                details.AddRange(BuildNeowsTalismanPreview(state.Context.Character));
+                details.AddRange(ApplyDefaultSourcePath(BuildNeowsTalismanPreview(state.Context.Character), BuildSourcePath(NeowOptionIds.NeowsBones, relicId)));
                 return;
 
             case NeowOptionIds.Pomander:
-                details.AddRange(BuildPomanderPreview());
+                details.AddRange(ApplyDefaultSourcePath(BuildPomanderPreview(), BuildSourcePath(NeowOptionIds.NeowsBones, relicId)));
                 return;
 
             case NeowOptionIds.SmallCapsule:
-                details.AddRange(BuildSmallCapsulePreview(state.Context, state.RelicBag, state.RewardsRng));
+                details.AddRange(ApplyDefaultSourcePath(BuildSmallCapsulePreview(state.Context, state.RelicBag, state.RewardsRng), BuildSourcePath(NeowOptionIds.NeowsBones, relicId)));
                 return;
 
             case NeowOptionIds.LeafyPoultice:
-                details.AddRange(BuildLeafyPreview(state.Context, state.Context.Character, state.TransformationsRng));
+                details.AddRange(ApplyDefaultSourcePath(BuildLeafyPreview(state.Context, state.Context.Character, state.TransformationsRng), BuildSourcePath(NeowOptionIds.NeowsBones, relicId)));
+                return;
+
+            case NeowOptionIds.Kaleidoscope:
+                details.AddRange(ApplyDefaultSourcePath(BuildKaleidoscopePreview(state.Context, state.NicheRng, state.RewardsRng), BuildSourcePath(NeowOptionIds.NeowsBones, relicId)));
+                return;
+
+            case NeowOptionIds.FishingRod:
+                details.Add(CreateTextDetail(UpgradeDeckLabel, "每进行3次普通战斗，随机升级牌组中的1张可升级卡牌。") with { SourcePath = BuildSourcePath(NeowOptionIds.NeowsBones, relicId) });
+                return;
+
+            case NeowOptionIds.SilkenTress:
+                details.Add(CreateTextDetail(RewardModifierLabel, "首次卡牌奖励中的可附魔卡牌会改为附魔版。") with { SourcePath = BuildSourcePath(NeowOptionIds.NeowsBones, relicId) });
+                return;
+
+            case NeowOptionIds.WingedBoots:
+                details.Add(CreateTextDetail(MovementLabel, "单人模式下可免费跨线移动3次。") with { SourcePath = BuildSourcePath(NeowOptionIds.NeowsBones, relicId) });
+                return;
+
+            case NeowOptionIds.SilverCrucible:
+                details.Add(CreateTextDetail(RewardModifierLabel, "单人模式下，接下来3次卡牌奖励中的可升级卡牌会改为升级版。") with { SourcePath = BuildSourcePath(NeowOptionIds.NeowsBones, relicId) });
+                return;
+
+            case NeowOptionIds.LavaRock:
+                details.Add(CreateTextDetail(RelicRewardLabel, "第一幕Boss奖励额外获得2个遗物奖励。") with { SourcePath = BuildSourcePath(NeowOptionIds.NeowsBones, relicId) });
+                return;
+
+            case NeowOptionIds.NutritiousOyster:
+                details.Add(CreateTextDetail(MaxHpLabel, "+11") with { SourcePath = BuildSourcePath(NeowOptionIds.NeowsBones, relicId) });
+                return;
+
+            case NeowOptionIds.StoneHumidifier:
+                details.Add(CreateTextDetail(MaxHpLabel, "每次火堆回复后额外获得5点最大生命。") with { SourcePath = BuildSourcePath(NeowOptionIds.NeowsBones, relicId) });
+                return;
+
+            case NeowOptionIds.PrecariousShears:
+                details.Add(CreateTextDetail(TransformCardLabel, "移除牌组中的2张牌。") with { SourcePath = BuildSourcePath(NeowOptionIds.NeowsBones, relicId) });
+                details.Add(CreateTextDetail(EffectLabel, "受到16点伤害。") with { SourcePath = BuildSourcePath(NeowOptionIds.NeowsBones, relicId) });
                 return;
         }
     }
+
+    private static IReadOnlyList<RewardDetail> ApplyDefaultSourcePath(IReadOnlyList<RewardDetail> details, string sourcePath)
+    {
+        if (details.Count == 0)
+        {
+            return details;
+        }
+
+        return details
+            .Select(detail => string.IsNullOrWhiteSpace(detail.SourcePath)
+                ? detail with { SourcePath = sourcePath }
+                : detail)
+            .ToArray();
+    }
+
+    private static string BuildSourcePath(string parentSource, string childRelicId) =>
+        $"{parentSource}>{childRelicId}";
 
     private GameRng CreatePlayerRewardsRng(NeowGenerationContext context)
     {
@@ -966,14 +1162,14 @@ internal sealed class NeowRewardPreviewer
 
     internal static CardRarity RollCardRarity(GameRng rng, CardRarityOddsType oddsType, bool scarcityActive)
     {
-        var (commonOdds, uncommonOdds, rareOdds) = GetRarityOdds(oddsType, scarcityActive);
+        var (_, uncommonOdds, rareOdds) = GetRarityOdds(oddsType, scarcityActive);
         var roll = rng.NextDouble();
         if (roll < rareOdds)
         {
             return CardRarity.Rare;
         }
 
-        if (roll < rareOdds + uncommonOdds)
+        if (roll < uncommonOdds)
         {
             return CardRarity.Uncommon;
         }

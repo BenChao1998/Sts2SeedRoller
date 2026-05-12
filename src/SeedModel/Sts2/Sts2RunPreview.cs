@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 
+using SeedModel.Neow;
+
 namespace SeedModel.Sts2;
 
 public sealed class Sts2RunPreview
@@ -35,4 +37,28 @@ public sealed class Sts2AncientOption
     public bool WasChosen { get; init; }
 
     public string? Note { get; init; }
+
+    public string? ContextCharacterId { get; init; }
+
+    public List<string> PreviewCardIds { get; init; } = new();
+
+    public Sts2SeaGlassPreview? SeaGlassPreview { get; init; }
+}
+
+public sealed class Sts2SeaGlassPreview
+{
+    public required CharacterId TargetCharacter { get; init; }
+
+    public required int Samples { get; init; }
+
+    public required IReadOnlyList<Sts2SeaGlassPreviewCard> RankedCards { get; init; }
+}
+
+public sealed class Sts2SeaGlassPreviewCard
+{
+    public required string CardId { get; init; }
+
+    public required int SeenCount { get; init; }
+
+    public required double SeenProbability { get; init; }
 }

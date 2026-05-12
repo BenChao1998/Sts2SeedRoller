@@ -125,7 +125,7 @@ public sealed class NeowOptionDataset
                 continue;
             }
 
-            result[metadata.Id] = metadata;
+            result[metadata.Id] = NeowCardMetadataNormalizer.Normalize(metadata);
         }
 
         return result;

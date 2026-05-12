@@ -15,6 +15,9 @@ namespace SeedUi.ViewModels;
 
 internal sealed partial class MainWindowViewModel
 {
+    private const int MaxVisibilitySampleCount = 1_000_000;
+    private const int DefaultSeaGlassSampleCount = 1000;
+
     private static readonly IReadOnlyList<EventVisibilitySourceFilterOption> _highProbabilityEventMostCommonSourceOptions =
     [
         new(string.Empty, "不限制"),
@@ -60,6 +63,8 @@ internal sealed partial class MainWindowViewModel
     private string _highProbabilityEarlyThresholdPercentText = string.Empty;
     private string _highProbabilityAverageFirstOpportunityMaxText = string.Empty;
     private string _highProbabilityMostCommonSourceText = string.Empty;
+    private string _visibilitySampleCountText = Sts2PoolFilter.DefaultVisibilitySamples.ToString(CultureInfo.InvariantCulture);
+    private string _seaGlassSampleCountText = DefaultSeaGlassSampleCount.ToString(CultureInfo.InvariantCulture);
     private string _eventPoolConflictMessage = string.Empty;
     private CatalogItem? _selectedAct1EventPoolCatalogItem;
     private CatalogItem? _selectedAct2EventPoolCatalogItem;
@@ -392,6 +397,31 @@ internal sealed partial class MainWindowViewModel
         }
     }
 
+    public string VisibilitySampleCountText
+    {
+        get => _visibilitySampleCountText;
+        set
+        {
+            if (SetProperty(ref _visibilitySampleCountText, value ?? string.Empty))
+            {
+                UpdatePoolFilterSummaryCore();
+            }
+        }
+    }
+
+    public string SeaGlassSampleCountText
+    {
+        get => _seaGlassSampleCountText;
+        set
+        {
+            if (SetProperty(ref _seaGlassSampleCountText, value ?? string.Empty))
+            {
+                UpdatePoolFilterSummaryCore();
+                UpdateAncientFilterSummary();
+            }
+        }
+    }
+
     public string HighProbabilitySeenThresholdDescription =>
         $"命中规则：任一路线画像下，所选遗物需满足“出现”阈值；下方其它条件留空表示不限制。当前出现阈值为 {FormatThresholdPercent(GetHighProbabilitySeenThreshold())}%。";
 
@@ -453,6 +483,7 @@ internal sealed partial class MainWindowViewModel
         ApplyAct2EventPoolFilter();
         ApplyAct3EventPoolFilter();
         ApplyHighProbabilityEventFilter();
+        RefreshSeedAnalysisRouteCatalogs();
     }
 
     private void RefreshPoolRelicCatalog()
@@ -473,6 +504,9 @@ internal sealed partial class MainWindowViewModel
             .ToList();
 
         ApplyHighProbabilityRelicFilter();
+        RefreshAct1DerivedRewardRelicCatalog();
+        ApplyAct1DerivedRelicFilter();
+        RefreshSeedAnalysisRouteCatalogs();
     }
 
     private void ApplyAct1EventPoolFilter()
@@ -714,6 +748,11 @@ internal sealed partial class MainWindowViewModel
             {
                 parts.Add($"遗物多来自：{GetRelicVisibilitySourceDisplayName(mostCommonSource.Value)}");
             }
+        }
+
+        if (HasHighProbabilityEventFilters || HighProbabilityRelicFilterChips.Count > 0)
+        {
+            parts.Add($"采样次数：{GetVisibilitySampleCount()}");
         }
 
         PoolFilterSummary = parts.Count > 0
@@ -971,6 +1010,31 @@ internal sealed partial class MainWindowViewModel
     {
         return GetOptionalThresholdPercent(HighProbabilityEventSeenThresholdPercentText)
             ?? Sts2PoolFilter.DefaultHighProbabilityEventSeenThreshold;
+    }
+
+    private int GetVisibilitySampleCount()
+    {
+        if (!int.TryParse(
+                VisibilitySampleCountText,
+                NumberStyles.Integer,
+                CultureInfo.InvariantCulture,
+                out var value) ||
+            value <= 0)
+        {
+            return Sts2PoolFilter.DefaultVisibilitySamples;
+        }
+
+        return Math.Clamp(value, 1, MaxVisibilitySampleCount);
+    }
+
+    private int GetSeaGlassSampleCount()
+    {
+        if (int.TryParse(SeaGlassSampleCountText, NumberStyles.Integer, CultureInfo.InvariantCulture, out var value))
+        {
+            return Math.Clamp(value, 1, MaxVisibilitySampleCount);
+        }
+
+        return DefaultSeaGlassSampleCount;
     }
 
     private static string FormatThresholdPercent(double threshold)

@@ -106,6 +106,32 @@ internal sealed class Sts2StandardShopPreviewer
         return new FirstShopRouteInfo(shopPoint.Coord.Row, Math.Max(0, route.Count - 2));
     }
 
+    internal static IReadOnlyDictionary<int, IReadOnlyList<Sts2GeneratedActRoute>> GetAllRoutes(
+        Sts2WorldData world,
+        SeedRunEvaluationContext context)
+    {
+        ArgumentNullException.ThrowIfNull(world);
+        ArgumentNullException.ThrowIfNull(context);
+
+        var runRng = new RunRngSet(context.RunSeed);
+        var actRoutes = new Dictionary<int, IReadOnlyList<Sts2GeneratedActRoute>>();
+        var ancientAvailability = context.ResolveAncientAvailability();
+
+        for (var actNumber = 1; actNumber <= 3; actNumber++)
+        {
+            var act = actNumber == 1
+                ? world.ResolveActOne(context.RunSeed, ancientAvailability, context.PlayerCount > 1)
+                    ?? world.Acts.FirstOrDefault(candidate => candidate.ActNumber == 1)
+                    ?? world.Acts[0]
+                : world.Acts.First(candidate => candidate.ActNumber == actNumber);
+
+            var map = StandardActMapState.Create(act, context.PlayerCount > 1, context.AscensionLevel, runRng.Get($"act_{actNumber}_map"));
+            actRoutes[actNumber] = map.GetAllGeneratedRoutes(actNumber);
+        }
+
+        return actRoutes;
+    }
+
     private static void ApplyStandardNeowRule(StandardShopState state, IReadOnlyList<NeowOptionResult> neowOptions)
     {
         var selected = neowOptions.FirstOrDefault();
@@ -238,7 +264,7 @@ internal sealed class Sts2StandardShopPreviewer
             selected.Add(cardId);
             if (simulateUpgradeRoll)
             {
-                state.RewardsRng.NextDouble();
+                state.RewardsRng.NextFloat();
             }
         }
     }
@@ -362,7 +388,8 @@ internal sealed class Sts2StandardShopPreviewer
             return false;
         }
 
-        return true;
+        return metadata.CanBeGeneratedInCombat &&
+               metadata.ParsedRarity is CardRarity.Common or CardRarity.Uncommon or CardRarity.Rare;
     }
 
     private static string FormatRouteRoom(StandardMapPointType pointType, StandardRoomType roomType, StandardMapCoord coord)
@@ -409,6 +436,9 @@ internal sealed class Sts2StandardShopPreviewer
                 SimulateCombatRewards(state, CardRarityOddsType.EliteEncounter, roomType, includeRelicReward: true);
                 break;
             case StandardRoomType.Treasure:
+                _ = state.RewardsRng.NextInt(42, 53);
+                state.PlayerRelicBag.PullFromFront(RollRelicRarity(state.RewardsRng));
+                break;
             case StandardRoomType.Event:
             case StandardRoomType.RestSite:
             case StandardRoomType.Unassigned:
@@ -425,12 +455,14 @@ internal sealed class Sts2StandardShopPreviewer
         StandardRoomType roomType,
         bool includeRelicReward)
     {
-        // Gold rewards populate before potion/card rewards and consume the rewards RNG.
+        // The live game first decides whether a potion reward exists, then populates
+        // the reward list in gold -> potion -> cards -> relic order.
+        var hasPotionReward = state.PotionOdds.Roll(roomType);
         _ = roomType == StandardRoomType.Elite
-            ? state.RewardsRng.NextInt(25, 36)
+            ? state.RewardsRng.NextInt(35, 46)
             : state.RewardsRng.NextInt(10, 21);
 
-        if (state.PotionOdds.Roll(roomType))
+        if (hasPotionReward)
         {
             RollPotionReward(state);
         }
@@ -489,7 +521,7 @@ internal sealed class Sts2StandardShopPreviewer
         }
 
         selected.Add(cardId);
-        state.RewardsRng.NextDouble();
+        state.RewardsRng.NextFloat();
         if (selected.Count >= 3)
         {
             selected.Clear();
@@ -971,15 +1003,14 @@ internal sealed class Sts2StandardShopPreviewer
             _merchantCardPool = characterPool
                 .Where(cardId => dataset.CardMetadataMap.TryGetValue(cardId, out var metadata) &&
                                  IsCardAllowedForPlayer(metadata, playerCount) &&
-                                 metadata.ParsedRarity is not CardRarity.Basic and not CardRarity.Ancient and not CardRarity.Event)
+                                 metadata.ParsedRarity is not CardRarity.Basic)
                 .ToArray();
             _merchantCardPoolByType = BuildCardTypeBuckets(_merchantCardPool, dataset.CardMetadataMap);
             _merchantCardPoolByTypeAndRarity = BuildCardTypeRarityBuckets(_merchantCardPool, dataset.CardMetadataMap);
 
             _combatRewardPool = characterPool
                 .Where(cardId => dataset.CardMetadataMap.TryGetValue(cardId, out var metadata) &&
-                                 IsCardAllowedForPlayer(metadata, playerCount) &&
-                                 metadata.ParsedRarity is CardRarity.Common or CardRarity.Uncommon or CardRarity.Rare)
+                                 IsCardAllowedForReward(metadata, playerCount))
                 .ToArray();
             _combatRewardPoolByRarity = BuildCardRarityBuckets(_combatRewardPool, dataset.CardMetadataMap);
 
@@ -1250,7 +1281,7 @@ internal sealed class Sts2StandardShopPreviewer
                 CurrentValue += 0.1f;
             }
 
-            var eliteBonus = roomType == StandardRoomType.Elite ? 0.125f : 0f;
+            var eliteBonus = roomType == StandardRoomType.Elite ? 0.25f : 0f;
             return roll < current + eliteBonus;
         }
     }
@@ -1604,6 +1635,25 @@ internal sealed class Sts2StandardShopPreviewer
             }
 
             return bestPath ?? new List<StandardMapPoint>();
+        }
+
+        public IReadOnlyList<Sts2GeneratedActRoute> GetAllGeneratedRoutes(int actNumber)
+        {
+            return FindAllPaths(StartingMapPoint)
+                .Select(path => new Sts2GeneratedActRoute(
+                    actNumber,
+                    path
+                        .Where(point => point.Coord.Row > 0 && point.PointType != StandardMapPointType.Boss)
+                        .Select(point => new Sts2GeneratedRouteNode(
+                            point.Coord.Row,
+                            point.Coord.Col,
+                            point.PointType.ToString(),
+                            point.Children
+                                .Select(child => child.PointType.ToString())
+                                .Distinct(StringComparer.OrdinalIgnoreCase)
+                                .ToList()))
+                        .ToList()))
+                .ToList();
         }
 
         private static int ComparePaths(IReadOnlyList<StandardMapPoint> left, IReadOnlyList<StandardMapPoint> right)
@@ -2261,16 +2311,16 @@ internal sealed class Sts2StandardShopPreviewer
             return actNumber switch
             {
                 1 => new MapPointTypeCountsState(
-                    numOfUnknowns: rng.NextGaussianInt(12, 1, 10, 14),
                     numOfRests: rng.NextGaussianInt(7, 1, 6, 7),
+                    numOfUnknowns: rng.NextGaussianInt(12, 1, 10, 14),
                     numOfElites: elites),
                 2 => new MapPointTypeCountsState(
-                    numOfUnknowns: rng.NextGaussianInt(12, 1, 10, 14) - 1,
                     numOfRests: rng.NextGaussianInt(6, 1, 6, 7),
+                    numOfUnknowns: rng.NextGaussianInt(12, 1, 10, 14) - 1,
                     numOfElites: elites),
                 _ => new MapPointTypeCountsState(
-                    numOfUnknowns: rng.NextGaussianInt(12, 1, 10, 14) - 1,
                     numOfRests: rng.NextInt(5, 7),
+                    numOfUnknowns: rng.NextGaussianInt(12, 1, 10, 14) - 1,
                     numOfElites: elites)
             };
         }

@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using SeedModel.Collections;
 using SeedModel.Neow;
 using SeedModel.Rng;
+using SeedModel.Run;
 using SeedModel.Sts2.Generation;
 
 namespace SeedModel.Sts2;
@@ -62,7 +64,9 @@ internal sealed class Sts2RelicVisibilityAnalyzer
         NeowOptionDataset dataset,
         Sts2RelicVisibilityRequest request,
         IReadOnlyList<Sts2RelicVisibilityAncientAct> ancientActs,
-        IReadOnlyDictionary<string, string> rarityMap)
+        IReadOnlyDictionary<string, string> rarityMap,
+        IReadOnlyList<Sts2ActPoolPreview>? actPools = null,
+        Sts2RunPreview? ancientPreview = null)
     {
         ArgumentNullException.ThrowIfNull(dataset);
         ArgumentNullException.ThrowIfNull(request);
@@ -91,11 +95,41 @@ internal sealed class Sts2RelicVisibilityAnalyzer
             request.AscensionLevel,
             ancientAvailability);
         var rewardModel = RewardSimulationModel.Create(dataset, request.Character, playerCount);
-        var ancientMap = ancientActs.ToDictionary(act => act.ActNumber, act => act, EqualityComparer<int>.Default);
+        var ancientMap = BuildAncientActRelicMap(ancientActs);
+        var relicIndexMap = BuildRelicIndexMap(rarityMap.Keys, ancientMap);
+        if (request.UseExactRouteCoverage && actPools != null && ancientPreview != null)
+        {
+            var exactProfile = RunExactRouteCoverageProfile(
+                dataset,
+                request,
+                actPools,
+                ancientPreview,
+                rarityMap.Keys,
+                relicIndexMap);
 
-        var profileResults = RouteProfile.All
-            .Select(profile => RunProfile(request, profile, baseline, rewardModel, ancientMap))
-            .ToList();
+            return new Sts2RelicVisibilityAnalysis
+            {
+                SeedText = request.SeedText,
+                SeedValue = request.SeedValue,
+                Character = request.Character,
+                PlayerCount = playerCount,
+                Samples = request.Samples,
+                EarlyWindow = request.EarlyWindow,
+                SharedBagSize = baseline.SharedBag.TotalCount,
+                PlayerBagSize = baseline.PlayerBag.TotalCount,
+                Act3OnlyGateTrackedRelics = BeforeAct3TreasureChestRelics.Count,
+                UsesExactRouteCoverage = true,
+                AncientActs = ancientActs.OrderBy(act => act.ActNumber).ToList(),
+                Profiles = [exactProfile]
+            };
+        }
+
+        var profiles = RouteProfile.All;
+        var profileResults = new Sts2RelicVisibilityProfileResult[profiles.Count];
+        Parallel.For(0, profiles.Count, index =>
+        {
+            profileResults[index] = RunProfile(request, profiles[index], baseline, rewardModel, ancientMap, relicIndexMap);
+        });
 
         return new Sts2RelicVisibilityAnalysis
         {
@@ -108,6 +142,7 @@ internal sealed class Sts2RelicVisibilityAnalyzer
             SharedBagSize = baseline.SharedBag.TotalCount,
             PlayerBagSize = baseline.PlayerBag.TotalCount,
             Act3OnlyGateTrackedRelics = BeforeAct3TreasureChestRelics.Count,
+            UsesExactRouteCoverage = false,
             AncientActs = ancientActs.OrderBy(act => act.ActNumber).ToList(),
             Profiles = profileResults
         };
@@ -118,6 +153,8 @@ internal sealed class Sts2RelicVisibilityAnalyzer
         Sts2RelicVisibilityRequest request,
         IReadOnlyList<Sts2RelicVisibilityAncientAct> ancientActs,
         IReadOnlyDictionary<string, string> rarityMap,
+        IReadOnlyList<Sts2ActPoolPreview>? actPools,
+        Sts2RunPreview? ancientPreview,
         Sts2PoolFilter filter)
     {
         ArgumentNullException.ThrowIfNull(dataset);
@@ -137,6 +174,14 @@ internal sealed class Sts2RelicVisibilityAnalyzer
             return true;
         }
 
+        if (actPools != null &&
+            ancientPreview != null &&
+            filter.HighProbabilitySeenThreshold > 0 &&
+            !AllTargetRelicsReachableOnExactRoutes(dataset, request, actPools, ancientPreview, targetRelics))
+        {
+            return false;
+        }
+
         if (request.Samples <= 0)
         {
             throw new ArgumentOutOfRangeException(nameof(request), "Samples must be positive.");
@@ -154,33 +199,90 @@ internal sealed class Sts2RelicVisibilityAnalyzer
             request.AscensionLevel,
             ancientAvailability);
         var rewardModel = RewardSimulationModel.Create(dataset, request.Character, playerCount);
-        var ancientMap = ancientActs.ToDictionary(act => act.ActNumber, act => act, EqualityComparer<int>.Default);
-        var matchedRelics = targetRelics.ToDictionary(relicId => relicId, _ => false, StringComparer.OrdinalIgnoreCase);
-
-        foreach (var profile in RouteProfile.All)
+        var ancientMap = BuildAncientActRelicMap(ancientActs);
+        var profiles = RouteProfile.All;
+        var profileMatches = new bool[profiles.Count][];
+        Parallel.For(0, profiles.Count, index =>
         {
-            var profileRelics = RunTargetedProfile(request, profile, baseline, rewardModel, ancientMap, targetRelics);
-            foreach (var relicId in targetRelics)
-            {
-                if (matchedRelics[relicId])
-                {
-                    continue;
-                }
+            profileMatches[index] = RunTargetedProfileMatches(request, profiles[index], baseline, rewardModel, ancientMap, targetRelics, filter);
+        });
 
-                if (profileRelics.TryGetValue(relicId, out var relic) &&
-                    filter.MatchesHighProbabilityRelic(relic))
+        for (var relicIndex = 0; relicIndex < targetRelics.Count; relicIndex++)
+        {
+            var matched = false;
+            for (var profileIndex = 0; profileIndex < profileMatches.Length; profileIndex++)
+            {
+                if (profileMatches[profileIndex][relicIndex])
                 {
-                    matchedRelics[relicId] = true;
+                    matched = true;
+                    break;
                 }
             }
 
-            if (targetRelics.All(relicId => matchedRelics[relicId]))
+            if (!matched)
             {
-                return true;
+                return false;
             }
         }
 
-        return targetRelics.All(relicId => matchedRelics[relicId]);
+        return true;
+    }
+
+    private bool AllTargetRelicsReachableOnExactRoutes(
+        NeowOptionDataset dataset,
+        Sts2RelicVisibilityRequest request,
+        IReadOnlyList<Sts2ActPoolPreview> actPools,
+        Sts2RunPreview ancientPreview,
+        IReadOnlyList<string> targetRelics)
+    {
+        var unlockedCharacters = request.UnlockedCharacters?.Count > 0
+            ? request.UnlockedCharacters
+            : [request.Character];
+        var allRoutes = Sts2StandardShopPreviewer.GetAllRoutes(_world, new SeedRunEvaluationContext
+        {
+            SeedText = request.SeedText,
+            RunSeed = request.SeedValue,
+            Character = request.Character,
+            UnlockedCharacters = unlockedCharacters,
+            PlayerCount = request.PlayerCount,
+            AscensionLevel = request.AscensionLevel,
+            AncientAvailability = request.AncientAvailability,
+            IncludeDarvSharedAncient = request.IncludeDarvSharedAncient
+        });
+        var totalRouteCount = allRoutes.Values.Aggregate(1L, (product, routes) => product * Math.Max(1, routes.Count));
+        var maxResults = totalRouteCount > int.MaxValue ? int.MaxValue : (int)totalRouteCount;
+        var analyzer = new Sts2ExactRouteAnalyzer(_world, workspaceRoot: null);
+        var exactAnalysis = analyzer.Analyze(
+            dataset,
+            new Sts2ExactRouteAnalysisRequest
+            {
+                SeedText = request.SeedText,
+                SeedValue = request.SeedValue,
+                Character = request.Character,
+                AscensionLevel = request.AscensionLevel,
+                PlayerCount = request.PlayerCount,
+                AncientAvailability = request.AncientAvailability,
+                IncludeDarvSharedAncient = request.IncludeDarvSharedAncient,
+                MaxResults = maxResults,
+                MaxRouteChecks = totalRouteCount
+            },
+            actPools,
+            ancientPreview,
+            unlockedCharacters);
+
+        foreach (var targetRelic in targetRelics)
+        {
+            var matched = exactAnalysis.Matches.Any(match =>
+                match.Acts.Any(act =>
+                    act.AncientRelics.Any(relicId => string.Equals(relicId, targetRelic, StringComparison.OrdinalIgnoreCase)) ||
+                    act.Rooms.Any(room => room.RelicIds.Any(relicId => string.Equals(relicId, targetRelic, StringComparison.OrdinalIgnoreCase)))));
+            if (!matched)
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private Sts2RelicVisibilityProfileResult RunProfile(
@@ -188,23 +290,37 @@ internal sealed class Sts2RelicVisibilityAnalyzer
         RouteProfile profile,
         BaselineState baseline,
         RewardSimulationModel rewardModel,
-        IReadOnlyDictionary<int, Sts2RelicVisibilityAncientAct> ancientActs)
+        IReadOnlyDictionary<int, ShownRelic[]> ancientActs,
+        IReadOnlyDictionary<string, int> relicIndexMap)
     {
         var routeRng = new GameRng(request.SeedValue, $"relic_visibility_{profile.Id}");
-        var stats = new Dictionary<string, AppearanceStats>(StringComparer.OrdinalIgnoreCase);
+        var relicIds = relicIndexMap
+            .OrderBy(pair => pair.Value)
+            .Select(pair => pair.Key)
+            .ToArray();
+        var stats = new AppearanceStats[relicIds.Length];
+        for (var i = 0; i < stats.Length; i++)
+        {
+            stats[i] = new AppearanceStats();
+        }
+
         var earlySamples = new List<IReadOnlyList<string>>(capacity: 3);
+        var sampleSeen = new bool[relicIds.Length];
+        var sampleFirstSeen = new int[relicIds.Length];
+        var sampleFirstAct = new int[relicIds.Length];
+        var sampleFirstSource = new Sts2RelicVisibilitySource[relicIds.Length];
+        var sampleSourcePresence = new byte[relicIds.Length];
+        var seenIndices = new List<int>(64);
+        var earliestThisSample = new List<string>();
+        var opportunities = new List<Opportunity>(32);
 
         for (var sample = 0; sample < request.Samples; sample++)
         {
             var state = baseline.Clone();
-            var sampleSeen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            var sampleFirstSeen = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-            var sampleFirstAct = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-            var sampleFirstSource = new Dictionary<string, Sts2RelicVisibilitySource>(StringComparer.OrdinalIgnoreCase);
-            var sampleSourcePresence = new Dictionary<string, SourcePresence>(StringComparer.OrdinalIgnoreCase);
-            var earliestThisSample = new List<string>();
+            seenIndices.Clear();
+            earliestThisSample.Clear();
 
-            var opportunities = BuildOpportunities(routeRng, profile);
+            BuildOpportunities(routeRng, profile, opportunities);
             var currentAct = 0;
             foreach (var opportunity in opportunities)
             {
@@ -233,29 +349,30 @@ internal sealed class Sts2RelicVisibilityAnalyzer
 
                 foreach (var shown in shownRelics)
                 {
-                    if (!sampleSourcePresence.TryGetValue(shown.RelicId, out var presence))
-                    {
-                        presence = new SourcePresence();
-                        sampleSourcePresence[shown.RelicId] = presence;
-                    }
-
-                    if (shown.Source == Sts2RelicVisibilitySource.Shop)
-                    {
-                        presence.ShopSeen = true;
-                    }
-                    else
-                    {
-                        presence.NonShopSeen = true;
-                    }
-
-                    if (!sampleSeen.Add(shown.RelicId))
+                    if (!relicIndexMap.TryGetValue(shown.RelicId, out var relicIndex))
                     {
                         continue;
                     }
 
-                    sampleFirstSeen[shown.RelicId] = opportunity.GlobalIndex;
-                    sampleFirstAct[shown.RelicId] = opportunity.ActNumber;
-                    sampleFirstSource[shown.RelicId] = shown.Source;
+                    if (shown.Source == Sts2RelicVisibilitySource.Shop)
+                    {
+                        sampleSourcePresence[relicIndex] |= 0b10;
+                    }
+                    else
+                    {
+                        sampleSourcePresence[relicIndex] |= 0b01;
+                    }
+
+                    if (sampleSeen[relicIndex])
+                    {
+                        continue;
+                    }
+
+                    sampleSeen[relicIndex] = true;
+                    seenIndices.Add(relicIndex);
+                    sampleFirstSeen[relicIndex] = opportunity.GlobalIndex;
+                    sampleFirstAct[relicIndex] = opportunity.ActNumber;
+                    sampleFirstSource[relicIndex] = shown.Source;
                     if (opportunity.GlobalIndex <= request.EarlyWindow)
                     {
                         earliestThisSample.Add(shown.RelicId);
@@ -268,14 +385,10 @@ internal sealed class Sts2RelicVisibilityAnalyzer
                 earlySamples.Add(earliestThisSample);
             }
 
-            foreach (var (relicId, firstIndex) in sampleFirstSeen)
+            foreach (var relicIndex in seenIndices)
             {
-                if (!stats.TryGetValue(relicId, out var relicStats))
-                {
-                    relicStats = new AppearanceStats();
-                    stats[relicId] = relicStats;
-                }
-
+                var relicStats = stats[relicIndex];
+                var firstIndex = sampleFirstSeen[relicIndex];
                 relicStats.SeenCount++;
                 relicStats.FirstOpportunityTotal += firstIndex;
                 if (firstIndex <= request.EarlyWindow)
@@ -283,41 +396,45 @@ internal sealed class Sts2RelicVisibilityAnalyzer
                     relicStats.EarlyCount++;
                 }
 
-                relicStats.FirstSeenActCounts[sampleFirstAct[relicId]] =
-                    relicStats.FirstSeenActCounts.GetValueOrDefault(sampleFirstAct[relicId]) + 1;
+                var firstAct = sampleFirstAct[relicIndex];
+                relicStats.FirstSeenActCounts[firstAct] =
+                    relicStats.FirstSeenActCounts.GetValueOrDefault(firstAct) + 1;
 
-                if (sampleSourcePresence.TryGetValue(relicId, out var presence))
+                var presence = sampleSourcePresence[relicIndex];
+                if ((presence & 0b01) != 0)
                 {
-                    if (presence.NonShopSeen)
-                    {
-                        relicStats.NonShopSeenCount++;
-                    }
-
-                    if (presence.ShopSeen)
-                    {
-                        relicStats.ShopSeenCount++;
-                    }
+                    relicStats.NonShopSeenCount++;
                 }
 
-                relicStats.FirstSourceCounts[sampleFirstSource[relicId]] =
-                    relicStats.FirstSourceCounts.GetValueOrDefault(sampleFirstSource[relicId]) + 1;
+                if ((presence & 0b10) != 0)
+                {
+                    relicStats.ShopSeenCount++;
+                }
+
+                var firstSource = sampleFirstSource[relicIndex];
+                relicStats.FirstSourceCounts[firstSource] =
+                    relicStats.FirstSourceCounts.GetValueOrDefault(firstSource) + 1;
+
+                sampleSeen[relicIndex] = false;
+                sampleSourcePresence[relicIndex] = 0;
             }
         }
 
-        var ranked = stats
-            .Select(pair => ToRankedRelic(pair.Key, pair.Value, request.Samples))
-            .OrderByDescending(item => item.EarlyProbability)
-            .ThenByDescending(item => item.SeenProbability)
-            .ThenBy(item => item.AverageFirstOpportunity)
-            .ThenBy(item => item.RelicId, StringComparer.OrdinalIgnoreCase)
-            .ToList();
+        var ranked = new List<Sts2RelicVisibilityRankedRelic>(stats.Length);
+        for (var i = 0; i < stats.Length; i++)
+        {
+            if (stats[i].SeenCount <= 0)
+            {
+                continue;
+            }
 
-        var seenRanked = ranked
-            .OrderByDescending(item => item.SeenProbability)
-            .ThenByDescending(item => item.EarlyProbability)
-            .ThenBy(item => item.AverageFirstOpportunity)
-            .ThenBy(item => item.RelicId, StringComparer.OrdinalIgnoreCase)
-            .ToList();
+            ranked.Add(ToRankedRelic(relicIds[i], stats[i], request.Samples));
+        }
+
+        ranked.Sort(CompareEarlyRelics);
+
+        var seenRanked = new List<Sts2RelicVisibilityRankedRelic>(ranked);
+        seenRanked.Sort(CompareSeenRelics);
 
         return new Sts2RelicVisibilityProfileResult
         {
@@ -333,30 +450,52 @@ internal sealed class Sts2RelicVisibilityAnalyzer
         };
     }
 
-    private Dictionary<string, Sts2RelicVisibilityRankedRelic> RunTargetedProfile(
+    private bool[] RunTargetedProfileMatches(
         Sts2RelicVisibilityRequest request,
         RouteProfile profile,
         BaselineState baseline,
         RewardSimulationModel rewardModel,
-        IReadOnlyDictionary<int, Sts2RelicVisibilityAncientAct> ancientActs,
-        IReadOnlyList<string> targetRelics)
+        IReadOnlyDictionary<int, ShownRelic[]> ancientActs,
+        IReadOnlyList<string> targetRelics,
+        Sts2PoolFilter filter)
     {
         var routeRng = new GameRng(request.SeedValue, $"relic_visibility_{profile.Id}");
-        var targetSet = targetRelics.ToHashSet(StringComparer.OrdinalIgnoreCase);
-        var stats = targetRelics.ToDictionary(
-            relicId => relicId,
-            _ => new AppearanceStats(),
-            StringComparer.OrdinalIgnoreCase);
+        var targetIds = targetRelics
+            .Where(static relicId => !string.IsNullOrWhiteSpace(relicId))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var targetIndexMap = new Dictionary<string, int>(targetIds.Length, StringComparer.OrdinalIgnoreCase);
+        var stats = new TargetedRelicStats[targetIds.Length];
+        for (var i = 0; i < targetIds.Length; i++)
+        {
+            targetIndexMap[targetIds[i]] = i;
+        }
 
+        var sampleSeen = new bool[targetIds.Length];
+        var sampleFirstSeen = new int[targetIds.Length];
+        var sampleFirstSource = new Sts2RelicVisibilitySource[targetIds.Length];
+        var sampleShopSeen = new bool[targetIds.Length];
+        var sampleNonShopSeen = new bool[targetIds.Length];
+        var seenIndices = new List<int>(targetIds.Length);
+        var opportunities = new List<Opportunity>(32);
+        var enablePruning = ShouldEnableTargetedRelicPruning(filter);
+        var possible = enablePruning ? new bool[targetIds.Length] : null;
+        if (possible != null)
+        {
+            Array.Fill(possible, true);
+        }
+
+        var remainingPossible = targetIds.Length;
         for (var sample = 0; sample < request.Samples; sample++)
         {
+            if (enablePruning && remainingPossible == 0)
+            {
+                break;
+            }
+
             var state = baseline.Clone();
-            var sampleSeen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            var sampleSourcePresence = new Dictionary<string, SourcePresence>(StringComparer.OrdinalIgnoreCase);
-            var sampleFirstSeen = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-            var sampleFirstAct = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-            var sampleFirstSource = new Dictionary<string, Sts2RelicVisibilitySource>(StringComparer.OrdinalIgnoreCase);
-            var opportunities = BuildOpportunities(routeRng, profile);
+            seenIndices.Clear();
+            BuildOpportunities(routeRng, profile, opportunities);
             var currentAct = 0;
 
             foreach (var opportunity in opportunities)
@@ -386,94 +525,413 @@ internal sealed class Sts2RelicVisibilityAnalyzer
 
                 foreach (var shown in shownRelics)
                 {
-                    if (!targetSet.Contains(shown.RelicId))
+                    if (!targetIndexMap.TryGetValue(shown.RelicId, out var targetIndex) ||
+                        (possible != null && !possible[targetIndex]))
                     {
                         continue;
-                    }
-
-                    if (!sampleSourcePresence.TryGetValue(shown.RelicId, out var presence))
-                    {
-                        presence = new SourcePresence();
-                        sampleSourcePresence[shown.RelicId] = presence;
                     }
 
                     if (shown.Source == Sts2RelicVisibilitySource.Shop)
                     {
-                        presence.ShopSeen = true;
+                        sampleShopSeen[targetIndex] = true;
                     }
                     else
                     {
-                        presence.NonShopSeen = true;
+                        sampleNonShopSeen[targetIndex] = true;
                     }
 
-                    if (!sampleSeen.Add(shown.RelicId))
+                    if (sampleSeen[targetIndex])
                     {
                         continue;
                     }
 
-                    sampleFirstSeen[shown.RelicId] = opportunity.GlobalIndex;
-                    sampleFirstAct[shown.RelicId] = opportunity.ActNumber;
-                    sampleFirstSource[shown.RelicId] = shown.Source;
+                    sampleSeen[targetIndex] = true;
+                    sampleFirstSeen[targetIndex] = opportunity.GlobalIndex;
+                    sampleFirstSource[targetIndex] = shown.Source;
+                    seenIndices.Add(targetIndex);
 
-                    if (sampleSeen.Count == targetSet.Count)
+                    if (seenIndices.Count == targetIds.Length)
                     {
                         break;
                     }
                 }
 
-                if (sampleSeen.Count == targetSet.Count)
+                if (seenIndices.Count == targetIds.Length)
                 {
                     break;
                 }
             }
 
-            foreach (var relicId in targetRelics)
+            for (var index = 0; index < targetIds.Length; index++)
             {
-                var relicStats = stats[relicId];
+                var relicStats = stats[index];
 
-                if (sampleFirstSeen.TryGetValue(relicId, out var firstIndex))
+                if (sampleSeen[index])
                 {
                     relicStats.SeenCount++;
-                    relicStats.FirstOpportunityTotal += firstIndex;
-                    if (firstIndex <= request.EarlyWindow)
+                    relicStats.FirstOpportunityTotal += sampleFirstSeen[index];
+                    if (sampleFirstSeen[index] <= request.EarlyWindow)
                     {
                         relicStats.EarlyCount++;
                     }
 
-                    relicStats.FirstSeenActCounts[sampleFirstAct[relicId]] =
-                        relicStats.FirstSeenActCounts.GetValueOrDefault(sampleFirstAct[relicId]) + 1;
-
-                    var firstSource = sampleFirstSource[relicId];
-                    relicStats.FirstSourceCounts[firstSource] =
-                        relicStats.FirstSourceCounts.TryGetValue(firstSource, out var count)
-                            ? count + 1
-                            : 1;
+                    relicStats.AddFirstSource(sampleFirstSource[index]);
                 }
 
-                if (sampleSourcePresence.TryGetValue(relicId, out var sourcePresence))
+                if (sampleNonShopSeen[index])
                 {
-                    if (sourcePresence.NonShopSeen)
+                    relicStats.NonShopSeenCount++;
+                }
+
+                if (sampleShopSeen[index])
+                {
+                    relicStats.ShopSeenCount++;
+                }
+
+                stats[index] = relicStats;
+
+                if (possible != null &&
+                    possible[index] &&
+                    !CanStillMatchTargetedRelicStats(
+                        filter,
+                        relicStats,
+                        samplesProcessed: sample + 1,
+                        totalSamples: request.Samples))
+                {
+                    possible[index] = false;
+                    remainingPossible--;
+                }
+
+                sampleSeen[index] = false;
+                sampleShopSeen[index] = false;
+                sampleNonShopSeen[index] = false;
+            }
+        }
+
+        var result = new bool[targetIds.Length];
+        for (var i = 0; i < targetIds.Length; i++)
+        {
+            result[i] = MatchesTargetedRelicStats(filter, stats[i], request.Samples);
+        }
+
+        return result;
+    }
+
+    private Sts2RelicVisibilityProfileResult RunExactRouteCoverageProfile(
+        NeowOptionDataset dataset,
+        Sts2RelicVisibilityRequest request,
+        IReadOnlyList<Sts2ActPoolPreview> actPools,
+        Sts2RunPreview ancientPreview,
+        IEnumerable<string> trackedRelicIds,
+        IReadOnlyDictionary<string, int> relicIndexMap)
+    {
+        var unlockedCharacters = request.UnlockedCharacters?.Count > 0
+            ? request.UnlockedCharacters
+            : [request.Character];
+        var context = new SeedRunEvaluationContext
+        {
+            SeedText = request.SeedText,
+            RunSeed = request.SeedValue,
+            Character = request.Character,
+            UnlockedCharacters = unlockedCharacters,
+            PlayerCount = request.PlayerCount,
+            AscensionLevel = request.AscensionLevel,
+            AncientAvailability = request.AncientAvailability,
+            IncludeDarvSharedAncient = request.IncludeDarvSharedAncient
+        };
+        var allRoutes = Sts2StandardShopPreviewer.GetAllRoutes(_world, context);
+        var totalRouteCount = allRoutes.Values.Aggregate(1L, (product, routes) => product * Math.Max(1, routes.Count));
+        var maxResults = totalRouteCount > int.MaxValue ? int.MaxValue : (int)totalRouteCount;
+        var exactAnalyzer = new Sts2ExactRouteAnalyzer(_world, workspaceRoot: null);
+        var exactAnalysis = exactAnalyzer.Analyze(
+            dataset,
+            new Sts2ExactRouteAnalysisRequest
+            {
+                SeedText = request.SeedText,
+                SeedValue = request.SeedValue,
+                Character = request.Character,
+                AscensionLevel = request.AscensionLevel,
+                PlayerCount = request.PlayerCount,
+                AncientAvailability = request.AncientAvailability,
+                IncludeDarvSharedAncient = request.IncludeDarvSharedAncient,
+                MaxResults = maxResults,
+                MaxRouteChecks = totalRouteCount
+            },
+            actPools,
+            ancientPreview,
+            unlockedCharacters);
+
+        var relicIds = relicIndexMap
+            .OrderBy(pair => pair.Value)
+            .Select(pair => pair.Key)
+            .ToArray();
+        var stats = new AppearanceStats[relicIds.Length];
+        for (var i = 0; i < stats.Length; i++)
+        {
+            stats[i] = new AppearanceStats();
+        }
+
+        var trackedSet = trackedRelicIds.ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var earlySamples = new List<IReadOnlyList<string>>(capacity: 3);
+        var actTreasureCounts = new Dictionary<int, Dictionary<int, int>>();
+        var actEliteCounts = new Dictionary<int, Dictionary<int, int>>();
+        var actShopCounts = new Dictionary<int, Dictionary<int, int>>();
+        var actAncientCounts = new Dictionary<int, Dictionary<int, int>>();
+
+        foreach (var match in exactAnalysis.Matches)
+        {
+            var sampleSeen = new bool[relicIds.Length];
+            var sampleFirstSeen = new int[relicIds.Length];
+            var sampleFirstAct = new int[relicIds.Length];
+            var sampleFirstSource = new Sts2RelicVisibilitySource[relicIds.Length];
+            var sampleSourcePresence = new byte[relicIds.Length];
+            var seenIndices = new List<int>(64);
+            var earliestThisSample = new List<string>();
+            var opportunityIndex = 0;
+
+            foreach (var act in match.Acts.OrderBy(item => item.ActNumber))
+            {
+                var ancientCount = act.ActNumber > 1 && act.AncientRelics.Count > 0 ? 1 : 0;
+                IncrementCount(actAncientCounts, act.ActNumber, ancientCount);
+                if (ancientCount > 0)
+                {
+                    opportunityIndex++;
+                    foreach (var relicId in act.AncientRelics)
                     {
-                        relicStats.NonShopSeenCount++;
+                        RegisterExactSeenRelic(
+                            relicId,
+                            act.ActNumber,
+                            act.ActNumber == 2 ? Sts2RelicVisibilitySource.AncientAct2 : Sts2RelicVisibilitySource.AncientAct3,
+                            opportunityIndex);
+                    }
+                }
+
+                var treasureCount = act.Rooms.Count(room => string.Equals(room.RoomType, "Treasure", StringComparison.OrdinalIgnoreCase));
+                var eliteCount = act.Rooms.Count(room => string.Equals(room.RoomType, "Elite", StringComparison.OrdinalIgnoreCase));
+                var shopCount = act.Rooms.Count(room => string.Equals(room.RoomType, "Shop", StringComparison.OrdinalIgnoreCase));
+                IncrementCount(actTreasureCounts, act.ActNumber, treasureCount);
+                IncrementCount(actEliteCounts, act.ActNumber, eliteCount);
+                IncrementCount(actShopCounts, act.ActNumber, shopCount);
+
+                foreach (var room in act.Rooms)
+                {
+                    if (!TryMapRoomTypeToSource(room.RoomType, out var source))
+                    {
+                        continue;
                     }
 
-                    if (sourcePresence.ShopSeen)
+                    opportunityIndex++;
+                    foreach (var relicId in room.RelicIds)
                     {
-                        relicStats.ShopSeenCount++;
+                        RegisterExactSeenRelic(relicId, act.ActNumber, source, opportunityIndex);
                     }
+                }
+            }
+
+            if (earlySamples.Count < 3)
+            {
+                earlySamples.Add(earliestThisSample);
+            }
+
+            foreach (var relicIndex in seenIndices)
+            {
+                var relicStats = stats[relicIndex];
+                var firstIndex = sampleFirstSeen[relicIndex];
+                relicStats.SeenCount++;
+                relicStats.FirstOpportunityTotal += firstIndex;
+                if (firstIndex <= request.EarlyWindow)
+                {
+                    relicStats.EarlyCount++;
+                }
+
+                var firstAct = sampleFirstAct[relicIndex];
+                relicStats.FirstSeenActCounts[firstAct] =
+                    relicStats.FirstSeenActCounts.GetValueOrDefault(firstAct) + 1;
+
+                var presence = sampleSourcePresence[relicIndex];
+                if ((presence & 0b01) != 0)
+                {
+                    relicStats.NonShopSeenCount++;
+                }
+
+                if ((presence & 0b10) != 0)
+                {
+                    relicStats.ShopSeenCount++;
+                }
+
+                var firstSource = sampleFirstSource[relicIndex];
+                relicStats.FirstSourceCounts[firstSource] =
+                    relicStats.FirstSourceCounts.GetValueOrDefault(firstSource) + 1;
+            }
+
+            void RegisterExactSeenRelic(
+                string relicId,
+                int actNumber,
+                Sts2RelicVisibilitySource source,
+                int firstOpportunity)
+            {
+                if (string.IsNullOrWhiteSpace(relicId) ||
+                    !trackedSet.Contains(relicId) ||
+                    !relicIndexMap.TryGetValue(relicId, out var relicIndex))
+                {
+                    return;
+                }
+
+                if (source == Sts2RelicVisibilitySource.Shop)
+                {
+                    sampleSourcePresence[relicIndex] |= 0b10;
+                }
+                else
+                {
+                    sampleSourcePresence[relicIndex] |= 0b01;
+                }
+
+                if (sampleSeen[relicIndex])
+                {
+                    return;
+                }
+
+                sampleSeen[relicIndex] = true;
+                sampleFirstSeen[relicIndex] = firstOpportunity;
+                sampleFirstAct[relicIndex] = actNumber;
+                sampleFirstSource[relicIndex] = source;
+                seenIndices.Add(relicIndex);
+                if (firstOpportunity <= request.EarlyWindow)
+                {
+                    earliestThisSample.Add(relicId);
                 }
             }
         }
 
-        return targetRelics.ToDictionary(
-            relicId => relicId,
-            relicId => ToRankedRelic(relicId, stats[relicId], request.Samples),
-            StringComparer.OrdinalIgnoreCase);
+        var ranked = new List<Sts2RelicVisibilityRankedRelic>(stats.Length);
+        for (var i = 0; i < stats.Length; i++)
+        {
+            if (stats[i].SeenCount <= 0)
+            {
+                continue;
+            }
+
+            ranked.Add(ToRankedRelic(relicIds[i], stats[i], exactAnalysis.Matches.Count));
+        }
+
+        ranked.Sort(CompareEarlyRelics);
+        var seenRanked = new List<Sts2RelicVisibilityRankedRelic>(ranked);
+        seenRanked.Sort(CompareSeenRelics);
+
+        return new Sts2RelicVisibilityProfileResult
+        {
+            Id = "exact-map",
+            Title = "真实地图",
+            Description = "按该种子的真实地图路线全量统计，与精确路线分析保持同一套底层逻辑。",
+            Acts =
+            [
+                BuildExactActSummary(1, actTreasureCounts, actEliteCounts, actShopCounts, actAncientCounts, exactAnalysis.Matches.Count),
+                BuildExactActSummary(2, actTreasureCounts, actEliteCounts, actShopCounts, actAncientCounts, exactAnalysis.Matches.Count),
+                BuildExactActSummary(3, actTreasureCounts, actEliteCounts, actShopCounts, actAncientCounts, exactAnalysis.Matches.Count)
+            ],
+            EarlyRelics = ranked,
+            SeenRelics = seenRanked,
+            EarlySamples = earlySamples
+        };
     }
 
-    private List<Opportunity> BuildOpportunities(GameRng rng, RouteProfile profile)
+    private static bool MatchesTargetedRelicStats(
+        Sts2PoolFilter filter,
+        TargetedRelicStats stats,
+        int totalSamples)
     {
-        var result = new List<Opportunity>();
+        var seenProbability = (double)stats.SeenCount / totalSamples;
+        if (seenProbability < filter.HighProbabilitySeenThreshold)
+        {
+            return false;
+        }
+
+        if (filter.HighProbabilityNonShopThreshold.HasValue &&
+            (double)stats.NonShopSeenCount / totalSamples < filter.HighProbabilityNonShopThreshold.Value)
+        {
+            return false;
+        }
+
+        if (filter.HighProbabilityShopThreshold.HasValue &&
+            (double)stats.ShopSeenCount / totalSamples < filter.HighProbabilityShopThreshold.Value)
+        {
+            return false;
+        }
+
+        if (filter.HighProbabilityEarlyThreshold.HasValue &&
+            (double)stats.EarlyCount / totalSamples < filter.HighProbabilityEarlyThreshold.Value)
+        {
+            return false;
+        }
+
+        var averageFirstOpportunity = stats.SeenCount == 0
+            ? double.PositiveInfinity
+            : stats.FirstOpportunityTotal / stats.SeenCount;
+        if (filter.HighProbabilityAverageFirstOpportunityMax.HasValue &&
+            averageFirstOpportunity > filter.HighProbabilityAverageFirstOpportunityMax.Value)
+        {
+            return false;
+        }
+
+        if (filter.HighProbabilityMostCommonSource.HasValue &&
+            stats.GetMostCommonSource() != filter.HighProbabilityMostCommonSource.Value)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    private static bool ShouldEnableTargetedRelicPruning(Sts2PoolFilter filter)
+    {
+        return filter.HighProbabilitySeenThreshold >= 0.5 ||
+               filter.HighProbabilityNonShopThreshold >= 0.5 ||
+               filter.HighProbabilityShopThreshold >= 0.5 ||
+               filter.HighProbabilityEarlyThreshold >= 0.5;
+    }
+
+    private static bool CanStillMatchTargetedRelicStats(
+        Sts2PoolFilter filter,
+        TargetedRelicStats stats,
+        int samplesProcessed,
+        int totalSamples)
+    {
+        var remainingSamples = totalSamples - samplesProcessed;
+        if (!CanStillReachThreshold(stats.SeenCount, remainingSamples, totalSamples, filter.HighProbabilitySeenThreshold))
+        {
+            return false;
+        }
+
+        if (filter.HighProbabilityNonShopThreshold.HasValue &&
+            !CanStillReachThreshold(stats.NonShopSeenCount, remainingSamples, totalSamples, filter.HighProbabilityNonShopThreshold.Value))
+        {
+            return false;
+        }
+
+        if (filter.HighProbabilityShopThreshold.HasValue &&
+            !CanStillReachThreshold(stats.ShopSeenCount, remainingSamples, totalSamples, filter.HighProbabilityShopThreshold.Value))
+        {
+            return false;
+        }
+
+        if (filter.HighProbabilityEarlyThreshold.HasValue &&
+            !CanStillReachThreshold(stats.EarlyCount, remainingSamples, totalSamples, filter.HighProbabilityEarlyThreshold.Value))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    private static bool CanStillReachThreshold(int currentCount, int remainingSamples, int totalSamples, double threshold)
+    {
+        var requiredCount = (int)Math.Ceiling(threshold * totalSamples);
+        return currentCount + remainingSamples >= requiredCount;
+    }
+
+    private void BuildOpportunities(GameRng rng, RouteProfile profile, List<Opportunity> result)
+    {
+        result.Clear();
         var globalIndex = 0;
         for (var actNumber = 1; actNumber <= profile.Acts.Count; actNumber++)
         {
@@ -511,14 +969,85 @@ internal sealed class Sts2RelicVisibilityAnalyzer
                 }
             }
         }
+    }
 
-        return result;
+    private static bool TryMapRoomTypeToSource(string? roomType, out Sts2RelicVisibilitySource source)
+    {
+        switch (roomType)
+        {
+            case "Treasure":
+                source = Sts2RelicVisibilitySource.Treasure;
+                return true;
+            case "Elite":
+                source = Sts2RelicVisibilitySource.Elite;
+                return true;
+            case "Shop":
+                source = Sts2RelicVisibilitySource.Shop;
+                return true;
+            default:
+                source = default;
+                return false;
+        }
+    }
+
+    private static void IncrementCount(
+        IDictionary<int, Dictionary<int, int>> countsByAct,
+        int actNumber,
+        int count)
+    {
+        if (!countsByAct.TryGetValue(actNumber, out var counts))
+        {
+            counts = new Dictionary<int, int>();
+            countsByAct[actNumber] = counts;
+        }
+
+        counts[count] = counts.GetValueOrDefault(count) + 1;
+    }
+
+    private static Sts2RelicVisibilityActSummary BuildExactActSummary(
+        int actNumber,
+        IReadOnlyDictionary<int, Dictionary<int, int>> treasureCounts,
+        IReadOnlyDictionary<int, Dictionary<int, int>> eliteCounts,
+        IReadOnlyDictionary<int, Dictionary<int, int>> shopCounts,
+        IReadOnlyDictionary<int, Dictionary<int, int>> ancientCounts,
+        int totalRoutes)
+    {
+        return new Sts2RelicVisibilityActSummary
+        {
+            ActNumber = actNumber,
+            TreasureCounts = ToWeightedChances(treasureCounts.GetValueOrDefault(actNumber), totalRoutes),
+            EliteCounts = ToWeightedChances(eliteCounts.GetValueOrDefault(actNumber), totalRoutes),
+            ShopCounts = ToWeightedChances(shopCounts.GetValueOrDefault(actNumber), totalRoutes),
+            AncientVisitChance = totalRoutes <= 0
+                ? 0d
+                : ancientCounts.GetValueOrDefault(actNumber)?.GetValueOrDefault(1) / (double)totalRoutes ?? 0d
+        };
+    }
+
+    private static IReadOnlyList<Sts2WeightedIntChance> ToWeightedChances(
+        IReadOnlyDictionary<int, int>? counts,
+        int totalRoutes)
+    {
+        if (counts == null || totalRoutes <= 0)
+        {
+            return [];
+        }
+
+        return counts
+            .OrderBy(pair => pair.Key)
+            .Select(pair => new Sts2WeightedIntChance
+            {
+                Value = pair.Key,
+                Weight = pair.Value / (double)totalRoutes
+            })
+            .ToList();
     }
 
     private IReadOnlyList<ShownRelic> ShowTreasure(BaselineState state, int actNumber)
     {
+        EnsureActRestrictions(state, actNumber);
         var rarity = RollRelicRarity(state.TreasureRng);
-        var relic = state.SharedBag.PullFromFront(rarity, relicId => IsRelicAllowed(relicId, actNumber, state.PlayerCount));
+        var relic = state.SharedBag.PullFromFront(rarity);
         if (relic == null)
         {
             return Array.Empty<ShownRelic>();
@@ -530,9 +1059,10 @@ internal sealed class Sts2RelicVisibilityAnalyzer
 
     private IReadOnlyList<ShownRelic> ShowElite(BaselineState state, int actNumber, RewardSimulationModel rewardModel)
     {
+        EnsureActRestrictions(state, actNumber);
         ConsumeEliteCombatPreRelic(state, rewardModel);
         var rarity = RollRelicRarity(state.RewardsRng);
-        var relic = state.PlayerBag.PullFromFront(rarity, relicId => IsRelicAllowed(relicId, actNumber, state.PlayerCount));
+        var relic = state.PlayerBag.PullFromFront(rarity);
         if (relic == null)
         {
             return Array.Empty<ShownRelic>();
@@ -544,31 +1074,46 @@ internal sealed class Sts2RelicVisibilityAnalyzer
 
     private IReadOnlyList<ShownRelic> ShowShop(BaselineState state, int actNumber)
     {
+        EnsureActRestrictions(state, actNumber);
         ConsumeShopPreRelicRewards(state);
         var shown = new List<ShownRelic>(3);
-        var selected = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var rarity in new[] { RollRelicRarity(state.RewardsRng), RollRelicRarity(state.RewardsRng), RelicRarity.Shop })
+        string? selected1 = null;
+        string? selected2 = null;
+
+        PullShopRelic(RollRelicRarity(state.RewardsRng));
+        PullShopRelic(RollRelicRarity(state.RewardsRng));
+        PullShopRelic(RelicRarity.Shop);
+
+        return shown;
+
+        void PullShopRelic(RelicRarity rarity)
         {
             var relic = state.PlayerBag.PullFromBack(
                 rarity,
-                selected,
-                ShopBlockedRelics,
-                relicId => IsRelicAllowed(relicId, actNumber, state.PlayerCount));
+                selected1,
+                selected2,
+                ShopBlockedRelics);
             if (relic == null)
             {
-                continue;
+                return;
             }
 
-            selected.Add(relic);
+            if (selected1 == null)
+            {
+                selected1 = relic;
+            }
+            else if (selected2 == null)
+            {
+                selected2 = relic;
+            }
+
             state.SharedBag.Remove(relic);
             shown.Add(new ShownRelic(relic, Sts2RelicVisibilitySource.Shop));
         }
-
-        return shown;
     }
 
     private static IReadOnlyList<ShownRelic> ShowAncient(
-        IReadOnlyDictionary<int, Sts2RelicVisibilityAncientAct> ancientActs,
+        IReadOnlyDictionary<int, ShownRelic[]> ancientActs,
         int actNumber)
     {
         if (!ancientActs.TryGetValue(actNumber, out var act))
@@ -576,20 +1121,14 @@ internal sealed class Sts2RelicVisibilityAnalyzer
             return Array.Empty<ShownRelic>();
         }
 
-        var source = actNumber == 2
-            ? Sts2RelicVisibilitySource.AncientAct2
-            : Sts2RelicVisibilitySource.AncientAct3;
-
-        return act.Options
-            .Where(option => !string.IsNullOrWhiteSpace(option.RelicId))
-            .Select(option => new ShownRelic(option.RelicId, source))
-            .ToList();
+        return act;
     }
 
     private static void ConsumeRegularCombat(BaselineState state, RewardSimulationModel rewardModel)
     {
+        var hasPotionReward = RollPotionRewardChance(state, isElite: false);
         _ = state.RewardsRng.NextInt(10, 21);
-        if (RollPotionRewardChance(state, isElite: false))
+        if (hasPotionReward)
         {
             RollPotionReward(state, rewardModel);
         }
@@ -602,8 +1141,9 @@ internal sealed class Sts2RelicVisibilityAnalyzer
 
     private static void ConsumeEliteCombatPreRelic(BaselineState state, RewardSimulationModel rewardModel)
     {
+        var hasPotionReward = RollPotionRewardChance(state, isElite: true);
         _ = state.RewardsRng.NextInt(25, 36);
-        if (RollPotionRewardChance(state, isElite: true))
+        if (hasPotionReward)
         {
             RollPotionReward(state, rewardModel);
         }
@@ -667,26 +1207,18 @@ internal sealed class Sts2RelicVisibilityAnalyzer
         }
 
         var rarity = RollCardRarity(state, oddsType);
-        var candidates = GetAvailableCards(rewardModel, rarity, state.CurrentRewardCards);
-        while (candidates.Count == 0)
+        string cardId;
+        while (!TryPickAvailableCard(rewardModel, rarity, state.CurrentRewardCards, state.RewardsRng, out cardId))
         {
             rarity = GetNextHighestRarity(rarity);
             if (rarity == CardRarity.None)
             {
                 return;
             }
-
-            candidates = GetAvailableCards(rewardModel, rarity, state.CurrentRewardCards);
-        }
-
-        var cardId = state.RewardsRng.NextItem(candidates);
-        if (string.IsNullOrWhiteSpace(cardId))
-        {
-            return;
         }
 
         state.CurrentRewardCards.Add(cardId);
-        _ = state.RewardsRng.NextDouble();
+        _ = state.RewardsRng.NextFloat();
         if (state.CurrentRewardCards.Count >= 3)
         {
             state.CurrentRewardCards.Clear();
@@ -761,17 +1293,54 @@ internal sealed class Sts2RelicVisibilityAnalyzer
         };
     }
 
-    private static List<string> GetAvailableCards(
+    private static bool TryPickAvailableCard(
         RewardSimulationModel rewardModel,
         CardRarity rarity,
-        ISet<string> excluded)
+        RewardCardBuffer excluded,
+        GameRng rng,
+        out string cardId)
     {
         if (!rewardModel.CardPoolByRarity.TryGetValue(rarity, out var pool))
         {
-            return [];
+            cardId = string.Empty;
+            return false;
         }
 
-        return pool.Where(cardId => !excluded.Contains(cardId)).ToList();
+        var availableCount = 0;
+        for (var i = 0; i < pool.Length; i++)
+        {
+            if (!excluded.Contains(pool[i]))
+            {
+                availableCount++;
+            }
+        }
+
+        if (availableCount == 0)
+        {
+            cardId = string.Empty;
+            return false;
+        }
+
+        var targetIndex = rng.NextInt(availableCount);
+        for (var i = 0; i < pool.Length; i++)
+        {
+            var candidate = pool[i];
+            if (excluded.Contains(candidate))
+            {
+                continue;
+            }
+
+            if (targetIndex == 0)
+            {
+                cardId = candidate;
+                return true;
+            }
+
+            targetIndex--;
+        }
+
+        cardId = string.Empty;
+        return false;
     }
 
     private static CardRarity GetNextHighestRarity(CardRarity rarity) =>
@@ -814,35 +1383,21 @@ internal sealed class Sts2RelicVisibilityAnalyzer
         return RelicRarity.Rare;
     }
 
-    private static bool IsRelicAllowed(string relicId, int actNumber, int playerCount)
+    private static void EnsureActRestrictions(BaselineState state, int actNumber)
     {
-        if (BeforeAct3TreasureChestRelics.Contains(relicId) && actNumber >= 3)
+        if (actNumber < 3 || state.Act3RestrictionsApplied)
         {
-            return false;
+            return;
         }
 
-        if (playerCount <= 1 && MultiplayerOnlyRelics.Contains(relicId))
-        {
-            return false;
-        }
-
-        if (playerCount > 1 && SinglePlayerOnlyRelics.Contains(relicId))
-        {
-            return false;
-        }
-
-        return true;
+        state.SharedBag.RemoveAll(BeforeAct3TreasureChestRelics);
+        state.PlayerBag.RemoveAll(BeforeAct3TreasureChestRelics);
+        state.Act3RestrictionsApplied = true;
     }
 
     private static Sts2RelicVisibilityRankedRelic ToRankedRelic(string relicId, AppearanceStats stats, int totalSamples)
     {
-        var mostCommonSource = stats.FirstSourceCounts.Count == 0
-            ? Sts2RelicVisibilitySource.Treasure
-            : stats.FirstSourceCounts
-                .OrderByDescending(pair => pair.Value)
-                .ThenBy(pair => pair.Key)
-                .First()
-                .Key;
+        var mostCommonSource = GetMostCommonSource(stats.FirstSourceCounts);
 
         return new Sts2RelicVisibilityRankedRelic
         {
@@ -852,16 +1407,138 @@ internal sealed class Sts2RelicVisibilityAnalyzer
             NonShopSeenProbability = (double)stats.NonShopSeenCount / totalSamples,
             ShopSeenProbability = (double)stats.ShopSeenCount / totalSamples,
             AverageFirstOpportunity = stats.SeenCount == 0 ? double.PositiveInfinity : stats.FirstOpportunityTotal / stats.SeenCount,
-            FirstSeenActChances = stats.FirstSeenActCounts
-                .OrderBy(pair => pair.Key)
-                .Select(pair => new Sts2RelicVisibilityActChance
-                {
-                    ActNumber = pair.Key,
-                    Probability = (double)pair.Value / totalSamples
-                })
-                .ToList(),
+            FirstSeenActChances = BuildActChances(stats.FirstSeenActCounts, totalSamples),
             MostCommonSource = mostCommonSource
         };
+    }
+
+    private static List<Sts2RelicVisibilityActChance> BuildActChances(
+        IReadOnlyDictionary<int, int> firstSeenActCounts,
+        int totalSamples)
+    {
+        if (firstSeenActCounts.Count == 0)
+        {
+            return [];
+        }
+
+        var result = new List<Sts2RelicVisibilityActChance>(firstSeenActCounts.Count);
+        if (firstSeenActCounts.TryGetValue(1, out var act1Count) && act1Count > 0)
+        {
+            result.Add(new Sts2RelicVisibilityActChance
+            {
+                ActNumber = 1,
+                Probability = (double)act1Count / totalSamples
+            });
+        }
+
+        if (firstSeenActCounts.TryGetValue(2, out var act2Count) && act2Count > 0)
+        {
+            result.Add(new Sts2RelicVisibilityActChance
+            {
+                ActNumber = 2,
+                Probability = (double)act2Count / totalSamples
+            });
+        }
+
+        if (firstSeenActCounts.TryGetValue(3, out var act3Count) && act3Count > 0)
+        {
+            result.Add(new Sts2RelicVisibilityActChance
+            {
+                ActNumber = 3,
+                Probability = (double)act3Count / totalSamples
+            });
+        }
+
+        if (result.Count == firstSeenActCounts.Count)
+        {
+            return result;
+        }
+
+        foreach (var pair in firstSeenActCounts)
+        {
+            if (pair.Key is 1 or 2 or 3 || pair.Value <= 0)
+            {
+                continue;
+            }
+
+            result.Add(new Sts2RelicVisibilityActChance
+            {
+                ActNumber = pair.Key,
+                Probability = (double)pair.Value / totalSamples
+            });
+        }
+
+        result.Sort(static (left, right) => left.ActNumber.CompareTo(right.ActNumber));
+        return result;
+    }
+
+    private static Sts2RelicVisibilitySource GetMostCommonSource(
+        IReadOnlyDictionary<Sts2RelicVisibilitySource, int> firstSourceCounts)
+    {
+        if (firstSourceCounts.Count == 0)
+        {
+            return Sts2RelicVisibilitySource.Treasure;
+        }
+
+        var bestSource = Sts2RelicVisibilitySource.Treasure;
+        var bestCount = int.MinValue;
+        foreach (var pair in firstSourceCounts)
+        {
+            if (pair.Value > bestCount ||
+                (pair.Value == bestCount && pair.Key < bestSource))
+            {
+                bestSource = pair.Key;
+                bestCount = pair.Value;
+            }
+        }
+
+        return bestSource;
+    }
+
+    private static int CompareEarlyRelics(Sts2RelicVisibilityRankedRelic left, Sts2RelicVisibilityRankedRelic right)
+    {
+        var compare = right.EarlyProbability.CompareTo(left.EarlyProbability);
+        if (compare != 0)
+        {
+            return compare;
+        }
+
+        compare = right.SeenProbability.CompareTo(left.SeenProbability);
+        if (compare != 0)
+        {
+            return compare;
+        }
+
+        compare = left.AverageFirstOpportunity.CompareTo(right.AverageFirstOpportunity);
+        if (compare != 0)
+        {
+            return compare;
+        }
+
+        return StringComparer.OrdinalIgnoreCase.Compare(left.RelicId, right.RelicId);
+    }
+
+    private static int CompareSeenRelics(Sts2RelicVisibilityRankedRelic left, Sts2RelicVisibilityRankedRelic right)
+    {
+        var compare = right.SeenProbability.CompareTo(left.SeenProbability);
+        if (compare != 0)
+        {
+            return compare;
+        }
+
+        compare = right.EarlyProbability.CompareTo(left.EarlyProbability);
+        if (compare != 0)
+        {
+            return compare;
+        }
+
+        compare = left.AverageFirstOpportunity.CompareTo(right.AverageFirstOpportunity);
+        if (compare != 0)
+        {
+            return compare;
+        }
+
+        return StringComparer.OrdinalIgnoreCase.Compare(left.RelicId, right.RelicId);
     }
 
     private sealed class AppearanceStats
@@ -881,9 +1558,121 @@ internal sealed class Sts2RelicVisibilityAnalyzer
         public Dictionary<Sts2RelicVisibilitySource, int> FirstSourceCounts { get; } = new();
     }
 
-    private sealed record Opportunity(int ActNumber, OpportunityKind Kind, int GlobalIndex);
+    private struct TargetedRelicStats
+    {
+        private int _treasureFirstCount;
+        private int _eliteFirstCount;
+        private int _shopFirstCount;
+        private int _ancientAct2FirstCount;
+        private int _ancientAct3FirstCount;
 
-    private sealed record ShownRelic(string RelicId, Sts2RelicVisibilitySource Source);
+        public int SeenCount;
+
+        public int EarlyCount;
+
+        public int NonShopSeenCount;
+
+        public int ShopSeenCount;
+
+        public double FirstOpportunityTotal;
+
+        public void AddFirstSource(Sts2RelicVisibilitySource source)
+        {
+            switch (source)
+            {
+                case Sts2RelicVisibilitySource.Treasure:
+                    _treasureFirstCount++;
+                    break;
+                case Sts2RelicVisibilitySource.Elite:
+                    _eliteFirstCount++;
+                    break;
+                case Sts2RelicVisibilitySource.Shop:
+                    _shopFirstCount++;
+                    break;
+                case Sts2RelicVisibilitySource.AncientAct2:
+                    _ancientAct2FirstCount++;
+                    break;
+                case Sts2RelicVisibilitySource.AncientAct3:
+                    _ancientAct3FirstCount++;
+                    break;
+            }
+        }
+
+        public Sts2RelicVisibilitySource GetMostCommonSource()
+        {
+            var bestSource = Sts2RelicVisibilitySource.Treasure;
+            var bestCount = _treasureFirstCount;
+
+            Consider(Sts2RelicVisibilitySource.Elite, _eliteFirstCount);
+            Consider(Sts2RelicVisibilitySource.Shop, _shopFirstCount);
+            Consider(Sts2RelicVisibilitySource.AncientAct2, _ancientAct2FirstCount);
+            Consider(Sts2RelicVisibilitySource.AncientAct3, _ancientAct3FirstCount);
+
+            return bestSource;
+
+            void Consider(Sts2RelicVisibilitySource source, int count)
+            {
+                if (count > bestCount)
+                {
+                    bestCount = count;
+                    bestSource = source;
+                }
+            }
+        }
+    }
+
+    private readonly record struct Opportunity(int ActNumber, OpportunityKind Kind, int GlobalIndex);
+
+    private readonly record struct ShownRelic(string RelicId, Sts2RelicVisibilitySource Source);
+
+    private static IReadOnlyDictionary<int, ShownRelic[]> BuildAncientActRelicMap(
+        IReadOnlyList<Sts2RelicVisibilityAncientAct> ancientActs)
+    {
+        var map = new Dictionary<int, ShownRelic[]>(ancientActs.Count);
+        foreach (var act in ancientActs)
+        {
+            var source = act.ActNumber == 2
+                ? Sts2RelicVisibilitySource.AncientAct2
+                : Sts2RelicVisibilitySource.AncientAct3;
+            map[act.ActNumber] = act.Options
+                .Where(option => !string.IsNullOrWhiteSpace(option.RelicId))
+                .Select(option => new ShownRelic(option.RelicId, source))
+                .ToArray();
+        }
+
+        return map;
+    }
+
+    private static IReadOnlyDictionary<string, int> BuildRelicIndexMap(
+        IEnumerable<string> relicIds,
+        IReadOnlyDictionary<int, ShownRelic[]> ancientActs)
+    {
+        var map = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        foreach (var relicId in relicIds)
+        {
+            AddRelicId(map, relicId);
+        }
+
+        foreach (var act in ancientActs.Values)
+        {
+            foreach (var shown in act)
+            {
+                AddRelicId(map, shown.RelicId);
+            }
+        }
+
+        return map;
+
+        static void AddRelicId(IDictionary<string, int> target, string? relicId)
+        {
+            if (string.IsNullOrWhiteSpace(relicId) || target.ContainsKey(relicId))
+            {
+                return;
+            }
+
+            target[relicId] = target.Count;
+        }
+    }
 
     private sealed class SourcePresence
     {
@@ -975,6 +1764,66 @@ internal sealed class Sts2RelicVisibilityAnalyzer
         }
     }
 
+    private sealed class RewardCardBuffer
+    {
+        private string? _first;
+        private string? _second;
+        private string? _third;
+
+        public int Count { get; private set; }
+
+        public bool Contains(string cardId)
+        {
+            return (!string.IsNullOrWhiteSpace(_first) && string.Equals(_first, cardId, StringComparison.OrdinalIgnoreCase)) ||
+                   (!string.IsNullOrWhiteSpace(_second) && string.Equals(_second, cardId, StringComparison.OrdinalIgnoreCase)) ||
+                   (!string.IsNullOrWhiteSpace(_third) && string.Equals(_third, cardId, StringComparison.OrdinalIgnoreCase));
+        }
+
+        public void Add(string cardId)
+        {
+            if (Contains(cardId))
+            {
+                return;
+            }
+
+            switch (Count)
+            {
+                case 0:
+                    _first = cardId;
+                    break;
+                case 1:
+                    _second = cardId;
+                    break;
+                case 2:
+                    _third = cardId;
+                    break;
+                default:
+                    return;
+            }
+
+            Count++;
+        }
+
+        public void Clear()
+        {
+            _first = null;
+            _second = null;
+            _third = null;
+            Count = 0;
+        }
+
+        public RewardCardBuffer Clone()
+        {
+            return new RewardCardBuffer
+            {
+                _first = _first,
+                _second = _second,
+                _third = _third,
+                Count = Count
+            };
+        }
+    }
+
     private sealed class BaselineState
     {
         private const uint DefaultPlayerNetId = 1;
@@ -992,7 +1841,8 @@ internal sealed class Sts2RelicVisibilityAnalyzer
             GameRng rewardsRng,
             float cardRareOffset,
             float potionChance,
-            HashSet<string> currentRewardCards)
+            RewardCardBuffer currentRewardCards,
+            bool act3RestrictionsApplied)
         {
             SeedText = seedText;
             Character = character;
@@ -1007,6 +1857,7 @@ internal sealed class Sts2RelicVisibilityAnalyzer
             CardRareOffset = cardRareOffset;
             PotionChance = potionChance;
             CurrentRewardCards = currentRewardCards;
+            Act3RestrictionsApplied = act3RestrictionsApplied;
         }
 
         public string SeedText { get; }
@@ -1033,7 +1884,9 @@ internal sealed class Sts2RelicVisibilityAnalyzer
 
         public float PotionChance { get; set; }
 
-        public HashSet<string> CurrentRewardCards { get; }
+        public RewardCardBuffer CurrentRewardCards { get; }
+
+        public bool Act3RestrictionsApplied { get; set; }
 
         public BaselineState Clone()
         {
@@ -1050,7 +1903,8 @@ internal sealed class Sts2RelicVisibilityAnalyzer
                 new GameRng(RewardsRng.Seed, RewardsRng.Counter),
                 CardRareOffset,
                 PotionChance,
-                new HashSet<string>(CurrentRewardCards, StringComparer.OrdinalIgnoreCase));
+                CurrentRewardCards.Clone(),
+                Act3RestrictionsApplied);
         }
 
         public static BaselineState Create(
@@ -1072,6 +1926,7 @@ internal sealed class Sts2RelicVisibilityAnalyzer
             // tracked gameplay rarities for the player's combined grab bag.
             var sharedBag = RelicBag.CreateFromSequence(sharedSequence, rarityMap, upFrontRng, trackedOnly: false);
             var playerBag = RelicBag.CreateFromSequence(playerSequence, rarityMap, upFrontRng, trackedOnly: true);
+            ApplyPlayerCountRestrictions(sharedBag, playerBag, playerCount);
 
             var playerSeed = unchecked(runSeed + DefaultPlayerNetId);
             return new BaselineState(
@@ -1087,7 +1942,22 @@ internal sealed class Sts2RelicVisibilityAnalyzer
                 new GameRng(playerSeed, "rewards"),
                 -0.05f,
                 0.4f,
-                new HashSet<string>(StringComparer.OrdinalIgnoreCase));
+                new RewardCardBuffer(),
+                act3RestrictionsApplied: false);
+        }
+
+        private static void ApplyPlayerCountRestrictions(RelicBag sharedBag, RelicBag playerBag, int playerCount)
+        {
+            if (playerCount <= 1)
+            {
+                sharedBag.RemoveAll(MultiplayerOnlyRelics);
+                playerBag.RemoveAll(MultiplayerOnlyRelics);
+            }
+            else
+            {
+                sharedBag.RemoveAll(SinglePlayerOnlyRelics);
+                playerBag.RemoveAll(SinglePlayerOnlyRelics);
+            }
         }
     }
 
@@ -1156,23 +2026,14 @@ internal sealed class Sts2RelicVisibilityAnalyzer
                 RemoveDisallowed(isAllowed);
             }
 
-            RelicRarity? current = rarity;
-            while (current is RelicRarity currentRarity)
+            foreach (var list in EnumerateFallbackBuckets(rarity))
             {
-                if (_deques.TryGetValue(currentRarity, out var list) && list.Count > 0)
+                if (list is { Count: > 0 })
                 {
                     var relic = list[0];
                     list.RemoveAt(0);
                     return relic;
                 }
-
-                current = current switch
-                {
-                    RelicRarity.Shop => RelicRarity.Common,
-                    RelicRarity.Common => RelicRarity.Uncommon,
-                    RelicRarity.Uncommon => RelicRarity.Rare,
-                    _ => null
-                };
             }
 
             return null;
@@ -1189,36 +2050,70 @@ internal sealed class Sts2RelicVisibilityAnalyzer
                 RemoveDisallowed(isAllowed);
             }
 
-            RelicRarity? current = rarity;
-            while (current is RelicRarity currentRarity)
+            foreach (var list in EnumerateFallbackBuckets(rarity))
             {
-                if (_deques.TryGetValue(currentRarity, out var list) && list.Count > 0)
+                if (list is not { Count: > 0 })
                 {
-                    for (var i = list.Count - 1; i >= 0; i--)
-                    {
-                        var relic = list[i];
-                        if (selected != null && selected.Contains(relic))
-                        {
-                            continue;
-                        }
-
-                        if (extraBlacklist != null && extraBlacklist.Contains(relic))
-                        {
-                            continue;
-                        }
-
-                        list.RemoveAt(i);
-                        return relic;
-                    }
+                    continue;
                 }
 
-                current = current switch
+                for (var i = list.Count - 1; i >= 0; i--)
                 {
-                    RelicRarity.Shop => RelicRarity.Common,
-                    RelicRarity.Common => RelicRarity.Uncommon,
-                    RelicRarity.Uncommon => RelicRarity.Rare,
-                    _ => null
-                };
+                    var relic = list[i];
+                    if (selected != null && selected.Contains(relic))
+                    {
+                        continue;
+                    }
+
+                    if (extraBlacklist != null && extraBlacklist.Contains(relic))
+                    {
+                        continue;
+                    }
+
+                    list.RemoveAt(i);
+                    return relic;
+                }
+            }
+
+            return null;
+        }
+
+        public string? PullFromBack(
+            RelicRarity rarity,
+            string? selected1,
+            string? selected2,
+            IReadOnlySet<string>? extraBlacklist = null,
+            Func<string, bool>? isAllowed = null)
+        {
+            if (isAllowed != null)
+            {
+                RemoveDisallowed(isAllowed);
+            }
+
+            foreach (var list in EnumerateFallbackBuckets(rarity))
+            {
+                if (list is not { Count: > 0 })
+                {
+                    continue;
+                }
+
+                for (var i = list.Count - 1; i >= 0; i--)
+                {
+                    var relic = list[i];
+                    if ((selected1 != null && string.Equals(selected1, relic, StringComparison.OrdinalIgnoreCase)) ||
+                        (selected2 != null && string.Equals(selected2, relic, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        continue;
+                    }
+
+                    if (extraBlacklist != null && extraBlacklist.Contains(relic))
+                    {
+                        continue;
+                    }
+
+                    list.RemoveAt(i);
+                    return relic;
+                }
             }
 
             return null;
@@ -1232,12 +2127,41 @@ internal sealed class Sts2RelicVisibilityAnalyzer
             }
         }
 
+        public void RemoveAll(IReadOnlySet<string> relicIds)
+        {
+            foreach (var list in _deques.Values)
+            {
+                list.RemoveAll(item => relicIds.Contains(item));
+            }
+        }
+
         private void RemoveDisallowed(Func<string, bool> isAllowed)
         {
             foreach (var list in _deques.Values)
             {
                 list.RemoveAll(item => !isAllowed(item));
             }
+        }
+
+        private IEnumerable<List<string>?> EnumerateFallbackBuckets(RelicRarity rarity)
+        {
+            RelicRarity? current = rarity;
+            while (current is RelicRarity currentRarity)
+            {
+                yield return GetBucket(currentRarity);
+                current = currentRarity switch
+                {
+                    RelicRarity.Shop => RelicRarity.Common,
+                    RelicRarity.Common => RelicRarity.Uncommon,
+                    RelicRarity.Uncommon => RelicRarity.Rare,
+                    _ => null
+                };
+            }
+        }
+
+        private List<string>? GetBucket(RelicRarity rarity)
+        {
+            return _deques.TryGetValue(rarity, out var list) ? list : null;
         }
     }
 

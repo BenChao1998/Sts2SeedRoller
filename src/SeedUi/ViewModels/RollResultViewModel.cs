@@ -501,6 +501,7 @@ internal sealed class RollResultViewModel
             Title = StripMarkup(option.Title ?? option.OptionId);
             Description = StripMarkup(option.Description ?? string.Empty);
             Note = StripMarkup(option.Note ?? string.Empty);
+            Details = BuildDetails(option);
         }
 
         public string OptionId { get; }
@@ -511,9 +512,43 @@ internal sealed class RollResultViewModel
 
         public string Note { get; }
 
+        public IReadOnlyList<string> Details { get; }
+
         public bool HasDescription => !string.IsNullOrWhiteSpace(Description);
 
         public bool HasNote => !string.IsNullOrWhiteSpace(Note);
+
+        public bool HasDetails => Details.Count > 0;
+
+        private static IReadOnlyList<string> BuildDetails(Sts2AncientOption option)
+        {
+            var details = new List<string>();
+
+            if (string.Equals(option.OptionId, "SEA_GLASS", StringComparison.OrdinalIgnoreCase))
+            {
+                if (!string.IsNullOrWhiteSpace(option.ContextCharacterId) &&
+                    Enum.TryParse<CharacterId>(option.ContextCharacterId, ignoreCase: true, out var characterId))
+                {
+                    var characterName = MainWindowViewModel.GetCharacterDisplayName(characterId);
+                    details.Add($"目标角色：{characterName}");
+                }
+
+                if (option.PreviewCardIds.Count > 0)
+                {
+                    details.Add($"卡牌预览：{string.Join("、", option.PreviewCardIds.Select(MainWindowViewModel.GetCardDisplayName))}");
+                }
+
+                if (option.SeaGlassPreview is { RankedCards.Count: > 0 } preview)
+                {
+                    details.Add($"海玻璃采样：{preview.Samples} 次");
+                    details.AddRange(preview.RankedCards
+                        .Take(8)
+                        .Select(card => $"{MainWindowViewModel.GetCardDisplayName(card.CardId)}：{card.SeenProbability:P1}"));
+                }
+            }
+
+            return details;
+        }
 
         private static string StripMarkup(string text)
         {

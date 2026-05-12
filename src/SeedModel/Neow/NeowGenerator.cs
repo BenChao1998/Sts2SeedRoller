@@ -37,15 +37,18 @@ public sealed class NeowGenerator : ISeedEventGenerator<NeowGenerationContext, I
     [
         NeowOptionIds.ArcaneScroll,
         NeowOptionIds.BoomingConch,
+        NeowOptionIds.FishingRod,
         NeowOptionIds.GoldenPearl,
+        NeowOptionIds.Kaleidoscope,
         NeowOptionIds.LeadPaperweight,
         NeowOptionIds.LostCoffer,
+        NeowOptionIds.MassiveScroll,
         NeowOptionIds.NeowsTorment,
         NeowOptionIds.NewLeaf,
-        NeowOptionIds.PreciseScissors,
         NeowOptionIds.PhialHolster,
-        NeowOptionIds.WingedBoots,
-        NeowOptionIds.MassiveScroll
+        NeowOptionIds.PreciseScissors,
+        NeowOptionIds.SilkenTress,
+        NeowOptionIds.WingedBoots
     ];
 
     private static readonly string[] ModernNegativeOptions =
@@ -54,9 +57,9 @@ public sealed class NeowGenerator : ISeedEventGenerator<NeowGenerationContext, I
         NeowOptionIds.HeftyTablet,
         NeowOptionIds.LargeCapsule,
         NeowOptionIds.LeafyPoultice,
+        NeowOptionIds.NeowsBones,
         NeowOptionIds.PrecariousShears,
-        NeowOptionIds.SilverCrucible,
-        NeowOptionIds.NeowsBones
+        NeowOptionIds.SilverCrucible
     ];
 
     private readonly NeowOptionDataset _dataset;
@@ -64,7 +67,7 @@ public sealed class NeowGenerator : ISeedEventGenerator<NeowGenerationContext, I
 
     public SeedEventType EventType => SeedEventType.Act1Neow;
 
-    private bool UsesModernRules => string.Equals(_dataset.Version, "0.103.2", StringComparison.OrdinalIgnoreCase);
+    private bool UsesModernRules => IsModernRulesVersion(_dataset.Version);
 
     public NeowGenerator(NeowOptionDataset dataset)
     {
@@ -167,13 +170,12 @@ public sealed class NeowGenerator : ISeedEventGenerator<NeowGenerationContext, I
                 modernPool.Remove(NeowOptionIds.PreciseScissors);
             }
 
-            modernPool.Add(rng.NextBool() ? NeowOptionIds.NutritiousOyster : NeowOptionIds.StoneHumidifier);
-
             if (!string.Equals(negativePick, NeowOptionIds.LargeCapsule, StringComparison.OrdinalIgnoreCase))
             {
                 modernPool.Add(rng.NextBool() ? NeowOptionIds.LavaRock : NeowOptionIds.SmallCapsule);
             }
 
+            modernPool.Add(rng.NextBool() ? NeowOptionIds.NutritiousOyster : NeowOptionIds.StoneHumidifier);
             modernPool.Add(rng.NextBool() ? NeowOptionIds.NeowsTalisman : NeowOptionIds.Pomander);
             return modernPool;
         }
@@ -200,13 +202,12 @@ public sealed class NeowGenerator : ISeedEventGenerator<NeowGenerationContext, I
             pool.Add(NeowOptionIds.MassiveScroll);
         }
 
-        pool.Add(rng.NextBool() ? NeowOptionIds.NutritiousOyster : NeowOptionIds.StoneHumidifier);
-
         if (!string.Equals(negativePick, NeowOptionIds.LargeCapsule, StringComparison.OrdinalIgnoreCase))
         {
             pool.Add(rng.NextBool() ? NeowOptionIds.LavaRock : NeowOptionIds.SmallCapsule);
         }
 
+        pool.Add(rng.NextBool() ? NeowOptionIds.NutritiousOyster : NeowOptionIds.StoneHumidifier);
         return pool;
     }
 
@@ -237,5 +238,11 @@ public sealed class NeowGenerator : ISeedEventGenerator<NeowGenerationContext, I
             Note = metadata.Note,
             Details = details
         };
+    }
+
+    private static bool IsModernRulesVersion(string? version)
+    {
+        return Version.TryParse(version, out var parsedVersion) &&
+               parsedVersion >= new Version(0, 103, 2);
     }
 }

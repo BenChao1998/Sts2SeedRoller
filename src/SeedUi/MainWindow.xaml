@@ -253,29 +253,65 @@
                                 </StackPanel>
                             </Border>
 
-                            <!-- 遗物筛选 -->
                             <Border Style="{StaticResource CardStyle}" Margin="0 0 0 16">
                                 <StackPanel>
-                                    <TextBlock Text="&#x9057;&#x7269;&#x7B5B;&#x9009;" FontSize="16" FontWeight="SemiBold" Margin="0 0 0 8" Foreground="#333"/>
-                                    <TextBlock Text="选择特定的遗物来筛选符合条件的种子" FontSize="12" Foreground="#999" Margin="0 0 0 16"/>
+                                    <TextBlock Text="第一幕筛选" FontSize="16" FontWeight="SemiBold" Margin="0 0 0 8" Foreground="#333"/>
+                                    <TextBlock Text="这一区只保留来源绑定筛选：只有当某个开局遗物，或某条来源链，实际产出了你指定的遗物 / 卡牌 / 药水时才算命中。"
+                                               FontSize="12" Foreground="#999" Margin="0 0 0 16" TextWrapping="Wrap"/>
 
-                                    <TextBlock Text="搜索遗物" FontSize="13" Foreground="#666" Margin="0 0 0 8"/>
-                                    <TextBox Text="{Binding RelicCatalogFilter, UpdateSourceTrigger=PropertyChanged}"
-                                             hc:InfoElement.Placeholder="输入名称或ID过滤遗物列表..." Margin="0 0 0 12" Height="30"/>
+                                    <Border Background="#F7F9FC" BorderBrush="#E3E8EF" BorderThickness="1" CornerRadius="6" Padding="10" Margin="0 16 0 16">
+                                        <TextBlock Text="来源绑定筛选：只有当某个开局遗物，或某条来源链，实际产出了你指定的遗物 / 卡牌 / 药水时才算命中。"
+                                                   FontSize="12" Foreground="#555" TextWrapping="Wrap"/>
+                                    </Border>
 
-                                    <Grid>
+                                    <TextBlock Text="一级来源遗物" FontSize="13" Foreground="#666" Margin="0 0 0 8"/>
+                                    <TextBox Text="{Binding Act1DerivedPrimarySourceCatalogFilter, UpdateSourceTrigger=PropertyChanged}"
+                                             hc:InfoElement.Placeholder="输入文字过滤一级来源遗物..." Margin="0 0 0 8" Height="30"/>
+                                    <ComboBox ItemsSource="{Binding Act1DerivedPrimarySourceCatalogView}" DisplayMemberPath="Display"
+                                              SelectedItem="{Binding SelectedAct1DerivedPrimarySourceItem}" Margin="0 0 0 12" MinHeight="25" VerticalContentAlignment="Center"/>
+
+                                    <TextBlock Text="二级来源遗物（只在链式来源时使用，例如：涅奥的骨头 -> 树叶药膏）" FontSize="13" Foreground="#666" Margin="0 0 0 8"/>
+                                    <TextBox Text="{Binding Act1DerivedSecondarySourceCatalogFilter, UpdateSourceTrigger=PropertyChanged}"
+                                             hc:InfoElement.Placeholder="输入文字过滤二级来源遗物..." Margin="0 0 0 8" Height="30"
+                                             IsEnabled="{Binding CanUseAct1DerivedSecondarySource}"/>
+                                    <Grid Margin="0 0 0 12">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
-                                        <ComboBox Grid.Column="0" ItemsSource="{Binding RelicCatalogView}" DisplayMemberPath="Display"
-                                                  SelectedItem="{Binding SelectedRelicCatalogItem}" Margin="0 0 8 0" MinHeight="25" VerticalContentAlignment="Center"/>
-                                        <Button Grid.Column="1" Content="添加" Command="{Binding AddRelicFilterCommand}"
-                                                Style="{StaticResource ButtonPrimary}"/>
+                                        <ComboBox Grid.Column="0" ItemsSource="{Binding Act1DerivedSecondarySourceCatalogView}" DisplayMemberPath="Display"
+                                                  SelectedItem="{Binding SelectedAct1DerivedSecondarySourceItem}" Margin="0 0 8 0" MinHeight="25" VerticalContentAlignment="Center"
+                                                  IsEnabled="{Binding CanUseAct1DerivedSecondarySource}"/>
+                                        <Button Grid.Column="1" Content="清空"
+                                                Command="{Binding ClearAct1DerivedSecondarySourceCommand}"
+                                                Style="{StaticResource GhostButtonStyle}"
+                                                MinWidth="52"
+                                                IsEnabled="{Binding CanUseAct1DerivedSecondarySource}"/>
                                     </Grid>
+                                    <TextBlock Text="不选二级来源时，表示直接绑定一级来源自己生成的结果。"
+                                               FontSize="11"
+                                               Foreground="#888"
+                                               Margin="0 0 0 4"
+                                               TextWrapping="Wrap"/>
+                                    <TextBlock Text="每一条精确绑定条件只能对应一条来源链；如果你想筛多个来源，请分别添加多条条件。"
+                                               FontSize="11"
+                                               Foreground="#888"
+                                               Margin="0 0 0 12"
+                                               TextWrapping="Wrap"/>
 
-                                    <TextBlock Text="&#x5DF2;&#x9009;&#x9057;&#x7269;" FontSize="13" Foreground="#666" Margin="0 16 0 8"/>
-                                    <ItemsControl ItemsSource="{Binding RelicFilterChips}">
+                                    <TextBlock Text="绑定派生遗物" FontSize="13" Foreground="#666" Margin="0 0 0 8"/>
+                                    <TextBox Text="{Binding Act1DerivedRelicCatalogFilter, UpdateSourceTrigger=PropertyChanged}"
+                                             hc:InfoElement.Placeholder="输入文字过滤派生遗物..." Margin="0 0 0 8" Height="30"/>
+                                    <Grid Margin="0 0 0 8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <ComboBox Grid.Column="0" ItemsSource="{Binding Act1DerivedRelicCatalogView}" DisplayMemberPath="Display"
+                                                  SelectedItem="{Binding SelectedAct1DerivedRelicItem}" Margin="0 0 8 0" MinHeight="25" VerticalContentAlignment="Center"/>
+                                        <Button Grid.Column="1" Content="添加" Command="{Binding AddAct1DerivedRelicChipCommand}" Style="{StaticResource ButtonPrimary}"/>
+                                    </Grid>
+                                    <ItemsControl ItemsSource="{Binding Act1DerivedBindingRelicChips}">
                                         <ItemsControl.ItemsPanel>
                                             <ItemsPanelTemplate>
                                                 <WrapPanel/>
@@ -287,7 +323,7 @@
                                                     <StackPanel Orientation="Horizontal">
                                                         <TextBlock Text="{Binding Label}" Foreground="#1976D2" FontSize="12"/>
                                                         <Button Content="&#xE711;" FontFamily="Segoe MDL2 Assets" FontSize="10"
-                                                                Command="{Binding DataContext.RemoveRelicFilterCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                                Command="{Binding DataContext.RemoveAct1DerivedRelicChipCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                                                 CommandParameter="{Binding Id}" Margin="6 0 0 0" Padding="2"
                                                                 Style="{StaticResource GhostButtonStyle}"/>
                                                     </StackPanel>
@@ -296,32 +332,19 @@
                                         </ItemsControl.ItemTemplate>
                                     </ItemsControl>
 
-                                </StackPanel>
-                            </Border>
-
-                            <!-- 卡牌筛选 -->
-                            <Border Style="{StaticResource CardStyle}" Margin="0 0 0 16">
-                                <StackPanel>
-                                    <TextBlock Text="&#x5361;&#x724C;&#x7B5B;&#x9009;" FontSize="16" FontWeight="SemiBold" Margin="0 0 0 8" Foreground="#333"/>
-                                    <TextBlock Text="可按中文名、拼音或ID过滤卡牌" FontSize="12" Foreground="#999" Margin="0 0 0 16"/>
-
-                                    <TextBlock Text="搜索卡牌" FontSize="13" Foreground="#666" Margin="0 0 0 8"/>
-                                    <TextBox Text="{Binding CardCatalogFilter, UpdateSourceTrigger=PropertyChanged}"
-                                             hc:InfoElement.Placeholder="输入文字过滤卡牌列表..." Margin="0 0 0 12" Height="30"/>
-
-                                    <Grid>
+                                    <TextBlock Text="绑定派生卡牌" FontSize="13" Foreground="#666" Margin="0 12 0 8"/>
+                                    <TextBox Text="{Binding Act1DerivedCardCatalogFilter, UpdateSourceTrigger=PropertyChanged}"
+                                             hc:InfoElement.Placeholder="输入文字过滤派生卡牌..." Margin="0 0 0 8" Height="30"/>
+                                    <Grid Margin="0 0 0 8">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
-                                        <ComboBox Grid.Column="0" ItemsSource="{Binding CardCatalogView}" DisplayMemberPath="Display"
-                                                  SelectedItem="{Binding SelectedCardCatalogItem}" Margin="0 0 8 0" MinHeight="25" VerticalContentAlignment="Center"/>
-                                        <Button Grid.Column="1" Content="添加" Command="{Binding AddCardFilterCommand}"
-                                                Style="{StaticResource ButtonPrimary}"/>
+                                        <ComboBox Grid.Column="0" ItemsSource="{Binding Act1DerivedCardCatalogView}" DisplayMemberPath="Display"
+                                                  SelectedItem="{Binding SelectedAct1DerivedCardItem}" Margin="0 0 8 0" MinHeight="25" VerticalContentAlignment="Center"/>
+                                        <Button Grid.Column="1" Content="添加" Command="{Binding AddAct1DerivedCardChipCommand}" Style="{StaticResource ButtonPrimary}"/>
                                     </Grid>
-
-                                    <TextBlock Text="&#x5DF2;&#x9009;&#x5361;&#x724C;" FontSize="13" Foreground="#666" Margin="0 16 0 8"/>
-                                    <ItemsControl ItemsSource="{Binding CardFilterChips}">
+                                    <ItemsControl ItemsSource="{Binding Act1DerivedBindingCardChips}">
                                         <ItemsControl.ItemsPanel>
                                             <ItemsPanelTemplate>
                                                 <WrapPanel/>
@@ -333,7 +356,7 @@
                                                     <StackPanel Orientation="Horizontal">
                                                         <TextBlock Text="{Binding Label}" Foreground="#1976D2" FontSize="12"/>
                                                         <Button Content="&#xE711;" FontFamily="Segoe MDL2 Assets" FontSize="10"
-                                                                Command="{Binding DataContext.RemoveCardFilterCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                                Command="{Binding DataContext.RemoveAct1DerivedCardChipCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                                                 CommandParameter="{Binding Id}" Margin="6 0 0 0" Padding="2"
                                                                 Style="{StaticResource GhostButtonStyle}"/>
                                                     </StackPanel>
@@ -341,32 +364,20 @@
                                             </DataTemplate>
                                         </ItemsControl.ItemTemplate>
                                     </ItemsControl>
-                                </StackPanel>
-                            </Border>
 
-                            <!-- 药水筛选 -->
-                            <Border Style="{StaticResource CardStyle}" Margin="0 0 0 16">
-                                <StackPanel>
-                                    <TextBlock Text="&#x836F;&#x6C34;&#x7B5B;&#x9009;" FontSize="16" FontWeight="SemiBold" Margin="0 0 0 8" Foreground="#333"/>
-                                    <TextBlock Text="支持输入药水名称或ID过滤" FontSize="12" Foreground="#999" Margin="0 0 0 16"/>
-
-                                    <TextBlock Text="搜索药水" FontSize="13" Foreground="#666" Margin="0 0 0 8"/>
-                                    <TextBox Text="{Binding PotionCatalogFilter, UpdateSourceTrigger=PropertyChanged}"
-                                             hc:InfoElement.Placeholder="输入文字过滤药水列表..." Margin="0 0 0 12" Height="30"/>
-
-                                    <Grid>
+                                    <TextBlock Text="绑定派生药水" FontSize="13" Foreground="#666" Margin="0 12 0 8"/>
+                                    <TextBox Text="{Binding Act1DerivedPotionCatalogFilter, UpdateSourceTrigger=PropertyChanged}"
+                                             hc:InfoElement.Placeholder="输入文字过滤派生药水..." Margin="0 0 0 8" Height="30"/>
+                                    <Grid Margin="0 0 0 8">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
-                                        <ComboBox Grid.Column="0" ItemsSource="{Binding PotionCatalogView}" DisplayMemberPath="Display"
-                                                  SelectedItem="{Binding SelectedPotionCatalogItem}" Margin="0 0 8 0" MinHeight="25" VerticalContentAlignment="Center"/>
-                                        <Button Grid.Column="1" Content="添加" Command="{Binding AddPotionFilterCommand}"
-                                                Style="{StaticResource ButtonPrimary}"/>
+                                        <ComboBox Grid.Column="0" ItemsSource="{Binding Act1DerivedPotionCatalogView}" DisplayMemberPath="Display"
+                                                  SelectedItem="{Binding SelectedAct1DerivedPotionItem}" Margin="0 0 8 0" MinHeight="25" VerticalContentAlignment="Center"/>
+                                        <Button Grid.Column="1" Content="添加" Command="{Binding AddAct1DerivedPotionChipCommand}" Style="{StaticResource ButtonPrimary}"/>
                                     </Grid>
-
-                                    <TextBlock Text="&#x5DF2;&#x9009;&#x836F;&#x6C34;" FontSize="13" Foreground="#666" Margin="0 16 0 8"/>
-                                    <ItemsControl ItemsSource="{Binding PotionFilterChips}">
+                                    <ItemsControl ItemsSource="{Binding Act1DerivedBindingPotionChips}">
                                         <ItemsControl.ItemsPanel>
                                             <ItemsPanelTemplate>
                                                 <WrapPanel/>
@@ -378,10 +389,29 @@
                                                     <StackPanel Orientation="Horizontal">
                                                         <TextBlock Text="{Binding Label}" Foreground="#1976D2" FontSize="12"/>
                                                         <Button Content="&#xE711;" FontFamily="Segoe MDL2 Assets" FontSize="10"
-                                                                Command="{Binding DataContext.RemovePotionFilterCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                                Command="{Binding DataContext.RemoveAct1DerivedPotionChipCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                                                 CommandParameter="{Binding Id}" Margin="6 0 0 0" Padding="2"
                                                                 Style="{StaticResource GhostButtonStyle}"/>
                                                     </StackPanel>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+
+                                    <Button Content="保存这一条精确条件" Command="{Binding AddAct1DerivedBindingConditionCommand}"
+                                            Style="{StaticResource ButtonPrimary}" Margin="0 16 0 12" HorizontalAlignment="Left"/>
+
+                                    <TextBlock Text="已添加的精确条件" FontSize="13" Foreground="#666" Margin="0 0 0 8"/>
+                                    <ItemsControl ItemsSource="{Binding Act1DerivedBindingConditions}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Background="#F7F9FC" BorderBrush="#E3E8EF" BorderThickness="1" CornerRadius="6" Padding="10" Margin="0 0 0 8">
+                                                    <DockPanel>
+                                                        <Button DockPanel.Dock="Right" Content="&#xE711;" FontFamily="Segoe MDL2 Assets" FontSize="10"
+                                                                Command="{Binding DataContext.RemoveAct1DerivedBindingConditionCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                                CommandParameter="{Binding Id}" Padding="2" Style="{StaticResource GhostButtonStyle}"/>
+                                                        <TextBlock Text="{Binding Summary}" Foreground="#333" FontSize="12" TextWrapping="Wrap" Margin="0 0 8 0"/>
+                                                    </DockPanel>
                                                 </Border>
                                             </DataTemplate>
                                         </ItemsControl.ItemTemplate>
@@ -532,6 +562,19 @@
                                             </StackPanel>
                                         </StackPanel>
                                         <TextBlock Text="&#x4E8B;&#x4EF6;&#x547D;&#x4E2D;&#x53C2;&#x6570;" FontSize="13" Foreground="#666" Margin="0 0 0 8"/>
+                                        <WrapPanel Margin="0 0 0 8">
+                                            <TextBlock Text="概率采样次数" FontSize="12" Foreground="#666" VerticalAlignment="Center" Margin="0 0 8 8"/>
+                                            <TextBox Text="{Binding VisibilitySampleCountText, UpdateSourceTrigger=PropertyChanged}"
+                                                     Width="110"
+                                                     Height="28"
+                                                     VerticalContentAlignment="Center"
+                                                     Margin="0 0 12 8"/>
+                                            <TextBlock Text="同时用于事件概率和遗物概率分析，默认 1000。"
+                                                       FontSize="11"
+                                                       Foreground="#888"
+                                                       VerticalAlignment="Center"
+                                                       Margin="0 0 0 8"/>
+                                        </WrapPanel>
                                         <Grid Margin="0 0 0 8">
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="Auto"/>
@@ -768,6 +811,138 @@
                                                 </DataTemplate>
                                             </ItemsControl.ItemTemplate>
                                         </ItemsControl>
+
+                                        <Border Background="#F7F9FC"
+                                                BorderBrush="#E3E8EF"
+                                                BorderThickness="1"
+                                                CornerRadius="6"
+                                                Padding="10"
+                                                Margin="0 16 0 0"
+                                                Visibility="{Binding IsAct2SeaGlassFilterAvailable, Converter={StaticResource BooleanVisibilityConverter}}">
+                                            <StackPanel>
+                                                <TextBlock Text="海玻璃额外筛选" FontSize="13" FontWeight="SemiBold" Foreground="#333" Margin="0 0 0 6"/>
+                                                <TextBlock Text="先按上方添加“海玻璃”，这里可以继续限定它指向的其他角色，以及那 15 张预览卡里必须出现的卡牌。"
+                                                           FontSize="11" Foreground="#666" Margin="0 0 0 8" TextWrapping="Wrap"/>
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <ComboBox Grid.Column="0"
+                                                              ItemsSource="{Binding Act2SeaGlassCharacterOptions}"
+                                                              DisplayMemberPath="DisplayName"
+                                                              SelectedItem="{Binding SelectedAct2SeaGlassCharacterOption}"
+                                                              Margin="0 0 8 0"
+                                                              MinHeight="25"
+                                                              VerticalContentAlignment="Center"/>
+                                                    <Button Grid.Column="1"
+                                                            Content="添加目标角色"
+                                                            Command="{Binding AddAct2SeaGlassCharacterFilterCommand}"
+                                                            Style="{StaticResource ButtonDefault}"/>
+                                                </Grid>
+                                                <ItemsControl ItemsSource="{Binding Act2SeaGlassCharacterFilterChips}" Margin="0 8 0 0">
+                                                    <ItemsControl.ItemsPanel>
+                                                        <ItemsPanelTemplate>
+                                                            <WrapPanel/>
+                                                        </ItemsPanelTemplate>
+                                                    </ItemsControl.ItemsPanel>
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <Border Style="{StaticResource FilterTagStyle}">
+                                                                <StackPanel Orientation="Horizontal">
+                                                                    <TextBlock Text="{Binding Label}" Foreground="#1976D2" FontSize="12"/>
+                                                                    <Button Content="&#xE711;" FontFamily="Segoe MDL2 Assets" FontSize="10"
+                                                                            Command="{Binding DataContext.RemoveAct2SeaGlassCharacterFilterCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                                            CommandParameter="{Binding Id}" Margin="6 0 0 0" Padding="2"
+                                                                            Style="{StaticResource GhostButtonStyle}"/>
+                                                                </StackPanel>
+                                                            </Border>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+
+                                                <Separator Margin="0 12 0 12"/>
+                                                <TextBlock Text="海玻璃卡牌筛选" FontSize="12" FontWeight="SemiBold" Foreground="#333" Margin="0 0 0 6"/>
+                                                <TextBlock Text="先确定一个目标角色，再从该角色的普通 / 罕见 / 稀有卡里多选需要命中的卡牌，并设置最低命中概率。"
+                                                           FontSize="11" Foreground="#666" Margin="0 0 0 8" TextWrapping="Wrap"/>
+                                                <Grid Margin="0 0 0 8">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="120"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="120"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Grid.Column="0"
+                                                               Text="最低概率 %"
+                                                               VerticalAlignment="Center"
+                                                               Foreground="#666"
+                                                               Margin="0 0 8 0"/>
+                                                    <TextBox Grid.Column="1"
+                                                             Text="{Binding Act2SeaGlassCardSeenThresholdPercentText, UpdateSourceTrigger=PropertyChanged}"
+                                                             Height="30"
+                                                             VerticalContentAlignment="Center"/>
+                                                    <TextBlock Grid.Column="2"
+                                                               Text="采样次数"
+                                                               VerticalAlignment="Center"
+                                                               Foreground="#666"
+                                                               Margin="12 0 8 0"/>
+                                                    <TextBox Grid.Column="3"
+                                                             Text="{Binding SeaGlassSampleCountText, UpdateSourceTrigger=PropertyChanged}"
+                                                             Height="30"
+                                                             VerticalContentAlignment="Center"/>
+                                                </Grid>
+                                                <TextBlock Text="说明：当前海玻璃预览的单卡最高命中率，实测通常也只有约 63%。建议阈值填 50% 到 60%；如果填到 80% 或 90%，大多数情况下都不会命中。"
+                                                           FontSize="11"
+                                                           Foreground="#8A5A00"
+                                                           Margin="0 0 0 8"
+                                                           TextWrapping="Wrap"/>
+                                                <TextBox Text="{Binding Act2SeaGlassCardCatalogFilter, UpdateSourceTrigger=PropertyChanged}"
+                                                         hc:InfoElement.Placeholder="输入名称或ID过滤海玻璃卡牌..."
+                                                         Margin="0 0 0 8"
+                                                         Height="30"
+                                                         IsEnabled="{Binding CanFilterAct2SeaGlassCards}"/>
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <ComboBox Grid.Column="0"
+                                                              ItemsSource="{Binding Act2SeaGlassCardCatalogView}"
+                                                              DisplayMemberPath="Display"
+                                                              SelectedItem="{Binding SelectedAct2SeaGlassCardCatalogItem}"
+                                                              Margin="0 0 8 0"
+                                                              MinHeight="25"
+                                                              VerticalContentAlignment="Center"
+                                                              IsEnabled="{Binding CanFilterAct2SeaGlassCards}"/>
+                                                    <Button Grid.Column="1"
+                                                            Content="添加卡牌"
+                                                            Command="{Binding AddAct2SeaGlassCardFilterCommand}"
+                                                            Style="{StaticResource ButtonDefault}"
+                                                            IsEnabled="{Binding CanFilterAct2SeaGlassCards}"/>
+                                                </Grid>
+                                                <ItemsControl ItemsSource="{Binding Act2SeaGlassCardFilterChips}" Margin="0 8 0 0">
+                                                    <ItemsControl.ItemsPanel>
+                                                        <ItemsPanelTemplate>
+                                                            <WrapPanel/>
+                                                        </ItemsPanelTemplate>
+                                                    </ItemsControl.ItemsPanel>
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <Border Style="{StaticResource FilterTagStyle}">
+                                                                <StackPanel Orientation="Horizontal">
+                                                                    <TextBlock Text="{Binding Label}" Foreground="#1976D2" FontSize="12"/>
+                                                                    <Button Content="&#xE711;" FontFamily="Segoe MDL2 Assets" FontSize="10"
+                                                                            Command="{Binding DataContext.RemoveAct2SeaGlassCardFilterCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                                            CommandParameter="{Binding Id}" Margin="6 0 0 0" Padding="2"
+                                                                            Style="{StaticResource GhostButtonStyle}"/>
+                                                                </StackPanel>
+                                                            </Border>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </StackPanel>
+                                        </Border>
                                     </StackPanel>
                                 </StackPanel>
                             </Border>
@@ -1346,6 +1521,14 @@
                                                                                                        Visibility="{Binding HasDescription, Converter={StaticResource BooleanVisibilityConverter}}"/>
                                                                                             <TextBlock Text="{Binding Note}" FontSize="11" Foreground="#999" FontStyle="Italic" TextWrapping="Wrap"
                                                                                                        Visibility="{Binding HasNote, Converter={StaticResource BooleanVisibilityConverter}}" Margin="0 2 0 0"/>
+                                                                                            <ItemsControl ItemsSource="{Binding Details}" Margin="0 6 0 0"
+                                                                                                          Visibility="{Binding HasDetails, Converter={StaticResource BooleanVisibilityConverter}}">
+                                                                                                <ItemsControl.ItemTemplate>
+                                                                                                    <DataTemplate>
+                                                                                                        <TextBlock Text="{Binding}" FontSize="11" Foreground="#5A4300" TextWrapping="Wrap" Margin="0 2 0 0"/>
+                                                                                                    </DataTemplate>
+                                                                                                </ItemsControl.ItemTemplate>
+                                                                                            </ItemsControl>
                                                                                         </StackPanel>
                                                                                     </DataTemplate>
                                                                                 </ItemsControl.ItemTemplate>
@@ -1671,7 +1854,14 @@
                                 </Grid.RowDefinitions>
                                 <DockPanel Grid.Row="0" Margin="0 0 0 12">
                                     <TextBlock Text="运行日志" FontSize="16" FontWeight="SemiBold" Foreground="#333"/>
+                                    <CheckBox Content="调试模式"
+                                              DockPanel.Dock="Right"
+                                              IsChecked="{Binding IsDebugModeEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                              VerticalAlignment="Center"
+                                              Margin="0 0 12 0"
+                                              HorizontalAlignment="Right"/>
                                     <Button Content="清空" Command="{Binding ClearLogsCommand}"
+                                            DockPanel.Dock="Right"
                                             Style="{StaticResource GhostButtonStyle}" HorizontalAlignment="Right"/>
                                 </DockPanel>
                                 <Border Grid.Row="1" Background="#FAFAFA" CornerRadius="4" Padding="12">

@@ -118,8 +118,8 @@ jobs:
           $uiZip = Join-Path $releaseAssetsDir "sts2seedroller-win-x64-$version.zip"
           $cliZip = Join-Path $releaseAssetsDir "sts2seedroller-cli-win-x64-$version.zip"
 
-          Compress-Archive -Path $uiAppRoot -DestinationPath $uiZip -Force
-          Compress-Archive -Path $cliAppRoot -DestinationPath $cliZip -Force
+          Compress-Archive -Path (Join-Path $uiPackageDir '*') -DestinationPath $uiZip -Force
+          Compress-Archive -Path (Join-Path $cliPackageDir '*') -DestinationPath $cliZip -Force
 
           "uiZip=$uiZip" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
           "cliZip=$cliZip" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append

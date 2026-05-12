@@ -46,6 +46,7 @@ sealed class Options
         int ascensionLevel,
         int samples,
         int earlyWindow,
+        bool useExactMapCoverage,
         string optionDataPath,
         string actDataPath,
         string neowDataPath,
@@ -60,6 +61,7 @@ sealed class Options
         AscensionLevel = ascensionLevel;
         Samples = samples;
         EarlyWindow = earlyWindow;
+        UseExactMapCoverage = useExactMapCoverage;
         OptionDataPath = optionDataPath;
         ActDataPath = actDataPath;
         NeowDataPath = neowDataPath;
@@ -80,6 +82,8 @@ sealed class Options
     public int Samples { get; }
 
     public int EarlyWindow { get; }
+
+    public bool UseExactMapCoverage { get; }
 
     public string OptionDataPath { get; }
 
@@ -103,6 +107,7 @@ sealed class Options
         var ascensionLevel = 0;
         var samples = 8000;
         var earlyWindow = 5;
+        var useExactMapCoverage = false;
         var optionDataPath = Path.Combine(workingDirectory, "data", "0.103.2", "ancients", "options.zhs.json");
         var actDataPath = Path.Combine(workingDirectory, "data", "0.103.2", "sts2", "acts.json");
         var neowDataPath = Path.Combine(workingDirectory, "data", "0.103.2", "neow", "options.json");
@@ -132,6 +137,9 @@ sealed class Options
                     break;
                 case "--early-window" when i + 1 < args.Length:
                     earlyWindow = int.Parse(args[++i], CultureInfo.InvariantCulture);
+                    break;
+                case "--exact-map":
+                    useExactMapCoverage = true;
                     break;
                 case "--ancient-data" when i + 1 < args.Length:
                     optionDataPath = ResolvePath(workingDirectory, args[++i]);
@@ -189,6 +197,7 @@ sealed class Options
             ascensionLevel,
             samples,
             earlyWindow,
+            useExactMapCoverage,
             optionDataPath,
             actDataPath,
             neowDataPath,

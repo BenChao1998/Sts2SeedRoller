@@ -43,7 +43,7 @@ internal sealed partial class MainWindowViewModel
                     FormatAncientSummary(act.Ancients),
                     (act.Events ?? [])
                         .Where(eventId => !string.IsNullOrWhiteSpace(eventId))
-                        .Select(eventId => MainWindowViewModel.CreateSeedAnalysisEventDisplayItem(eventId))
+                        .Select(eventId => CreateSeedAnalysisEventDisplayItem(eventId))
                         .ToList()))
                 .OrderBy(item => item.ActNumber)
                 .ThenBy(item => item.BranchName, StringComparer.OrdinalIgnoreCase)
@@ -68,7 +68,14 @@ internal sealed partial class MainWindowViewModel
             return "无古神开场事件";
         }
 
-        return $"古神开场：{string.Join(" / ", ancients)}";
+        var displayValues = ancients
+            .Where(ancientId => !string.IsNullOrWhiteSpace(ancientId))
+            .Select(ancientId => AncientDisplayCatalog.GetDisplayText(ancientId, ancientId))
+            .ToList();
+
+        return displayValues.Count == 0
+            ? "无古神开场事件"
+            : $"古神开场：{string.Join(" / ", displayValues)}";
     }
 
     internal sealed class EventPoolCatalogActViewModel
@@ -93,7 +100,7 @@ internal sealed partial class MainWindowViewModel
 
         public IReadOnlyList<SeedAnalysisDisplayItemViewModel> Events { get; }
 
-        public string Title => $"第{ActNumber}幕 - {BranchName}";
+        public string Title => $"第 {ActNumber} 幕 - {BranchName}";
 
         public string EventCountText => $"事件数：{Events.Count}";
 

@@ -28,4 +28,27 @@ public sealed record SeedRunMatch
     public Sts2EventVisibilityAnalysis? EventVisibilityAnalysis { get; init; }
 
     public Sts2RelicVisibilityAnalysis? RelicVisibilityAnalysis { get; init; }
+
+    public SeedRunDiagnostics? Diagnostics { get; init; }
+}
+
+public sealed record SeedRunDiagnostics
+{
+    public long TotalElapsedMilliseconds { get; init; }
+
+    public long NeowElapsedMilliseconds { get; init; }
+
+    public long AncientElapsedMilliseconds { get; init; }
+
+    public long PoolAnalysisElapsedMilliseconds { get; init; }
+
+    public long EventTargetedMatchElapsedMilliseconds { get; init; }
+
+    public long RelicTargetedMatchElapsedMilliseconds { get; init; }
+
+    public long ShopElapsedMilliseconds { get; init; }
+
+    public long FinalEventAnalysisElapsedMilliseconds { get; init; }
+
+    public long FinalRelicAnalysisElapsedMilliseconds { get; init; }
 }

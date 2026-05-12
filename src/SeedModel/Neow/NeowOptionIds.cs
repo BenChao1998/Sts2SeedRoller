@@ -4,12 +4,15 @@ public static class NeowOptionIds
 {
     public const string ArcaneScroll = "ARCANE_SCROLL";
     public const string BoomingConch = "BOOMING_CONCH";
+    public const string FishingRod = "FISHING_ROD";
     public const string Pomander = "POMANDER";
     public const string GoldenPearl = "GOLDEN_PEARL";
+    public const string Kaleidoscope = "KALEIDOSCOPE";
     public const string LeadPaperweight = "LEAD_PAPERWEIGHT";
     public const string NewLeaf = "NEW_LEAF";
     public const string NeowsTorment = "NEOWS_TORMENT";
     public const string PreciseScissors = "PRECISE_SCISSORS";
+    public const string SilkenTress = "SILKEN_TRESS";
     public const string LostCoffer = "LOST_COFFER";
     public const string NutritiousOyster = "NUTRITIOUS_OYSTER";
     public const string StoneHumidifier = "STONE_HUMIDIFIER";

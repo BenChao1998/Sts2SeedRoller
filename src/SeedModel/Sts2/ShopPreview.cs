@@ -14,6 +14,8 @@ public sealed record ShopPreview
 
     public int DiscountedColoredSlot { get; init; } = -1;
 
+    public int CardRemovalPrice { get; init; }
+
     public string? AssumedNeowOptionId { get; init; }
 
     public IReadOnlyList<string> RouteRooms { get; init; } = Array.Empty<string>();

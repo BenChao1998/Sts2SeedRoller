@@ -55,8 +55,9 @@ internal sealed partial class MainWindowViewModel
                 samples));
         }
 
-        SeedAnalysisRelicVisibilitySummary =
-            $"当前每条路线画像使用 {analysis.Samples} 次采样；前期窗口为前 {analysis.EarlyWindow} 次遗物机会。";
+        SeedAnalysisRelicVisibilitySummary = analysis.UsesExactRouteCoverage
+            ? $"当前按该种子的真实地图路线全量统计；前期窗口为前 {analysis.EarlyWindow} 次遗物机会。"
+            : $"当前每条路线画像使用 {analysis.Samples} 次采样；前期窗口为前 {analysis.EarlyWindow} 次遗物机会。";
     }
 
     private void ClearSeedAnalysisRelicVisibility()

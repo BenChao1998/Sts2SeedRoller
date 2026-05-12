@@ -1,8 +1,12 @@
 .vs/
+Slay the Spire 2/
+Slay the Spire 2/**
 Slay the Spire 2 版本0.99.1源码（游戏源码，读取用）/
 Slay the Spire 2 版本0.99.1源码（游戏源码，读取用）/**
 Slay the Spire 2 版本0.103.2源码（游戏源码，读取用）/
 Slay the Spire 2 版本0.103.2源码（游戏源码，读取用）/**
+Slay the Spire 2 版本0.105.1源码（游戏源码，读取用）/
+Slay the Spire 2 版本0.105.1源码（游戏源码，读取用）/**
 临时回收站/
 临时回收站/**
 存档/
@@ -19,3 +23,13 @@ bin/
 obj/
 **/bin/
 **/obj/
+
+# Local temporary comparison/probe files
+/temp_compare*.cs
+/tmp/
+
+# Ad-hoc scratch outputs and one-off scripts
+/scratch/tmp_*
+/scratch/*probe_output.txt
+/scratch/*.txt
+/scratch/*.cs

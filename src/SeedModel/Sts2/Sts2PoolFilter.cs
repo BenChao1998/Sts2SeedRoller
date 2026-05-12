@@ -9,6 +9,7 @@ public sealed record Sts2PoolFilter
 {
     public const double DefaultHighProbabilitySeenThreshold = 0.50;
     public const double DefaultHighProbabilityEventSeenThreshold = 0.50;
+    public const int DefaultVisibilitySamples = 1_000;
 
     public static Sts2PoolFilter Empty { get; } = new();
 
@@ -29,6 +30,8 @@ public sealed record Sts2PoolFilter
     public Sts2EventVisibilitySource? HighProbabilityEventMostCommonSource { get; init; }
 
     public IReadOnlyList<string> HighProbabilityRelicIds { get; init; } = Array.Empty<string>();
+
+    public int VisibilitySamples { get; init; } = DefaultVisibilitySamples;
 
     public double HighProbabilitySeenThreshold { get; init; } = DefaultHighProbabilitySeenThreshold;
 

@@ -27,6 +27,8 @@ internal static class AncientDisplayCatalog
 
     private sealed record AncientOptionMetadata(string Id, string? Title, string? Description);
 
+    private sealed record RelicLocalizationMetadata(string? Title, string? Description);
+
     private sealed record AncientOptionFileModel
     {
         public List<AncientOptionRecord> Options { get; init; } = new();
@@ -42,6 +44,7 @@ internal static class AncientDisplayCatalog
     }
 
     private static readonly Dictionary<string, (IReadOnlyDictionary<string, AncientDisplayOption> Ancients, IReadOnlyDictionary<string, AncientRelicDisplayOption> Relics, IReadOnlyList<AncientDisplayOption> Act2, IReadOnlyList<AncientDisplayOption> Act3)> VersionCache = new();
+    private static string _activeCacheKey = "__default__";
 
     public static IReadOnlyList<AncientDisplayOption> AllowedForAct2 { get; private set; } = Array.Empty<AncientDisplayOption>();
 
@@ -70,6 +73,7 @@ internal static class AncientDisplayCatalog
             {
                 AllowedForAct2 = cached.Act2;
                 AllowedForAct3 = cached.Act3;
+                _activeCacheKey = cacheKey;
                 return;
             }
         }
@@ -138,18 +142,23 @@ internal static class AncientDisplayCatalog
 
         AllowedForAct2 = act2ReadOnly;
         AllowedForAct3 = act3ReadOnly;
+        _activeCacheKey = cacheKey;
     }
 
     private static IReadOnlyDictionary<string, AncientDisplayOption> GetAncientLookup()
     {
-        if (VersionCache.TryGetValue("__default__", out var cached))
+        if (VersionCache.TryGetValue(_activeCacheKey, out var cached))
+            return cached.Ancients;
+        if (VersionCache.TryGetValue("__default__", out cached))
             return cached.Ancients;
         return new Dictionary<string, AncientDisplayOption>(StringComparer.OrdinalIgnoreCase);
     }
 
     private static IReadOnlyDictionary<string, AncientRelicDisplayOption> GetRelicLookup()
     {
-        if (VersionCache.TryGetValue("__default__", out var cached))
+        if (VersionCache.TryGetValue(_activeCacheKey, out var cached))
+            return cached.Relics;
+        if (VersionCache.TryGetValue("__default__", out cached))
             return cached.Relics;
         return new Dictionary<string, AncientRelicDisplayOption>(StringComparer.OrdinalIgnoreCase);
     }
@@ -225,7 +234,7 @@ internal static class AncientDisplayCatalog
 
     public static string ResolveOptionDataPath(string? version = null)
     {
-        var resolvedVersion = string.IsNullOrWhiteSpace(version) ? "0.99.1" : version;
+        var resolvedVersion = UiDataPathResolver.GetPreferredVersionOrDefault(version);
         var localized = UiDataPathResolver.ResolveVersionedDataFilePath(resolvedVersion, "ancients", "options.zhs.json");
         if (File.Exists(localized))
         {
@@ -282,6 +291,8 @@ internal static class AncientDisplayCatalog
             }
         }
 
+        TryLoadFromRelicLocalization(version, metadata);
+
         // Fallback: try embedded resources
         TryLoadFromEmbeddedResource(metadata);
         return metadata;
@@ -317,6 +328,84 @@ internal static class AncientDisplayCatalog
         catch
         {
             return false;
+        }
+    }
+
+    private static void TryLoadFromRelicLocalization(string? version, Dictionary<string, AncientOptionMetadata> metadata)
+    {
+        try
+        {
+            var resolvedVersion = UiDataPathResolver.GetPreferredVersionOrDefault(version);
+            var path = UiDataPathResolver.ResolveVersionedDataFilePath(resolvedVersion, "sts2", "localization", "zhs", "relics.json");
+            if (!File.Exists(path))
+            {
+                return;
+            }
+
+            using var stream = File.OpenRead(path);
+            var table = JsonSerializer.Deserialize<Dictionary<string, string>>(stream, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            if (table == null || table.Count == 0)
+            {
+                return;
+            }
+
+            var relicMetadata = new Dictionary<string, RelicLocalizationMetadata>(StringComparer.OrdinalIgnoreCase);
+            foreach (var pair in table)
+            {
+                if (string.IsNullOrWhiteSpace(pair.Key) || string.IsNullOrWhiteSpace(pair.Value))
+                {
+                    continue;
+                }
+
+                const string titleSuffix = ".title";
+                const string eventDescriptionSuffix = ".eventDescription";
+                const string descriptionSuffix = ".description";
+
+                if (pair.Key.EndsWith(titleSuffix, StringComparison.OrdinalIgnoreCase))
+                {
+                    var id = NormalizeOptionId(pair.Key[..^titleSuffix.Length]);
+                    relicMetadata.TryGetValue(id, out var existing);
+                    existing ??= new RelicLocalizationMetadata(null, null);
+                    relicMetadata[id] = existing with { Title = pair.Value };
+                }
+                else if (pair.Key.EndsWith(eventDescriptionSuffix, StringComparison.OrdinalIgnoreCase))
+                {
+                    var id = NormalizeOptionId(pair.Key[..^eventDescriptionSuffix.Length]);
+                    relicMetadata.TryGetValue(id, out var existing);
+                    existing ??= new RelicLocalizationMetadata(null, null);
+                    relicMetadata[id] = existing with { Description = pair.Value };
+                }
+                else if (pair.Key.EndsWith(descriptionSuffix, StringComparison.OrdinalIgnoreCase))
+                {
+                    var id = NormalizeOptionId(pair.Key[..^descriptionSuffix.Length]);
+                    relicMetadata.TryGetValue(id, out var existing);
+                    existing ??= new RelicLocalizationMetadata(null, null);
+                    var description = string.IsNullOrWhiteSpace(existing.Description) ? pair.Value : existing.Description;
+                    relicMetadata[id] = existing with { Description = description };
+                }
+            }
+
+            foreach (var pair in relicMetadata)
+            {
+                if (!metadata.TryGetValue(pair.Key, out var existing))
+                {
+                    metadata[pair.Key] = new AncientOptionMetadata(pair.Key, pair.Value.Title, pair.Value.Description);
+                    continue;
+                }
+
+                metadata[pair.Key] = new AncientOptionMetadata(
+                    pair.Key,
+                    string.IsNullOrWhiteSpace(existing.Title) ? pair.Value.Title : existing.Title,
+                    string.IsNullOrWhiteSpace(existing.Description) ? pair.Value.Description : existing.Description);
+            }
+        }
+        catch
+        {
+            // 忽略本地化补全失败，保留已有元数据。
         }
     }
 

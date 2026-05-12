@@ -49,6 +49,45 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         "BOWLER_HAT",
         "LUCKY_FYSH"
     };
+    private static readonly string[] Act1DerivedPrimarySourceRelicIds =
+    [
+        NeowOptionIds.ArcaneScroll,
+        NeowOptionIds.BoomingConch,
+        NeowOptionIds.Pomander,
+        NeowOptionIds.GoldenPearl,
+        NeowOptionIds.LeadPaperweight,
+        NeowOptionIds.NewLeaf,
+        NeowOptionIds.NeowsTorment,
+        NeowOptionIds.PreciseScissors,
+        NeowOptionIds.LostCoffer,
+        NeowOptionIds.NutritiousOyster,
+        NeowOptionIds.StoneHumidifier,
+        NeowOptionIds.MassiveScroll,
+        NeowOptionIds.LavaRock,
+        NeowOptionIds.SmallCapsule,
+        NeowOptionIds.SilverCrucible,
+        NeowOptionIds.HeftyTablet,
+        NeowOptionIds.PhialHolster,
+        NeowOptionIds.WingedBoots,
+        NeowOptionIds.NeowsBones,
+        NeowOptionIds.NeowsTalisman,
+        NeowOptionIds.ScrollBoxes,
+        NeowOptionIds.CursedPearl,
+        NeowOptionIds.LargeCapsule,
+        NeowOptionIds.LeafyPoultice,
+        NeowOptionIds.PrecariousShears,
+        NeowOptionIds.FishingRod,
+        NeowOptionIds.Kaleidoscope,
+        NeowOptionIds.SilkenTress
+    ];
+    private static readonly HashSet<string> Act1DerivedPrimarySourceRelicIdSet =
+        new(Act1DerivedPrimarySourceRelicIds, StringComparer.OrdinalIgnoreCase);
+    private static readonly HashSet<string> Act1DerivedSecondarySourceRelicIdSet =
+        new(Act1DerivedPrimarySourceRelicIds.Where(static id => !string.Equals(id, NeowOptionIds.NeowsBones, StringComparison.OrdinalIgnoreCase)),
+            StringComparer.OrdinalIgnoreCase);
+    private static readonly HashSet<string> Act1DerivedRewardRelicOptionIdSet =
+        new(Act1DerivedPrimarySourceRelicIds.Where(static id => !string.Equals(id, NeowOptionIds.NeowsBones, StringComparison.OrdinalIgnoreCase)),
+            StringComparer.OrdinalIgnoreCase);
 
     private readonly string _configFilePath = Path.Combine(AppContext.BaseDirectory, "config.json");
     private readonly string _debugLogFilePath = Path.Combine(AppContext.BaseDirectory, "logs", "ui-debug.log");
@@ -64,8 +103,22 @@ internal sealed partial class MainWindowViewModel : ObservableObject
     private readonly RelayCommand _removeAct2OptionFilterCommand;
     private readonly RelayCommand _addAct3OptionFilterCommand;
     private readonly RelayCommand _removeAct3OptionFilterCommand;
+    private readonly RelayCommand _addAct2SeaGlassCharacterFilterCommand;
+    private readonly RelayCommand _removeAct2SeaGlassCharacterFilterCommand;
+    private readonly RelayCommand _addAct2SeaGlassCardFilterCommand;
+    private readonly RelayCommand _removeAct2SeaGlassCardFilterCommand;
+    private readonly RelayCommand _addAct1DerivedRelicChipCommand;
+    private readonly RelayCommand _removeAct1DerivedRelicChipCommand;
+    private readonly RelayCommand _addAct1DerivedCardChipCommand;
+    private readonly RelayCommand _removeAct1DerivedCardChipCommand;
+    private readonly RelayCommand _addAct1DerivedPotionChipCommand;
+    private readonly RelayCommand _removeAct1DerivedPotionChipCommand;
+    private readonly RelayCommand _addAct1DerivedBindingConditionCommand;
+    private readonly RelayCommand _removeAct1DerivedBindingConditionCommand;
+    private readonly RelayCommand _clearAct1DerivedSecondarySourceCommand;
 
     private NeowOptionDataset? _dataset;
+    private NeowOptionDataset? _seedAnalysisDataset;
     private GameVersionOption _selectedGameVersion;
     private SeedEventMetadata _selectedEvent;
     private CancellationTokenSource? _rollCancellation;
@@ -98,6 +151,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
     private int _progressMaximum = 1;
     private string _statusMessage = "等待操作…";
     private string _rollProgressText = string.Empty;
+    private bool _isDebugModeEnabled;
     private IReadOnlyList<CatalogItem> _relicCatalog = Array.Empty<CatalogItem>();
     private IReadOnlyList<CatalogItem> _cardCatalog = Array.Empty<CatalogItem>();
     private IReadOnlyList<CatalogItem> _potionCatalog = Array.Empty<CatalogItem>();
@@ -117,6 +171,8 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         Array.Empty<AncientDisplayCatalog.AncientRelicDisplayOption>();
     private AncientDisplayCatalog.AncientRelicDisplayOption? _selectedAct2RelicOption;
     private AncientDisplayCatalog.AncientRelicDisplayOption? _selectedAct3RelicOption;
+    private CharacterOption? _selectedAct2SeaGlassCharacterOption;
+    private CatalogItem? _selectedAct2SeaGlassCardCatalogItem;
     private string _ancientFilterSummary = "第二幕：任意 | 第三幕：任意";
 
     private bool _includeShop;
@@ -124,12 +180,34 @@ internal sealed partial class MainWindowViewModel : ObservableObject
     private string _shopCardCatalogFilter = string.Empty;
     private string _shopRelicCatalogFilter = string.Empty;
     private string _shopPotionCatalogFilter = string.Empty;
+    private string _act1DerivedPrimarySourceCatalogFilter = string.Empty;
+    private string _act1DerivedSecondarySourceCatalogFilter = string.Empty;
+    private string _act1DerivedRelicCatalogFilter = string.Empty;
+    private string _act1DerivedCardCatalogFilter = string.Empty;
+    private string _act1DerivedPotionCatalogFilter = string.Empty;
+    private string _act2SeaGlassCardCatalogFilter = string.Empty;
+    private string _act2SeaGlassCardSeenThresholdPercentText = "50";
     private CatalogItem? _selectedShopCardCatalogItem;
     private CatalogItem? _selectedShopRelicCatalogItem;
     private CatalogItem? _selectedShopPotionCatalogItem;
     private IReadOnlyList<CatalogItem> _filteredShopCards = Array.Empty<CatalogItem>();
     private IReadOnlyList<CatalogItem> _filteredShopRelics = Array.Empty<CatalogItem>();
     private IReadOnlyList<CatalogItem> _filteredShopPotions = Array.Empty<CatalogItem>();
+    private IReadOnlyList<CatalogItem> _act1DerivedPrimarySourceCatalog = Array.Empty<CatalogItem>();
+    private IReadOnlyList<CatalogItem> _act1DerivedSecondarySourceCatalog = Array.Empty<CatalogItem>();
+    private IReadOnlyList<CatalogItem> _act1DerivedRewardRelicCatalog = Array.Empty<CatalogItem>();
+    private IReadOnlyList<CatalogItem> _filteredAct1DerivedPrimarySourceCatalog = Array.Empty<CatalogItem>();
+    private IReadOnlyList<CatalogItem> _filteredAct1DerivedSecondarySourceCatalog = Array.Empty<CatalogItem>();
+    private IReadOnlyList<CatalogItem> _filteredAct1DerivedRelics = Array.Empty<CatalogItem>();
+    private IReadOnlyList<CatalogItem> _filteredAct1DerivedCards = Array.Empty<CatalogItem>();
+    private IReadOnlyList<CatalogItem> _filteredAct1DerivedPotions = Array.Empty<CatalogItem>();
+    private IReadOnlyList<CatalogItem> _act2SeaGlassCardCatalog = Array.Empty<CatalogItem>();
+    private IReadOnlyList<CatalogItem> _filteredAct2SeaGlassCardCatalog = Array.Empty<CatalogItem>();
+    private CatalogItem? _selectedAct1DerivedPrimarySourceItem;
+    private CatalogItem? _selectedAct1DerivedSecondarySourceItem;
+    private CatalogItem? _selectedAct1DerivedRelicItem;
+    private CatalogItem? _selectedAct1DerivedCardItem;
+    private CatalogItem? _selectedAct1DerivedPotionItem;
     private IReadOnlyDictionary<string, string> _relicLocalizationTable = EmptyLocalizationTable;
     private IReadOnlyDictionary<string, string> _cardLocalizationTable = EmptyLocalizationTable;
 
@@ -140,11 +218,23 @@ internal sealed partial class MainWindowViewModel : ObservableObject
 
     public ObservableCollection<FilterChipViewModel> Act3OptionFilterChips { get; } = new();
 
+    public ObservableCollection<FilterChipViewModel> Act2SeaGlassCharacterFilterChips { get; } = new();
+
+    public ObservableCollection<FilterChipViewModel> Act2SeaGlassCardFilterChips { get; } = new();
+
     public ObservableCollection<FilterChipViewModel> ShopCardFilterChips { get; } = new();
 
     public ObservableCollection<FilterChipViewModel> ShopRelicFilterChips { get; } = new();
 
     public ObservableCollection<FilterChipViewModel> ShopPotionFilterChips { get; } = new();
+
+    public ObservableCollection<FilterChipViewModel> Act1DerivedBindingRelicChips { get; } = new();
+
+    public ObservableCollection<FilterChipViewModel> Act1DerivedBindingCardChips { get; } = new();
+
+    public ObservableCollection<FilterChipViewModel> Act1DerivedBindingPotionChips { get; } = new();
+
+    public ObservableCollection<Act1DerivedBindingConditionViewModel> Act1DerivedBindingConditions { get; } = new();
 
     public RelayCommand AddShopCardFilterCommand { get; private set; } = null!;
 
@@ -158,15 +248,27 @@ internal sealed partial class MainWindowViewModel : ObservableObject
 
     public RelayCommand RemoveShopPotionFilterCommand { get; private set; } = null!;
 
+    public RelayCommand AddAct1DerivedRelicChipCommand => _addAct1DerivedRelicChipCommand;
+
+    public RelayCommand RemoveAct1DerivedRelicChipCommand => _removeAct1DerivedRelicChipCommand;
+
+    public RelayCommand AddAct1DerivedCardChipCommand => _addAct1DerivedCardChipCommand;
+
+    public RelayCommand RemoveAct1DerivedCardChipCommand => _removeAct1DerivedCardChipCommand;
+
+    public RelayCommand AddAct1DerivedPotionChipCommand => _addAct1DerivedPotionChipCommand;
+
+    public RelayCommand RemoveAct1DerivedPotionChipCommand => _removeAct1DerivedPotionChipCommand;
+
+    public RelayCommand AddAct1DerivedBindingConditionCommand => _addAct1DerivedBindingConditionCommand;
+
+    public RelayCommand RemoveAct1DerivedBindingConditionCommand => _removeAct1DerivedBindingConditionCommand;
+
+    public RelayCommand ClearAct1DerivedSecondarySourceCommand => _clearAct1DerivedSecondarySourceCommand;
+
     public MainWindowViewModel()
     {
-        InitializeDebugLogFile();
-
-        GameVersionOptions =
-        [
-            new GameVersionOption("0.103.2", "v0.103.2", "从源码 C# 文件中解析"),
-            new GameVersionOption("0.99.1", "v0.99.1", "内置数据，数据来源于 seed_info.json 提取")
-        ];
+        GameVersionOptions = BuildGameVersionOptions();
         _selectedGameVersion = GameVersionOptions.First();
 
         EventOptions = SeedEventRegistry.All;
@@ -188,8 +290,17 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         ShopCardFilterChips = new ObservableCollection<FilterChipViewModel>();
         ShopRelicFilterChips = new ObservableCollection<FilterChipViewModel>();
         ShopPotionFilterChips = new ObservableCollection<FilterChipViewModel>();
+        Act1DerivedBindingRelicChips = new ObservableCollection<FilterChipViewModel>();
+        Act1DerivedBindingCardChips = new ObservableCollection<FilterChipViewModel>();
+        Act1DerivedBindingPotionChips = new ObservableCollection<FilterChipViewModel>();
+        Act1DerivedBindingConditions = new ObservableCollection<Act1DerivedBindingConditionViewModel>();
+        Act2SeaGlassCharacterFilterChips = new ObservableCollection<FilterChipViewModel>();
+        Act2SeaGlassCardFilterChips = new ObservableCollection<FilterChipViewModel>();
         Act2OptionFilterChips.CollectionChanged += OnAncientOptionChipsChanged;
         Act3OptionFilterChips.CollectionChanged += OnAncientOptionChipsChanged;
+        Act2SeaGlassCharacterFilterChips.CollectionChanged += OnAncientOptionChipsChanged;
+        Act2SeaGlassCharacterFilterChips.CollectionChanged += OnAct2SeaGlassCharacterFilterChanged;
+        Act2SeaGlassCardFilterChips.CollectionChanged += OnAncientOptionChipsChanged;
         ShopCardFilterChips.CollectionChanged += OnShopFilterChipsChanged;
         ShopRelicFilterChips.CollectionChanged += OnShopFilterChipsChanged;
         ShopPotionFilterChips.CollectionChanged += OnShopFilterChipsChanged;
@@ -221,6 +332,19 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         _removeAct2OptionFilterCommand = new RelayCommand(RemoveAct2OptionFilter);
         _addAct3OptionFilterCommand = new RelayCommand(AddAct3OptionFilter);
         _removeAct3OptionFilterCommand = new RelayCommand(RemoveAct3OptionFilter);
+        _addAct2SeaGlassCharacterFilterCommand = new RelayCommand(AddAct2SeaGlassCharacterFilter);
+        _removeAct2SeaGlassCharacterFilterCommand = new RelayCommand(RemoveAct2SeaGlassCharacterFilter);
+        _addAct2SeaGlassCardFilterCommand = new RelayCommand(AddAct2SeaGlassCardFilter);
+        _removeAct2SeaGlassCardFilterCommand = new RelayCommand(RemoveAct2SeaGlassCardFilter);
+        _addAct1DerivedRelicChipCommand = new RelayCommand(AddAct1DerivedRelicChip);
+        _removeAct1DerivedRelicChipCommand = new RelayCommand(RemoveAct1DerivedRelicChip);
+        _addAct1DerivedCardChipCommand = new RelayCommand(AddAct1DerivedCardChip);
+        _removeAct1DerivedCardChipCommand = new RelayCommand(RemoveAct1DerivedCardChip);
+        _addAct1DerivedPotionChipCommand = new RelayCommand(AddAct1DerivedPotionChip);
+        _removeAct1DerivedPotionChipCommand = new RelayCommand(RemoveAct1DerivedPotionChip);
+        _addAct1DerivedBindingConditionCommand = new RelayCommand(AddAct1DerivedBindingCondition);
+        _removeAct1DerivedBindingConditionCommand = new RelayCommand(RemoveAct1DerivedBindingCondition);
+        _clearAct1DerivedSecondarySourceCommand = new RelayCommand(ClearAct1DerivedSecondarySource);
         ClearLogsCommand = new RelayCommand(ClearLogs);
 
         _ancientPreviewer = InitializeAncientPreviewer();
@@ -231,6 +355,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         UpdateAncientFilterSummary();
         InitializeEventPoolCatalog();
         InitializePoolFilter();
+        InitializeSeedAnalysisRouteSearch();
         InitializeSeedArchive();
         RefreshAncientAvailabilityStatus("startup", shouldLog: false);
     }
@@ -401,6 +526,12 @@ internal sealed partial class MainWindowViewModel : ObservableObject
 
     public IReadOnlyList<AncientDisplayCatalog.AncientRelicDisplayOption> Act3RelicOptions => _act3RelicOptions;
 
+    public IReadOnlyList<CharacterOption> Act2SeaGlassCharacterOptions => CharacterOptions
+        .Where(option => option.Id != SelectedCharacter)
+        .ToList();
+
+    public IEnumerable<CatalogItem> Act2SeaGlassCardCatalogView => _filteredAct2SeaGlassCardCatalog;
+
     public ObservableCollection<RollResultViewModel> Results { get; }
 
     public RollResultViewModel? SelectedResult
@@ -410,6 +541,24 @@ internal sealed partial class MainWindowViewModel : ObservableObject
     }
 
     public ObservableCollection<LogEntryViewModel> Logs { get; }
+
+    public bool IsDebugModeEnabled
+    {
+        get => _isDebugModeEnabled;
+        set
+        {
+            if (!SetProperty(ref _isDebugModeEnabled, value))
+            {
+                return;
+            }
+
+            if (value)
+            {
+                InitializeDebugLogFile();
+                AddLog("信息", "已开启调试模式，详细日志与落盘日志已恢复。");
+            }
+        }
+    }
 
     public ObservableCollection<FilterChipViewModel> RelicFilterChips { get; }
 
@@ -428,6 +577,16 @@ internal sealed partial class MainWindowViewModel : ObservableObject
     public IEnumerable<CatalogItem> ShopRelicCatalogView => _filteredShopRelics;
 
     public IEnumerable<CatalogItem> ShopPotionCatalogView => _filteredShopPotions;
+
+    public IEnumerable<CatalogItem> Act1DerivedPrimarySourceCatalogView => _filteredAct1DerivedPrimarySourceCatalog;
+
+    public IEnumerable<CatalogItem> Act1DerivedSecondarySourceCatalogView => _filteredAct1DerivedSecondarySourceCatalog;
+
+    public IEnumerable<CatalogItem> Act1DerivedRelicCatalogView => _filteredAct1DerivedRelics;
+
+    public IEnumerable<CatalogItem> Act1DerivedCardCatalogView => _filteredAct1DerivedCards;
+
+    public IEnumerable<CatalogItem> Act1DerivedPotionCatalogView => _filteredAct1DerivedPotions;
 
     public string ShopCardCatalogFilter
     {
@@ -459,6 +618,78 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         }
     }
 
+    public string Act2SeaGlassCardCatalogFilter
+    {
+        get => _act2SeaGlassCardCatalogFilter;
+        set
+        {
+            if (SetProperty(ref _act2SeaGlassCardCatalogFilter, value ?? string.Empty))
+                ApplyAct2SeaGlassCardFilter();
+        }
+    }
+
+    public string Act2SeaGlassCardSeenThresholdPercentText
+    {
+        get => _act2SeaGlassCardSeenThresholdPercentText;
+        set
+        {
+            if (SetProperty(ref _act2SeaGlassCardSeenThresholdPercentText, value ?? string.Empty))
+            {
+                UpdateAncientFilterSummary();
+            }
+        }
+    }
+
+    public string Act1DerivedPrimarySourceCatalogFilter
+    {
+        get => _act1DerivedPrimarySourceCatalogFilter;
+        set
+        {
+            if (SetProperty(ref _act1DerivedPrimarySourceCatalogFilter, value ?? string.Empty))
+                ApplyAct1DerivedPrimarySourceFilter();
+        }
+    }
+
+    public string Act1DerivedSecondarySourceCatalogFilter
+    {
+        get => _act1DerivedSecondarySourceCatalogFilter;
+        set
+        {
+            if (SetProperty(ref _act1DerivedSecondarySourceCatalogFilter, value ?? string.Empty))
+                ApplyAct1DerivedSecondarySourceFilter();
+        }
+    }
+
+    public string Act1DerivedRelicCatalogFilter
+    {
+        get => _act1DerivedRelicCatalogFilter;
+        set
+        {
+            if (SetProperty(ref _act1DerivedRelicCatalogFilter, value ?? string.Empty))
+                ApplyAct1DerivedRelicFilter();
+        }
+    }
+
+    public string Act1DerivedCardCatalogFilter
+    {
+        get => _act1DerivedCardCatalogFilter;
+        set
+        {
+            if (SetProperty(ref _act1DerivedCardCatalogFilter, value ?? string.Empty))
+                ApplyAct1DerivedCardFilter();
+        }
+    }
+
+    public string Act1DerivedPotionCatalogFilter
+    {
+        get => _act1DerivedPotionCatalogFilter;
+        set
+        {
+            if (SetProperty(ref _act1DerivedPotionCatalogFilter, value ?? string.Empty))
+                ApplyAct1DerivedPotionFilter();
+        }
+    }
+
     public CatalogItem? SelectedShopCardCatalogItem
     {
         get => _selectedShopCardCatalogItem;
@@ -476,6 +707,48 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         get => _selectedShopPotionCatalogItem;
         set => SetProperty(ref _selectedShopPotionCatalogItem, value);
     }
+
+    public CatalogItem? SelectedAct1DerivedPrimarySourceItem
+    {
+        get => _selectedAct1DerivedPrimarySourceItem;
+        set
+        {
+            if (SetProperty(ref _selectedAct1DerivedPrimarySourceItem, value))
+            {
+                RefreshAct1DerivedSecondarySourceCatalog();
+                RaisePropertyChanged(nameof(CanUseAct1DerivedSecondarySource));
+            }
+        }
+    }
+
+    public CatalogItem? SelectedAct1DerivedSecondarySourceItem
+    {
+        get => _selectedAct1DerivedSecondarySourceItem;
+        set => SetProperty(ref _selectedAct1DerivedSecondarySourceItem, value);
+    }
+
+    public CatalogItem? SelectedAct1DerivedRelicItem
+    {
+        get => _selectedAct1DerivedRelicItem;
+        set => SetProperty(ref _selectedAct1DerivedRelicItem, value);
+    }
+
+    public CatalogItem? SelectedAct1DerivedCardItem
+    {
+        get => _selectedAct1DerivedCardItem;
+        set => SetProperty(ref _selectedAct1DerivedCardItem, value);
+    }
+
+    public CatalogItem? SelectedAct1DerivedPotionItem
+    {
+        get => _selectedAct1DerivedPotionItem;
+        set => SetProperty(ref _selectedAct1DerivedPotionItem, value);
+    }
+
+    public bool HasAct1DerivedBindingConditions => Act1DerivedBindingConditions.Count > 0;
+
+    public bool CanUseAct1DerivedSecondarySource =>
+        string.Equals(SelectedAct1DerivedPrimarySourceItem?.Value, NeowOptionIds.NeowsBones, StringComparison.OrdinalIgnoreCase);
 
     public ICommand LoadDatasetCommand => _loadDatasetCommand;
 
@@ -515,6 +788,14 @@ internal sealed partial class MainWindowViewModel : ObservableObject
     public ICommand AddAct3OptionFilterCommand => _addAct3OptionFilterCommand;
 
     public ICommand RemoveAct3OptionFilterCommand => _removeAct3OptionFilterCommand;
+
+    public ICommand AddAct2SeaGlassCharacterFilterCommand => _addAct2SeaGlassCharacterFilterCommand;
+
+    public ICommand RemoveAct2SeaGlassCharacterFilterCommand => _removeAct2SeaGlassCharacterFilterCommand;
+
+    public ICommand AddAct2SeaGlassCardFilterCommand => _addAct2SeaGlassCardFilterCommand;
+
+    public ICommand RemoveAct2SeaGlassCardFilterCommand => _removeAct2SeaGlassCardFilterCommand;
 
     public string DatasetSummary
     {
@@ -588,7 +869,10 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         set
         {
             var normalized = value?.Trim().ToUpperInvariant() ?? string.Empty;
-            SetProperty(ref _seedText, normalized);
+            if (SetProperty(ref _seedText, normalized))
+            {
+                RefreshSeedAnalysisRouteCatalogs();
+            }
         }
     }
 
@@ -619,13 +903,33 @@ internal sealed partial class MainWindowViewModel : ObservableObject
     public CharacterId SelectedCharacter
     {
         get => _selectedCharacter;
-        set => SetProperty(ref _selectedCharacter, value);
+        set
+        {
+            if (SetProperty(ref _selectedCharacter, value))
+            {
+                RaisePropertyChanged(nameof(Act2SeaGlassCharacterOptions));
+                if (Act2SeaGlassCharacterFilterChips.Any(chip =>
+                    string.Equals(chip.Value, value.ToString(), StringComparison.OrdinalIgnoreCase)))
+                {
+                    Act2SeaGlassCharacterFilterChips.Clear();
+                }
+
+                RefreshAct2SeaGlassCardCatalog();
+                RefreshSeedAnalysisRouteCatalogs();
+            }
+        }
     }
 
     public int SelectedAscensionLevel
     {
         get => _selectedAscensionLevel;
-        set => SetProperty(ref _selectedAscensionLevel, Math.Clamp(value, 0, AscensionOptions[^1]));
+        set
+        {
+            if (SetProperty(ref _selectedAscensionLevel, Math.Clamp(value, 0, AscensionOptions[^1])))
+            {
+                RefreshSeedAnalysisRouteCatalogs();
+            }
+        }
     }
 
     public SeedRollMode SelectedSeedMode
@@ -649,13 +953,14 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         {
             if (SetProperty(ref _includeAct2, value))
             {
-                if (value && string.IsNullOrWhiteSpace(Act2AncientFilter))
-                {
-                    Act2AncientFilter = Act2FilterOptions.FirstOrDefault()?.Id ?? string.Empty;
-                }
-                RaisePropertyChanged(nameof(AncientPreviewStatusText));
-                UpdateAncientFilterSummary();
-            }
+        if (value && string.IsNullOrWhiteSpace(Act2AncientFilter))
+        {
+            Act2AncientFilter = Act2FilterOptions.FirstOrDefault()?.Id ?? string.Empty;
+        }
+        RaisePropertyChanged(nameof(Act2SeaGlassCharacterOptions));
+        RaisePropertyChanged(nameof(AncientPreviewStatusText));
+        UpdateAncientFilterSummary();
+    }
         }
     }
 
@@ -684,6 +989,15 @@ internal sealed partial class MainWindowViewModel : ObservableObject
             if (SetProperty(ref _act2AncientFilter, NormalizeAncientInput(value)))
             {
                 UpdateAct2RelicOptions();
+                if (!IsAct2SeaGlassFilterAvailable)
+                {
+                    Act2SeaGlassCharacterFilterChips.Clear();
+                    Act2SeaGlassCardFilterChips.Clear();
+                    SelectedAct2SeaGlassCharacterOption = null;
+                    SelectedAct2SeaGlassCardCatalogItem = null;
+                }
+
+                RaisePropertyChanged(nameof(IsAct2SeaGlassFilterAvailable));
                 UpdateAncientFilterSummary();
             }
         }
@@ -729,7 +1043,20 @@ internal sealed partial class MainWindowViewModel : ObservableObject
     public AncientDisplayCatalog.AncientRelicDisplayOption? SelectedAct2RelicOption
     {
         get => _selectedAct2RelicOption;
-        set => SetProperty(ref _selectedAct2RelicOption, value);
+        set
+        {
+            if (SetProperty(ref _selectedAct2RelicOption, value))
+            {
+                RaisePropertyChanged(nameof(IsAct2SeaGlassFilterAvailable));
+                if (!IsAct2SeaGlassFilterAvailable)
+                {
+                    Act2SeaGlassCharacterFilterChips.Clear();
+                    Act2SeaGlassCardFilterChips.Clear();
+                    SelectedAct2SeaGlassCharacterOption = null;
+                    SelectedAct2SeaGlassCardCatalogItem = null;
+                }
+            }
+        }
     }
 
     public AncientDisplayCatalog.AncientRelicDisplayOption? SelectedAct3RelicOption
@@ -737,6 +1064,25 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         get => _selectedAct3RelicOption;
         set => SetProperty(ref _selectedAct3RelicOption, value);
     }
+
+    public CharacterOption? SelectedAct2SeaGlassCharacterOption
+    {
+        get => _selectedAct2SeaGlassCharacterOption;
+        set => SetProperty(ref _selectedAct2SeaGlassCharacterOption, value);
+    }
+
+    public CatalogItem? SelectedAct2SeaGlassCardCatalogItem
+    {
+        get => _selectedAct2SeaGlassCardCatalogItem;
+        set => SetProperty(ref _selectedAct2SeaGlassCardCatalogItem, value);
+    }
+
+    public bool IsAct2SeaGlassFilterAvailable =>
+        string.Equals(Act2AncientFilter, "OROBAS", StringComparison.OrdinalIgnoreCase) &&
+        (string.Equals(SelectedAct2RelicOption?.Id, "SEA_GLASS", StringComparison.OrdinalIgnoreCase) ||
+         Act2OptionFilterChips.Any(chip => string.Equals(chip.Value, "SEA_GLASS", StringComparison.OrdinalIgnoreCase)));
+
+    public bool CanFilterAct2SeaGlassCards => Act2SeaGlassCharacterFilterChips.Count == 1;
 
     public bool IsAncientPreviewAvailable
     {
@@ -885,7 +1231,10 @@ internal sealed partial class MainWindowViewModel : ObservableObject
             // Fallback: old flat path (for backward compatibility during transition)
             if (!File.Exists(neowPath))
             {
-                neowPath = UiDataPathResolver.ResolveVersionedDataFilePath("0.99.1", "neow", "options.json");
+                neowPath = UiDataPathResolver.ResolveVersionedDataFilePath(
+                    UiDataPathResolver.GetPreferredVersionOrDefault(),
+                    "neow",
+                    "options.json");
             }
 
             LogInfo($"[数据路径] neow={neowPath}");
@@ -1054,6 +1403,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         ApplyShopCardFilter();
         ApplyShopRelicFilter();
         ApplyShopPotionFilter();
+        RefreshAct1DerivedSourceCatalogs();
         RefreshPoolRelicCatalog();
 
         _staticCardCatalog = _cardCatalog;
@@ -1068,6 +1418,143 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         SelectedShopRelicCatalogItem = null;
         SelectedShopPotionCatalogItem = null;
         SelectedHighProbabilityRelicCatalogItem = null;
+    }
+
+    private void RefreshAct1DerivedSourceCatalogs()
+    {
+        _act1DerivedPrimarySourceCatalog = _relicCatalog
+            .Where(item => Act1DerivedPrimarySourceRelicIdSet.Contains(item.Value))
+            .OrderBy(item => item.Display, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        ApplyAct1DerivedPrimarySourceFilter();
+        RefreshAct1DerivedSecondarySourceCatalog();
+        RefreshAct1DerivedRewardRelicCatalog();
+        ApplyAct1DerivedRelicFilter();
+        ApplyAct1DerivedCardFilter();
+        ApplyAct1DerivedPotionFilter();
+    }
+
+    private void RefreshAct2SeaGlassCardCatalog()
+    {
+        _act2SeaGlassCardCatalog = Array.Empty<CatalogItem>();
+
+        var dataset = _dataset;
+        var targetCharacterChip = Act2SeaGlassCharacterFilterChips.FirstOrDefault();
+        if (dataset == null ||
+            targetCharacterChip == null ||
+            !Enum.TryParse<CharacterId>(targetCharacterChip.Value, ignoreCase: true, out var targetCharacter) ||
+            !dataset.CharacterCardPoolMap.TryGetValue(targetCharacter, out var cardPool))
+        {
+            SelectedAct2SeaGlassCardCatalogItem = null;
+            ApplyAct2SeaGlassCardFilter();
+            return;
+        }
+
+        _act2SeaGlassCardCatalog = cardPool
+            .Where(cardId => !string.IsNullOrWhiteSpace(cardId))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Where(cardId => dataset.CardMetadataMap.TryGetValue(cardId, out var metadata) &&
+                             metadata.ParsedRarity is CardRarity.Common or CardRarity.Uncommon or CardRarity.Rare)
+            .Select(cardId =>
+            {
+                var name = GetLocalizedCardTitle(cardId);
+                if (string.IsNullOrWhiteSpace(name) &&
+                    dataset.CardMap.TryGetValue(cardId, out var card) &&
+                    !string.IsNullOrWhiteSpace(card.Name))
+                {
+                    name = card.Name;
+                }
+
+                name ??= cardId;
+                var rarity = dataset.CardMetadataMap.TryGetValue(cardId, out var metadata)
+                    ? metadata.ParsedRarity.ToString()
+                    : "Unknown";
+                var display = $"{name} ({cardId})";
+                return new CatalogItem(cardId, display, BuildSearchKey(display, name, cardId, rarity, "海玻璃"));
+            })
+            .OrderBy(item => item.Display, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        if (SelectedAct2SeaGlassCardCatalogItem is not null &&
+            !_act2SeaGlassCardCatalog.Any(item =>
+                string.Equals(item.Value, SelectedAct2SeaGlassCardCatalogItem.Value, StringComparison.OrdinalIgnoreCase)))
+        {
+            SelectedAct2SeaGlassCardCatalogItem = null;
+        }
+
+        ApplyAct2SeaGlassCardFilter();
+    }
+
+    private void ApplyAct2SeaGlassCardFilter()
+    {
+        _filteredAct2SeaGlassCardCatalog = FilterCatalog(_act2SeaGlassCardCatalog, _act2SeaGlassCardCatalogFilter);
+        RaisePropertyChanged(nameof(Act2SeaGlassCardCatalogView));
+    }
+
+    private void RefreshAct1DerivedSecondarySourceCatalog()
+    {
+        if (!CanUseAct1DerivedSecondarySource)
+        {
+            _act1DerivedSecondarySourceCatalog = Array.Empty<CatalogItem>();
+            SelectedAct1DerivedSecondarySourceItem = null;
+            ApplyAct1DerivedSecondarySourceFilter();
+            return;
+        }
+
+        _act1DerivedSecondarySourceCatalog = _relicCatalog
+            .Where(item => Act1DerivedSecondarySourceRelicIdSet.Contains(item.Value))
+            .OrderBy(item => item.Display, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        if (SelectedAct1DerivedSecondarySourceItem is not null &&
+            !_act1DerivedSecondarySourceCatalog.Any(item =>
+                string.Equals(item.Value, SelectedAct1DerivedSecondarySourceItem.Value, StringComparison.OrdinalIgnoreCase)))
+        {
+            SelectedAct1DerivedSecondarySourceItem = null;
+        }
+
+        ApplyAct1DerivedSecondarySourceFilter();
+    }
+
+    private void ApplyAct1DerivedPrimarySourceFilter()
+    {
+        _filteredAct1DerivedPrimarySourceCatalog = FilterCatalog(_act1DerivedPrimarySourceCatalog, _act1DerivedPrimarySourceCatalogFilter);
+        RaisePropertyChanged(nameof(Act1DerivedPrimarySourceCatalogView));
+    }
+
+    private void ApplyAct1DerivedSecondarySourceFilter()
+    {
+        _filteredAct1DerivedSecondarySourceCatalog = FilterCatalog(_act1DerivedSecondarySourceCatalog, _act1DerivedSecondarySourceCatalogFilter);
+        RaisePropertyChanged(nameof(Act1DerivedSecondarySourceCatalogView));
+    }
+
+    private void RefreshAct1DerivedRewardRelicCatalog()
+    {
+        _act1DerivedRewardRelicCatalog = _poolRelicCatalog
+            .Concat(_relicCatalog.Where(item => Act1DerivedRewardRelicOptionIdSet.Contains(item.Value)))
+            .GroupBy(item => item.Value, StringComparer.OrdinalIgnoreCase)
+            .Select(group => group.First())
+            .OrderBy(item => item.Display, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+    }
+
+    private void ApplyAct1DerivedRelicFilter()
+    {
+        _filteredAct1DerivedRelics = FilterCatalog(_act1DerivedRewardRelicCatalog, _act1DerivedRelicCatalogFilter);
+        RaisePropertyChanged(nameof(Act1DerivedRelicCatalogView));
+    }
+
+    private void ApplyAct1DerivedCardFilter()
+    {
+        _filteredAct1DerivedCards = FilterCatalog(_cardCatalog, _act1DerivedCardCatalogFilter);
+        RaisePropertyChanged(nameof(Act1DerivedCardCatalogView));
+    }
+
+    private void ApplyAct1DerivedPotionFilter()
+    {
+        _filteredAct1DerivedPotions = FilterCatalog(_potionCatalog, _act1DerivedPotionCatalogFilter);
+        RaisePropertyChanged(nameof(Act1DerivedPotionCatalogView));
     }
 
     private static string BuildSearchKey(params string?[] fragments)
@@ -1211,6 +1698,142 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         RemoveChipById(PotionFilterChips, parameter as string);
     }
 
+    private void AddAct1DerivedRelicChip()
+    {
+        if (SelectedAct1DerivedRelicItem is null)
+        {
+            LogWarn("请选择要绑定的派生遗物。");
+            return;
+        }
+
+        if (Act1DerivedBindingRelicChips.Any(chip => string.Equals(chip.Value, SelectedAct1DerivedRelicItem.Value, StringComparison.OrdinalIgnoreCase)))
+        {
+            LogWarn("该派生遗物已在当前绑定条件中。");
+            return;
+        }
+
+        Act1DerivedBindingRelicChips.Add(FilterChipViewModel.FromCatalog(SelectedAct1DerivedRelicItem));
+        SelectedAct1DerivedRelicItem = null;
+    }
+
+    private void RemoveAct1DerivedRelicChip(object? parameter)
+    {
+        RemoveChipById(Act1DerivedBindingRelicChips, parameter as string);
+    }
+
+    private void AddAct1DerivedCardChip()
+    {
+        if (SelectedAct1DerivedCardItem is null)
+        {
+            LogWarn("请选择要绑定的派生卡牌。");
+            return;
+        }
+
+        if (Act1DerivedBindingCardChips.Any(chip => string.Equals(chip.Value, SelectedAct1DerivedCardItem.Value, StringComparison.OrdinalIgnoreCase)))
+        {
+            LogWarn("该派生卡牌已在当前绑定条件中。");
+            return;
+        }
+
+        Act1DerivedBindingCardChips.Add(FilterChipViewModel.FromCatalog(SelectedAct1DerivedCardItem));
+        SelectedAct1DerivedCardItem = null;
+    }
+
+    private void RemoveAct1DerivedCardChip(object? parameter)
+    {
+        RemoveChipById(Act1DerivedBindingCardChips, parameter as string);
+    }
+
+    private void AddAct1DerivedPotionChip()
+    {
+        if (SelectedAct1DerivedPotionItem is null)
+        {
+            LogWarn("请选择要绑定的派生药水。");
+            return;
+        }
+
+        if (Act1DerivedBindingPotionChips.Any(chip => string.Equals(chip.Value, SelectedAct1DerivedPotionItem.Value, StringComparison.OrdinalIgnoreCase)))
+        {
+            LogWarn("该派生药水已在当前绑定条件中。");
+            return;
+        }
+
+        Act1DerivedBindingPotionChips.Add(FilterChipViewModel.FromCatalog(SelectedAct1DerivedPotionItem));
+        SelectedAct1DerivedPotionItem = null;
+    }
+
+    private void RemoveAct1DerivedPotionChip(object? parameter)
+    {
+        RemoveChipById(Act1DerivedBindingPotionChips, parameter as string);
+    }
+
+    private void AddAct1DerivedBindingCondition()
+    {
+        if (SelectedAct1DerivedPrimarySourceItem is null)
+        {
+            LogWarn("请选择一级来源遗物。");
+            return;
+        }
+
+        var primary = SelectedAct1DerivedPrimarySourceItem.Value;
+        var secondary = SelectedAct1DerivedSecondarySourceItem?.Value;
+        var relicIds = Act1DerivedBindingRelicChips.Select(chip => chip.Value).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+        var cardIds = Act1DerivedBindingCardChips.Select(chip => chip.Value).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+        var potionIds = Act1DerivedBindingPotionChips.Select(chip => chip.Value).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+        var condition = new Act1DerivedBindingConditionViewModel(
+            primary,
+            SelectedAct1DerivedPrimarySourceItem.Display,
+            secondary,
+            SelectedAct1DerivedSecondarySourceItem?.Display,
+            relicIds,
+            cardIds,
+            potionIds);
+
+        if (Act1DerivedBindingConditions.Any(existing => existing.IsEquivalentTo(condition)))
+        {
+            LogWarn("相同的绑定条件已存在。");
+            return;
+        }
+
+        Act1DerivedBindingConditions.Add(condition);
+        RaisePropertyChanged(nameof(HasAct1DerivedBindingConditions));
+        ClearAct1DerivedBindingEditor();
+    }
+
+    private void RemoveAct1DerivedBindingCondition(object? parameter)
+    {
+        if (parameter is not string id)
+        {
+            return;
+        }
+
+        var match = Act1DerivedBindingConditions.FirstOrDefault(item => string.Equals(item.Id, id, StringComparison.Ordinal));
+        if (match == null)
+        {
+            return;
+        }
+
+        Act1DerivedBindingConditions.Remove(match);
+        RaisePropertyChanged(nameof(HasAct1DerivedBindingConditions));
+    }
+
+    private void ClearAct1DerivedSecondarySource()
+    {
+        SelectedAct1DerivedSecondarySourceItem = null;
+    }
+
+    private void ClearAct1DerivedBindingEditor()
+    {
+        SelectedAct1DerivedPrimarySourceItem = null;
+        SelectedAct1DerivedSecondarySourceItem = null;
+        SelectedAct1DerivedRelicItem = null;
+        SelectedAct1DerivedCardItem = null;
+        SelectedAct1DerivedPotionItem = null;
+        Act1DerivedBindingRelicChips.Clear();
+        Act1DerivedBindingCardChips.Clear();
+        Act1DerivedBindingPotionChips.Clear();
+    }
+
     private void AddShopCardFilter()
     {
         if (_dataset == null)
@@ -1301,6 +1924,66 @@ internal sealed partial class MainWindowViewModel : ObservableObject
     private void AddAct2OptionFilter()
     {
         TryAddAncientOptionChip(Act2OptionFilterChips, SelectedAct2RelicOption);
+    }
+
+    private void AddAct2SeaGlassCharacterFilter()
+    {
+        if (SelectedAct2SeaGlassCharacterOption is null)
+        {
+            LogWarn("请选择海玻璃指向的其他角色。");
+            return;
+        }
+
+        if (Act2SeaGlassCharacterFilterChips.Count > 0)
+        {
+            LogWarn("海玻璃一次只能绑定一个目标角色；如需更换，请先移除当前角色。");
+            return;
+        }
+
+        if (Act2SeaGlassCharacterFilterChips.Any(chip => string.Equals(chip.Value, SelectedAct2SeaGlassCharacterOption.Id.ToString(), StringComparison.OrdinalIgnoreCase)))
+        {
+            LogWarn("该海玻璃目标角色已在筛选条件中。");
+            return;
+        }
+
+        Act2SeaGlassCharacterFilterChips.Add(new FilterChipViewModel(
+            SelectedAct2SeaGlassCharacterOption.Id.ToString(),
+            $"海玻璃 -> {SelectedAct2SeaGlassCharacterOption.DisplayName}"));
+        SelectedAct2SeaGlassCharacterOption = null;
+    }
+
+    private void RemoveAct2SeaGlassCharacterFilter(object? parameter)
+    {
+        RemoveChipById(Act2SeaGlassCharacterFilterChips, parameter as string);
+    }
+
+    private void AddAct2SeaGlassCardFilter()
+    {
+        if (!CanFilterAct2SeaGlassCards)
+        {
+            LogWarn("请先为海玻璃确定一个目标角色。");
+            return;
+        }
+
+        if (SelectedAct2SeaGlassCardCatalogItem is null)
+        {
+            LogWarn("请选择要绑定的海玻璃卡牌。");
+            return;
+        }
+
+        if (Act2SeaGlassCardFilterChips.Any(chip => string.Equals(chip.Value, SelectedAct2SeaGlassCardCatalogItem.Value, StringComparison.OrdinalIgnoreCase)))
+        {
+            LogWarn("该海玻璃卡牌已在筛选条件中。");
+            return;
+        }
+
+        Act2SeaGlassCardFilterChips.Add(FilterChipViewModel.FromCatalog(SelectedAct2SeaGlassCardCatalogItem));
+        SelectedAct2SeaGlassCardCatalogItem = null;
+    }
+
+    private void RemoveAct2SeaGlassCardFilter(object? parameter)
+    {
+        RemoveChipById(Act2SeaGlassCardFilterChips, parameter as string);
     }
 
     private void RemoveAct2OptionFilter(object? parameter)
@@ -1400,6 +2083,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
     private void ResetDatasetForEventChange()
     {
         _dataset = null;
+        _seedAnalysisDataset = null;
         DatasetSummary = "尚未加载数据";
         _rollCommand?.RaiseCanExecuteChanged();
         RefreshArchiveCommandStates();
@@ -1407,12 +2091,21 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         _cardCatalog = Array.Empty<CatalogItem>();
         _potionCatalog = Array.Empty<CatalogItem>();
         _shopRelicCatalog = Array.Empty<CatalogItem>();
+        _act1DerivedPrimarySourceCatalog = Array.Empty<CatalogItem>();
+        _act1DerivedSecondarySourceCatalog = Array.Empty<CatalogItem>();
+        _act1DerivedRewardRelicCatalog = Array.Empty<CatalogItem>();
         ApplyRelicFilter();
         ApplyCardFilter();
         ApplyPotionFilter();
         ApplyShopCardFilter();
         ApplyShopRelicFilter();
         ApplyShopPotionFilter();
+        ApplyAct1DerivedPrimarySourceFilter();
+        ApplyAct1DerivedSecondarySourceFilter();
+        ApplyAct1DerivedRelicFilter();
+        ApplyAct1DerivedCardFilter();
+        ApplyAct1DerivedPotionFilter();
+        ApplyAct2SeaGlassCardFilter();
         SelectedRelicCatalogItem = null;
         SelectedCardCatalogItem = null;
         SelectedPotionCatalogItem = null;
@@ -1422,6 +2115,15 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         RelicFilterChips.Clear();
         CardFilterChips.Clear();
         PotionFilterChips.Clear();
+        Act2SeaGlassCharacterFilterChips.Clear();
+        Act2SeaGlassCardFilterChips.Clear();
+        SelectedAct2SeaGlassCharacterOption = null;
+        SelectedAct2SeaGlassCardCatalogItem = null;
+        Act2SeaGlassCardSeenThresholdPercentText = "50";
+        SeaGlassSampleCountText = "1000";
+        Act1DerivedBindingConditions.Clear();
+        ClearAct1DerivedBindingEditor();
+        RaisePropertyChanged(nameof(HasAct1DerivedBindingConditions));
         ShopCardFilterChips.Clear();
         ShopRelicFilterChips.Clear();
         ShopPotionFilterChips.Clear();
@@ -1662,6 +2364,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         var (firstSeed, lastSeed) = ResolveSeedRange(workItems, state.MinIndex, state.MaxIndex, config.InitialSeed);
 
         ReportProgress(progress, state.TotalScanned, state.TotalHitSeeds, state.TotalHitOptions);
+        LogTimingSummary(state);
 
         return new RollExecutionResult(
             finalResults,
@@ -1750,6 +2453,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         var lastSeedText = lastSeed ?? firstSeedText;
 
         ReportProgress(progress, state.TotalScanned, state.TotalHitSeeds, state.TotalHitOptions);
+        LogTimingSummary(state);
 
         return new RollExecutionResult(
             finalResults,
@@ -1802,7 +2506,8 @@ internal sealed partial class MainWindowViewModel : ObservableObject
                 includeAct3,
                 SelectedAscensionLevel,
                 requireAct2Match,
-                requireAct3Match),
+                requireAct3Match,
+                LogInfo),
             (workItem, loopState, workerState) =>
             {
                 if (Volatile.Read(ref state.CancellationFlag) == 1)
@@ -1824,7 +2529,9 @@ internal sealed partial class MainWindowViewModel : ObservableObject
                     return workerState;
                 }
 
-                var hit = workerState.Process(workItem);
+                var processResult = workerState.Process(workItem);
+                var hit = processResult.Hit;
+                AccumulateDiagnostics(state, processResult.Diagnostics);
                 var scanned = Interlocked.Increment(ref state.TotalScanned);
                 UpdateMinIndex(ref state.MinIndex, workItem.Index);
                 UpdateMaxIndex(ref state.MaxIndex, workItem.Index);
@@ -1897,6 +2604,46 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         }
 
         return scanned % Math.Max(1, reportInterval) == 0;
+    }
+
+    private void LogTimingSummary(RollAggregationState state)
+    {
+        if (state.DiagnosticSampleCount <= 0)
+        {
+            return;
+        }
+
+        var samples = Math.Max(1L, state.DiagnosticSampleCount);
+        LogInfo(
+            $"[耗时汇总] scanned={state.TotalScanned} | samples={samples} | " +
+            $"avgTotal={state.TotalElapsedMilliseconds / samples}ms | " +
+            $"avgNeow={state.NeowElapsedMilliseconds / samples}ms | " +
+            $"avgAncient={state.AncientElapsedMilliseconds / samples}ms | " +
+            $"avgPools={state.PoolAnalysisElapsedMilliseconds / samples}ms | " +
+            $"avgEventMatch={state.EventTargetedMatchElapsedMilliseconds / samples}ms | " +
+            $"avgRelicMatch={state.RelicTargetedMatchElapsedMilliseconds / samples}ms | " +
+            $"avgShop={state.ShopElapsedMilliseconds / samples}ms | " +
+            $"avgFinalEvent={state.FinalEventAnalysisElapsedMilliseconds / samples}ms | " +
+            $"avgFinalRelic={state.FinalRelicAnalysisElapsedMilliseconds / samples}ms");
+    }
+
+    private static void AccumulateDiagnostics(RollAggregationState state, SeedRunDiagnostics? diagnostics)
+    {
+        if (diagnostics == null)
+        {
+            return;
+        }
+
+        Interlocked.Increment(ref state.DiagnosticSampleCount);
+        Interlocked.Add(ref state.TotalElapsedMilliseconds, diagnostics.TotalElapsedMilliseconds);
+        Interlocked.Add(ref state.NeowElapsedMilliseconds, diagnostics.NeowElapsedMilliseconds);
+        Interlocked.Add(ref state.AncientElapsedMilliseconds, diagnostics.AncientElapsedMilliseconds);
+        Interlocked.Add(ref state.PoolAnalysisElapsedMilliseconds, diagnostics.PoolAnalysisElapsedMilliseconds);
+        Interlocked.Add(ref state.EventTargetedMatchElapsedMilliseconds, diagnostics.EventTargetedMatchElapsedMilliseconds);
+        Interlocked.Add(ref state.RelicTargetedMatchElapsedMilliseconds, diagnostics.RelicTargetedMatchElapsedMilliseconds);
+        Interlocked.Add(ref state.ShopElapsedMilliseconds, diagnostics.ShopElapsedMilliseconds);
+        Interlocked.Add(ref state.FinalEventAnalysisElapsedMilliseconds, diagnostics.FinalEventAnalysisElapsedMilliseconds);
+        Interlocked.Add(ref state.FinalRelicAnalysisElapsedMilliseconds, diagnostics.FinalRelicAnalysisElapsedMilliseconds);
     }
 
     private static (string FirstSeed, string LastSeed) ResolveSeedRange(
@@ -2030,7 +2777,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         return true;
     }
 
-    private static string GetCharacterDisplayName(CharacterId id)
+    internal static string GetCharacterDisplayName(CharacterId id)
     {
         return id switch
         {
@@ -2053,11 +2800,16 @@ internal sealed partial class MainWindowViewModel : ObservableObject
 
     private SeedRunFilter BuildRunFilter()
     {
-        var relicTerms = SplitTerms(FilterRelicTerms);
-        var relicIds = RelicFilterChips.Select(chip => chip.Value);
-        var cardIds = CardFilterChips.Select(chip => chip.Value);
-        var potionIds = PotionFilterChips.Select(chip => chip.Value);
-        var neowFilter = NeowOptionFilter.Create(null, relicTerms, relicIds, cardIds, potionIds);
+        var derivedBindingFilters = Act1DerivedBindingConditions
+            .Select(condition => condition.ToFilter())
+            .ToList();
+        var neowFilter = NeowOptionFilter.Create(
+            null,
+            relicTerms: Array.Empty<string>(),
+            relicIds: Array.Empty<string>(),
+            cardIds: Array.Empty<string>(),
+            potionIds: Array.Empty<string>(),
+            derivedBindingFilters);
 
         var includeAct2 = IncludeAct2 && IsAncientPreviewAvailable;
         var includeAct3 = IncludeAct3 && IsAncientPreviewAvailable;
@@ -2072,7 +2824,17 @@ internal sealed partial class MainWindowViewModel : ObservableObject
             Act2AncientId = includeAct2 ? NormalizeAncientFilterValue(Act2AncientFilter) : null,
             Act3AncientId = includeAct3 ? NormalizeAncientFilterValue(Act3AncientFilter) : null,
             Act2OptionIds = act2OptionIds,
-            Act3OptionIds = act3OptionIds
+            Act3OptionIds = act3OptionIds,
+            Act2SeaGlassOtherCharacterIds = includeAct2
+                ? Act2SeaGlassCharacterFilterChips.Select(chip => chip.Value).ToList()
+                : Array.Empty<string>(),
+            Act2SeaGlassCardIds = includeAct2
+                ? Act2SeaGlassCardFilterChips.Select(chip => chip.Value).ToList()
+                : Array.Empty<string>(),
+            Act2SeaGlassCardSeenThreshold = includeAct2 && Act2SeaGlassCardFilterChips.Count > 0
+                ? GetOptionalThresholdPercent(Act2SeaGlassCardSeenThresholdPercentText)
+                : null,
+            SeaGlassPreviewSamples = GetSeaGlassSampleCount()
         };
 
         var shopFilter = IncludeShop
@@ -2092,6 +2854,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
                 Act2EventIds = Act2EventPoolFilterChips.Select(chip => chip.Value).ToList(),
                 Act3EventIds = Act3EventPoolFilterChips.Select(chip => chip.Value).ToList(),
                 HighProbabilityEventIds = Act1EventPoolFilterChips.Concat(Act2EventPoolFilterChips).Concat(Act3EventPoolFilterChips).Select(chip => chip.Value).Distinct(StringComparer.OrdinalIgnoreCase).ToList(),
+                VisibilitySamples = GetVisibilitySampleCount(),
                 HighProbabilityEventSeenThreshold = GetHighProbabilityEventSeenThreshold(),
                 HighProbabilityEventEarlyThreshold = null,
                 HighProbabilityEventAverageFirstOpportunityMax = GetOptionalPositiveDouble(HighProbabilityEventAverageFirstOpportunityMaxText),
@@ -2219,15 +2982,52 @@ internal sealed partial class MainWindowViewModel : ObservableObject
             return $"{label}：{displayName}（遗物：{options}）";
         }
 
+        var act2SeaGlassParts = new List<string>();
+        if (Act2SeaGlassCharacterFilterChips.Count > 0)
+        {
+            act2SeaGlassParts.Add($"海玻璃角色：{string.Join(" / ", Act2SeaGlassCharacterFilterChips.Select(chip => chip.Label.Replace("海玻璃 -> ", string.Empty, StringComparison.Ordinal)))}");
+        }
+
+        if (Act2SeaGlassCardFilterChips.Count > 0)
+        {
+            var threshold = GetOptionalThresholdPercent(Act2SeaGlassCardSeenThresholdPercentText);
+            var thresholdText = threshold.HasValue ? $"（概率≥{FormatThresholdPercent(threshold.Value)}%）" : string.Empty;
+            act2SeaGlassParts.Add($"海玻璃卡牌{thresholdText}：{string.Join(" / ", Act2SeaGlassCardFilterChips.Select(chip => chip.Label))}");
+        }
+
+        if (Act2SeaGlassCharacterFilterChips.Count > 0 || Act2SeaGlassCardFilterChips.Count > 0)
+        {
+            act2SeaGlassParts.Add($"海玻璃采样：{GetSeaGlassSampleCount()}");
+        }
+
+        var act2SeaGlass = act2SeaGlassParts.Count > 0
+            ? $"，{string.Join("，", act2SeaGlassParts)}"
+            : string.Empty;
+
         AncientFilterSummary = string.Join(" | ", new[]
         {
-            Format("第二幕", IncludeAct2, Act2AncientFilter, Act2OptionFilterChips),
+            Format("第二幕", IncludeAct2, Act2AncientFilter, Act2OptionFilterChips) + act2SeaGlass,
             Format("第三幕", IncludeAct3, Act3AncientFilter, Act3OptionFilterChips)
         });
     }
 
-    private void OnAncientOptionChipsChanged(object? sender, NotifyCollectionChangedEventArgs e) =>
+    private void OnAncientOptionChipsChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        RaisePropertyChanged(nameof(IsAct2SeaGlassFilterAvailable));
         UpdateAncientFilterSummary();
+    }
+
+    private void OnAct2SeaGlassCharacterFilterChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        RefreshAct2SeaGlassCardCatalog();
+        RaisePropertyChanged(nameof(CanFilterAct2SeaGlassCards));
+
+        if (Act2SeaGlassCharacterFilterChips.Count == 0)
+        {
+            Act2SeaGlassCardFilterChips.Clear();
+            SelectedAct2SeaGlassCardCatalogItem = null;
+        }
+    }
 
     private void OnShopFilterChipsChanged(object? sender, NotifyCollectionChangedEventArgs e) =>
         UpdateShopFilterSummary();
@@ -2360,7 +3160,8 @@ internal sealed partial class MainWindowViewModel : ObservableObject
                             Label = detail.Label,
                             Value = detail.Value,
                             ModelId = detail.ModelId,
-                            Amount = detail.Amount
+                            Amount = detail.Amount,
+                            SourcePath = detail.SourcePath
                         }).ToList()
                     })
                     .ToList();
@@ -2480,6 +3281,9 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         RelicFilterChips.Clear();
         CardFilterChips.Clear();
         PotionFilterChips.Clear();
+        Act1DerivedBindingConditions.Clear();
+        ClearAct1DerivedBindingEditor();
+        RaisePropertyChanged(nameof(HasAct1DerivedBindingConditions));
         ResetSeedAnalysis();
         IncludeAct2 = false;
         IncludeAct3 = false;
@@ -2489,6 +3293,10 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         Act2AncientFilter = string.Empty;
         Act3AncientFilter = string.Empty;
         Act2OptionFilterChips.Clear();
+        Act2SeaGlassCharacterFilterChips.Clear();
+        Act2SeaGlassCardFilterChips.Clear();
+        SelectedAct2SeaGlassCharacterOption = null;
+        SelectedAct2SeaGlassCardCatalogItem = null;
         Act3OptionFilterChips.Clear();
         Act1EventPoolFilterChips.Clear();
         Act2EventPoolFilterChips.Clear();
@@ -2506,6 +3314,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         HighProbabilityEarlyThresholdPercentText = string.Empty;
         HighProbabilityAverageFirstOpportunityMaxText = string.Empty;
         HighProbabilityMostCommonSourceText = string.Empty;
+        VisibilitySampleCountText = Sts2PoolFilter.DefaultVisibilitySamples.ToString(CultureInfo.InvariantCulture);
         HighProbabilityRelicFilterChips.Clear();
         ShopCardFilterChips.Clear();
         ShopRelicFilterChips.Clear();
@@ -2596,7 +3405,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         var normalizedRollCount = NormalizeRollCount(config.RollCount, SelectedSeedMode);
         RollCount = normalizedRollCount.ToString(CultureInfo.InvariantCulture);
         SeedStep = Math.Clamp(config.SeedStep, 1, MaxSeedStep).ToString(CultureInfo.InvariantCulture);
-        FilterRelicTerms = string.Join(", ", config.RelicTerms != null ? config.RelicTerms : Array.Empty<string>());
+        FilterRelicTerms = string.Empty;
 
         if (!string.IsNullOrWhiteSpace(config.Character) &&
             Enum.TryParse(config.Character, ignoreCase: true, out CharacterId character))
@@ -2604,13 +3413,23 @@ internal sealed partial class MainWindowViewModel : ObservableObject
             SelectedCharacter = character;
         }
 
+        IncludeAct2 = config.IncludeAct2;
+        IncludeAct3 = config.IncludeAct3;
+        IsDebugModeEnabled = config.IsDebugModeEnabled;
         SelectedAscensionLevel = Math.Clamp(config.Ascension, 0, AscensionOptions[^1]);
         Act2AncientFilter = config.Act2AncientId ?? string.Empty;
         Act3AncientFilter = config.Act3AncientId ?? string.Empty;
         ResetValueChips(Act2OptionFilterChips, config.Act2OptionIds);
         ResetValueChips(Act3OptionFilterChips, config.Act3OptionIds);
-        IncludeAct2 = config.IncludeAct2;
-        IncludeAct3 = config.IncludeAct3;
+        ResetCharacterTaggedChips(Act2SeaGlassCharacterFilterChips, config.Act2SeaGlassOtherCharacterIds, "海玻璃 -> ");
+        RefreshAct2SeaGlassCardCatalog();
+        ResetChips(Act2SeaGlassCardFilterChips, config.Act2SeaGlassCardIds, _act2SeaGlassCardCatalog);
+        Act2SeaGlassCardSeenThresholdPercentText = config.Act2SeaGlassCardSeenThresholdPercent?.ToString("0.##", CultureInfo.InvariantCulture)
+            ?? "50";
+        SeaGlassSampleCountText = Math.Clamp(
+            config.SeaGlassSampleCount.GetValueOrDefault(1000),
+            1,
+            1_000_000).ToString(CultureInfo.InvariantCulture);
         IncludePoolFilter = config.IncludePoolFilter;
         ResetChips(Act1EventPoolFilterChips, config.Act1EventIds, _poolEventCatalog);
         ResetChips(Act2EventPoolFilterChips, config.Act2EventIds, _poolEventCatalog);
@@ -2633,6 +3452,10 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         HighProbabilityEarlyThresholdPercentText = FormatOptionalPercentInput(config.HighProbabilityEarlyThresholdPercent);
         HighProbabilityAverageFirstOpportunityMaxText = FormatOptionalNumberInput(config.HighProbabilityAverageFirstOpportunityMax);
         HighProbabilityMostCommonSourceText = config.HighProbabilityMostCommonSource ?? string.Empty;
+        VisibilitySampleCountText = Math.Clamp(
+            config.VisibilitySamples.GetValueOrDefault(Sts2PoolFilter.DefaultVisibilitySamples),
+            1,
+            MaxVisibilitySampleCount).ToString(CultureInfo.InvariantCulture);
         ResetChips(HighProbabilityRelicFilterChips, highProbabilityRelicIds, _poolRelicCatalog);
         IncludeShop = config.IncludeShop;
         ShopMaxFirstRow = config.ShopMaxFirstRow?.ToString(CultureInfo.InvariantCulture) ?? string.Empty;
@@ -2640,9 +3463,10 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         ResetChips(ShopRelicFilterChips, config.ShopRelicIds, _relicCatalog);
         ResetChips(ShopPotionFilterChips, config.ShopPotionIds, _potionCatalog);
 
-        ResetChips(RelicFilterChips, config.RelicIds, _relicCatalog);
-        ResetChips(CardFilterChips, config.CardIds, _cardCatalog);
-        ResetChips(PotionFilterChips, config.PotionIds, _potionCatalog);
+        RelicFilterChips.Clear();
+        CardFilterChips.Clear();
+        PotionFilterChips.Clear();
+        ResetAct1DerivedBindingConditions(config.Act1DerivedBindings);
     }
 
     private static void ResetChips(
@@ -2687,6 +3511,51 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         }
     }
 
+    private void ResetCharacterTaggedChips(
+        ObservableCollection<FilterChipViewModel> target,
+        IEnumerable<string>? values,
+        string prefix)
+    {
+        target.Clear();
+        if (values == null)
+        {
+            return;
+        }
+
+        foreach (var value in values.Where(v => !string.IsNullOrWhiteSpace(v)))
+        {
+            if (!Enum.TryParse<CharacterId>(value, ignoreCase: true, out var id))
+            {
+                continue;
+            }
+
+            var label = CharacterOptions.FirstOrDefault(option => option.Id == id)?.DisplayName ?? id.ToString();
+            target.Add(new FilterChipViewModel(id.ToString(), $"{prefix}{label}"));
+        }
+    }
+
+    private void ResetAct1DerivedBindingConditions(IEnumerable<Act1DerivedBindingConditionConfig>? conditions)
+    {
+        Act1DerivedBindingConditions.Clear();
+        ClearAct1DerivedBindingEditor();
+        if (conditions == null)
+        {
+            RaisePropertyChanged(nameof(HasAct1DerivedBindingConditions));
+            return;
+        }
+
+        foreach (var condition in conditions)
+        {
+            var viewModel = condition.ToViewModel();
+            if (viewModel != null)
+            {
+                Act1DerivedBindingConditions.Add(viewModel);
+            }
+        }
+
+        RaisePropertyChanged(nameof(HasAct1DerivedBindingConditions));
+    }
+
     private async Task SaveConfigAsync()
     {
         await SaveConfigToFileAsync(_configFilePath);
@@ -2706,6 +3575,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
                 SeedStep = ParseIntOrDefault(SeedStep, 1),
                 Character = SelectedCharacter.ToString(),
                 Ascension = SelectedAscensionLevel,
+                IsDebugModeEnabled = IsDebugModeEnabled,
                 IncludeAct2 = IncludeAct2,
                 IncludeAct3 = IncludeAct3,
                 IncludePoolFilter = IncludePoolFilter,
@@ -2723,6 +3593,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
                 HighProbabilityEarlyThresholdPercent = GetOptionalThresholdPercent(HighProbabilityEarlyThresholdPercentText) * 100d,
                 HighProbabilityAverageFirstOpportunityMax = GetOptionalPositiveDouble(HighProbabilityAverageFirstOpportunityMaxText),
                 HighProbabilityMostCommonSource = GetHighProbabilityMostCommonSource()?.ToString(),
+                VisibilitySamples = GetVisibilitySampleCount(),
                 HighProbabilityRelicIds = HighProbabilityRelicFilterChips.Select(chip => chip.Value).ToList(),
                 IncludeShop = IncludeShop,
                 ShopMaxFirstRow = ParsePositiveIntOrNull(ShopMaxFirstRow),
@@ -2733,10 +3604,15 @@ internal sealed partial class MainWindowViewModel : ObservableObject
                 Act3AncientId = Act3AncientFilter,
                 Act2OptionIds = Act2OptionFilterChips.Select(chip => chip.Value).ToList(),
                 Act3OptionIds = Act3OptionFilterChips.Select(chip => chip.Value).ToList(),
-                RelicIds = RelicFilterChips.Select(chip => chip.Value).ToList(),
-                RelicTerms = SplitTerms(FilterRelicTerms).ToList(),
-                CardIds = CardFilterChips.Select(chip => chip.Value).ToList(),
-                PotionIds = PotionFilterChips.Select(chip => chip.Value).ToList(),
+                Act2SeaGlassOtherCharacterIds = Act2SeaGlassCharacterFilterChips.Select(chip => chip.Value).ToList(),
+                Act2SeaGlassCardIds = Act2SeaGlassCardFilterChips.Select(chip => chip.Value).ToList(),
+                Act2SeaGlassCardSeenThresholdPercent = GetOptionalThresholdPercent(Act2SeaGlassCardSeenThresholdPercentText) * 100d,
+                SeaGlassSampleCount = GetSeaGlassSampleCount(),
+                RelicIds = new List<string>(),
+                RelicTerms = new List<string>(),
+                CardIds = new List<string>(),
+                PotionIds = new List<string>(),
+                Act1DerivedBindings = Act1DerivedBindingConditions.Select(Act1DerivedBindingConditionConfig.FromViewModel).ToList(),
                 StopOnFirstMatch = SelectedSeedMode == SeedRollMode.RandomUntilHit
             };
 
@@ -2812,7 +3688,15 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         }
     }
 
-    private void LogInfo(string message) => AddLog("信息", message);
+    private void LogInfo(string message)
+    {
+        if (!IsDebugModeEnabled)
+        {
+            return;
+        }
+
+        AddLog("信息", message);
+    }
 
     private void LogWarn(string message) => AddLog("警告", message);
 
@@ -2866,6 +3750,11 @@ internal sealed partial class MainWindowViewModel : ObservableObject
 
     private void TryAppendLogFile(LogEntryViewModel entry)
     {
+        if (!IsDebugModeEnabled)
+        {
+            return;
+        }
+
         try
         {
             File.AppendAllText(
@@ -2957,6 +3846,8 @@ internal sealed partial class MainWindowViewModel : ObservableObject
 
     private sealed record RollHit(int Index, RollResultViewModel Result, int OptionCount);
 
+    private sealed record RollProcessResult(RollHit? Hit, SeedRunDiagnostics? Diagnostics);
+
     private sealed class RollAggregationState
     {
         public int TotalScanned;
@@ -2965,6 +3856,16 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         public int MinIndex = int.MaxValue;
         public int MaxIndex = -1;
         public int CancellationFlag;
+        public long DiagnosticSampleCount;
+        public long TotalElapsedMilliseconds;
+        public long NeowElapsedMilliseconds;
+        public long AncientElapsedMilliseconds;
+        public long PoolAnalysisElapsedMilliseconds;
+        public long EventTargetedMatchElapsedMilliseconds;
+        public long RelicTargetedMatchElapsedMilliseconds;
+        public long ShopElapsedMilliseconds;
+        public long FinalEventAnalysisElapsedMilliseconds;
+        public long FinalRelicAnalysisElapsedMilliseconds;
     }
 
     internal sealed record RollExecutionResult(
@@ -3037,6 +3938,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         private readonly int _ascensionLevel;
         private readonly bool _requireAct2Match;
         private readonly bool _requireAct3Match;
+        private readonly Action<string>? _logInfo;
 
         public RollWorkerState(
             NeowOptionDataset dataset,
@@ -3050,7 +3952,8 @@ internal sealed partial class MainWindowViewModel : ObservableObject
             bool includeAct3,
             int ascensionLevel,
             bool requireAct2Match,
-            bool requireAct3Match)
+            bool requireAct3Match,
+            Action<string>? logInfo = null)
         {
             _dataset = dataset;
             _evaluator = new SeedRunEvaluator(dataset, previewer);
@@ -3065,9 +3968,10 @@ internal sealed partial class MainWindowViewModel : ObservableObject
             _ascensionLevel = ascensionLevel;
             _requireAct2Match = requireAct2Match;
             _requireAct3Match = requireAct3Match;
+            _logInfo = logInfo;
         }
 
-        public RollHit? Process(SeedWorkItem workItem)
+        public RollProcessResult Process(SeedWorkItem workItem)
         {
             var runContext = new SeedRunEvaluationContext
             {
@@ -3086,7 +3990,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
             var match = _evaluator.Evaluate(runContext, _filter);
             if (!match.IsFinalMatch)
             {
-                return null;
+                return new RollProcessResult(null, match.Diagnostics);
             }
 
             var displayNeow = _filter.NeowFilter.HasCriteria ? match.NeowMatches : match.NeowOptions;
@@ -3104,10 +4008,12 @@ internal sealed partial class MainWindowViewModel : ObservableObject
                     UnlockedCharacters = _unlockedCharacters,
                     AscensionLevel = _ascensionLevel,
                     PlayerCount = 1,
+                    Samples = _filter.PoolFilter.VisibilitySamples,
                     AncientAvailability = _ancientAvailability
                 });
             }
 
+            var viewModelStopwatch = System.Diagnostics.Stopwatch.StartNew();
             var viewModel = new RollResultViewModel(
                 workItem.SeedText,
                 workItem.SeedValue,
@@ -3124,8 +4030,15 @@ internal sealed partial class MainWindowViewModel : ObservableObject
                 _ascensionLevel,
                 match.ShopPreview,
                 match.ShopFilterMatched);
+            viewModelStopwatch.Stop();
 
-            return new RollHit(workItem.Index, viewModel, displayNeow.Count);
+            if (match.Diagnostics != null)
+            {
+                _logInfo?.Invoke(
+                    $"[耗时] Seed={workItem.SeedText} | total={match.Diagnostics.TotalElapsedMilliseconds}ms | neow={match.Diagnostics.NeowElapsedMilliseconds}ms | ancient={match.Diagnostics.AncientElapsedMilliseconds}ms | pools={match.Diagnostics.PoolAnalysisElapsedMilliseconds}ms | eventMatch={match.Diagnostics.EventTargetedMatchElapsedMilliseconds}ms | relicMatch={match.Diagnostics.RelicTargetedMatchElapsedMilliseconds}ms | shop={match.Diagnostics.ShopElapsedMilliseconds}ms | finalEvent={match.Diagnostics.FinalEventAnalysisElapsedMilliseconds}ms | finalRelic={match.Diagnostics.FinalRelicAnalysisElapsedMilliseconds}ms | vm={viewModelStopwatch.ElapsedMilliseconds}ms");
+            }
+
+            return new RollProcessResult(new RollHit(workItem.Index, viewModel, displayNeow.Count), match.Diagnostics);
         }
     }
 
@@ -3164,6 +4077,88 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         public string Label { get; }
 
         public static FilterChipViewModel FromCatalog(CatalogItem item) => new(item.Value, item.Display);
+    }
+
+    internal sealed class Act1DerivedBindingConditionViewModel
+    {
+        public Act1DerivedBindingConditionViewModel(
+            string primarySourceRelicId,
+            string primarySourceLabel,
+            string? secondarySourceRelicId,
+            string? secondarySourceLabel,
+            IReadOnlyList<string> relicIds,
+            IReadOnlyList<string> cardIds,
+            IReadOnlyList<string> potionIds)
+        {
+            Id = Guid.NewGuid().ToString("N");
+            PrimarySourceRelicId = primarySourceRelicId;
+            PrimarySourceLabel = primarySourceLabel;
+            SecondarySourceRelicId = secondarySourceRelicId;
+            SecondarySourceLabel = secondarySourceLabel;
+            RelicIds = relicIds;
+            CardIds = cardIds;
+            PotionIds = potionIds;
+        }
+
+        public string Id { get; }
+
+        public string PrimarySourceRelicId { get; }
+
+        public string PrimarySourceLabel { get; }
+
+        public string? SecondarySourceRelicId { get; }
+
+        public string? SecondarySourceLabel { get; }
+
+        public IReadOnlyList<string> RelicIds { get; }
+
+        public IReadOnlyList<string> CardIds { get; }
+
+        public IReadOnlyList<string> PotionIds { get; }
+
+        public string Summary
+        {
+            get
+            {
+                var chain = string.IsNullOrWhiteSpace(SecondarySourceLabel)
+                    ? PrimarySourceLabel
+                    : $"{PrimarySourceLabel} -> {SecondarySourceLabel}";
+                var parts = new List<string>();
+                if (RelicIds.Count > 0)
+                {
+                    parts.Add($"遗物：{string.Join("、", RelicIds.Select(GetRelicDisplayName))}");
+                }
+
+                if (CardIds.Count > 0)
+                {
+                    parts.Add($"卡牌：{string.Join("、", CardIds.Select(GetCardDisplayName))}");
+                }
+
+                if (PotionIds.Count > 0)
+                {
+                    parts.Add($"药水：{string.Join("、", PotionIds.Select(GetPotionDisplayName))}");
+                }
+
+                return parts.Count == 0 ? chain : $"{chain} -> {string.Join(" | ", parts)}";
+            }
+        }
+
+        public bool IsEquivalentTo(Act1DerivedBindingConditionViewModel other)
+        {
+            return string.Equals(PrimarySourceRelicId, other.PrimarySourceRelicId, StringComparison.OrdinalIgnoreCase) &&
+                   string.Equals(SecondarySourceRelicId ?? string.Empty, other.SecondarySourceRelicId ?? string.Empty, StringComparison.OrdinalIgnoreCase) &&
+                   RelicIds.OrderBy(static id => id, StringComparer.OrdinalIgnoreCase).SequenceEqual(other.RelicIds.OrderBy(static id => id, StringComparer.OrdinalIgnoreCase), StringComparer.OrdinalIgnoreCase) &&
+                   CardIds.OrderBy(static id => id, StringComparer.OrdinalIgnoreCase).SequenceEqual(other.CardIds.OrderBy(static id => id, StringComparer.OrdinalIgnoreCase), StringComparer.OrdinalIgnoreCase) &&
+                   PotionIds.OrderBy(static id => id, StringComparer.OrdinalIgnoreCase).SequenceEqual(other.PotionIds.OrderBy(static id => id, StringComparer.OrdinalIgnoreCase), StringComparer.OrdinalIgnoreCase);
+        }
+
+        public NeowDerivedBindingFilter ToFilter() =>
+            new(
+                PrimarySourceRelicId,
+                SecondarySourceRelicId,
+                RelicIds.ToList(),
+                CardIds.ToList(),
+                PotionIds.ToList());
     }
 
     private sealed class ExportFileModel
@@ -3220,6 +4215,8 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         public string? ModelId { get; init; }
 
         public int? Amount { get; init; }
+
+        public string? SourcePath { get; init; }
     }
 
     private sealed class AncientActExportRecord
@@ -3274,6 +4271,33 @@ internal sealed partial class MainWindowViewModel : ObservableObject
 
     internal sealed record GameVersionOption(string Id, string DisplayName, string Description);
 
+    private static IReadOnlyList<GameVersionOption> BuildGameVersionOptions()
+    {
+        var discoveredVersions = UiDataPathResolver.GetAvailableVersionDirectories();
+        if (discoveredVersions.Count == 0)
+        {
+            return
+            [
+                new GameVersionOption("0.103.2", "v0.103.2", "从源码 C# 文件中解析"),
+                new GameVersionOption("0.99.1", "v0.99.1", "内置数据，数据来源于 seed_info.json 提取")
+            ];
+        }
+
+        return discoveredVersions
+            .Select(version => new GameVersionOption(
+                version,
+                $"v{version}",
+                BuildGameVersionDescription(version)))
+            .ToList();
+    }
+
+    private static string BuildGameVersionDescription(string version)
+    {
+        return string.Equals(version, "0.99.1", StringComparison.OrdinalIgnoreCase)
+            ? "内置数据，数据来源于 seed_info.json 提取"
+            : "版本目录数据";
+    }
+
     internal sealed class AppConfig
     {
         public string? GameVersion { get; init; }
@@ -3292,6 +4316,8 @@ internal sealed partial class MainWindowViewModel : ObservableObject
 
         public int Ascension { get; init; }
 
+        public bool IsDebugModeEnabled { get; init; }
+
         public bool IncludeAct2 { get; init; }
 
         public bool IncludeAct3 { get; init; }
@@ -3305,6 +4331,14 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         public List<string>? Act2OptionIds { get; init; }
 
         public List<string>? Act3OptionIds { get; init; }
+
+        public List<string>? Act2SeaGlassOtherCharacterIds { get; init; }
+
+        public List<string>? Act2SeaGlassCardIds { get; init; }
+
+        public double? Act2SeaGlassCardSeenThresholdPercent { get; init; }
+
+        public int? SeaGlassSampleCount { get; init; }
 
         public List<string>? Act1EventIds { get; init; }
 
@@ -3334,6 +4368,8 @@ internal sealed partial class MainWindowViewModel : ObservableObject
 
         public string? HighProbabilityMostCommonSource { get; init; }
 
+        public int? VisibilitySamples { get; init; }
+
         public List<string>? HighProbabilityRelicIds { get; init; }
 
         // Legacy fields kept for backward compatibility with old configs.
@@ -3359,7 +4395,51 @@ internal sealed partial class MainWindowViewModel : ObservableObject
 
         public List<string>? PotionIds { get; init; }
 
+        public List<Act1DerivedBindingConditionConfig>? Act1DerivedBindings { get; init; }
+
         public bool StopOnFirstMatch { get; init; }
+    }
+
+    internal sealed class Act1DerivedBindingConditionConfig
+    {
+        public string PrimarySourceRelicId { get; init; } = string.Empty;
+
+        public string? SecondarySourceRelicId { get; init; }
+
+        public List<string> RelicIds { get; init; } = new();
+
+        public List<string> CardIds { get; init; } = new();
+
+        public List<string> PotionIds { get; init; } = new();
+
+        public static Act1DerivedBindingConditionConfig FromViewModel(Act1DerivedBindingConditionViewModel viewModel)
+        {
+            return new Act1DerivedBindingConditionConfig
+            {
+                PrimarySourceRelicId = viewModel.PrimarySourceRelicId,
+                SecondarySourceRelicId = viewModel.SecondarySourceRelicId,
+                RelicIds = viewModel.RelicIds.ToList(),
+                CardIds = viewModel.CardIds.ToList(),
+                PotionIds = viewModel.PotionIds.ToList()
+            };
+        }
+
+        public Act1DerivedBindingConditionViewModel? ToViewModel()
+        {
+            if (string.IsNullOrWhiteSpace(PrimarySourceRelicId))
+            {
+                return null;
+            }
+
+            return new Act1DerivedBindingConditionViewModel(
+                PrimarySourceRelicId,
+                GetRelicDisplayName(PrimarySourceRelicId),
+                SecondarySourceRelicId,
+                string.IsNullOrWhiteSpace(SecondarySourceRelicId) ? null : GetRelicDisplayName(SecondarySourceRelicId),
+                RelicIds,
+                CardIds,
+                PotionIds);
+        }
     }
 }
 

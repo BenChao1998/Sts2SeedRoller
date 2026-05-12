@@ -663,7 +663,8 @@ Sts2RunRequest CreateRunRequest(string seedText, CharacterId character)
         AscensionLevel = 10,
         IncludeAct2 = true,
         IncludeAct3 = true,
-        PlayerCount = 1
+        PlayerCount = 1,
+        SeaGlassPreviewSamples = 200
     };
 }
 
@@ -695,13 +696,27 @@ void PrintSeedPreview(string seedText)
 {
     const CharacterId character = CharacterId.Silent;
     var request = CreateRunRequest(seedText, character);
-    var preview = currentPreviewer.Preview(request);
+    using var datasetStream = File.OpenRead(Path.Combine(workspace, "data", "0.103.2", "neow", "options.json"));
+    var dataset = NeowOptionDataLoader.Load(datasetStream);
+    var preview = currentPreviewer.Preview(request, dataset);
 
     Console.WriteLine($"seed={seedText}");
     foreach (var act in preview.Acts.OrderBy(act => act.ActNumber))
     {
         Console.WriteLine(
             $"  Act {act.ActNumber}: {act.AncientId} [{string.Join(", ", act.AncientOptions.Select(option => option.OptionId))}]");
+        foreach (var option in act.AncientOptions.Where(option => option.PreviewCardIds.Count > 0))
+        {
+            Console.WriteLine($"    {option.OptionId} -> {string.Join(", ", option.PreviewCardIds)}");
+            if (option.SeaGlassPreview is { RankedCards.Count: > 0 } previewDetails)
+            {
+                Console.WriteLine($"      samples={previewDetails.Samples}");
+                foreach (var card in previewDetails.RankedCards.Take(8))
+                {
+                    Console.WriteLine($"      {card.CardId}: {card.SeenProbability:P1}");
+                }
+            }
+        }
     }
 }
 
@@ -756,9 +771,10 @@ void PrintSeedPreviewAfterUiSequence(string seedText)
         PlayerCount = 1,
         AncientAvailability = ancientAvailability,
         IncludeAct2 = true,
-        IncludeAct3 = true
+        IncludeAct3 = true,
+        SeaGlassPreviewSamples = 200
     };
-    var preview = currentPreviewer.Preview(previewRequest);
+    var preview = currentPreviewer.Preview(previewRequest, dataset);
 
     Console.WriteLine($"seed={normalizedSeed}");
     Console.WriteLine($"  AnalyzePools acts={string.Join(" | ", analysis.Acts.Select(act => $"Act{act.ActNumber}:{act.ActName}"))}");
@@ -767,6 +783,14 @@ void PrintSeedPreviewAfterUiSequence(string seedText)
     {
         Console.WriteLine(
             $"  Preview Act {act.ActNumber}: {act.AncientId} [{string.Join(", ", act.AncientOptions.Select(option => option.OptionId))}]");
+        foreach (var option in act.AncientOptions.Where(option => option.SeaGlassPreview is { RankedCards.Count: > 0 }))
+        {
+            Console.WriteLine($"    {option.OptionId} sample={option.SeaGlassPreview!.Samples}");
+            foreach (var card in option.SeaGlassPreview.RankedCards.Take(8))
+            {
+                Console.WriteLine($"      {card.CardId}: {card.SeenProbability:P1}");
+            }
+        }
     }
 }
 

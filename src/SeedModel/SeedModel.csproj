@@ -6,5 +6,13 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-</Project>
+  <ItemGroup>
+    <Compile Remove="obj\**\*.cs" />
+    <Compile Remove="artifacts\**\*.cs" />
+    <EmbeddedResource Remove="obj\**" />
+    <EmbeddedResource Remove="artifacts\**" />
+    <None Remove="obj\**" />
+    <None Remove="artifacts\**" />
+  </ItemGroup>
 
+</Project>
