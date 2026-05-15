@@ -266,6 +266,15 @@ internal sealed class NeowRewardPreviewer
             }
         }
 
+        if (string.Equals(relicId, NeowOptionIds.NewLeaf, StringComparison.OrdinalIgnoreCase))
+        {
+            var newLeafDetails = BuildNewLeafPreview(context, character);
+            if (newLeafDetails.Count > 0)
+            {
+                return ApplyDefaultSourcePath(newLeafDetails, relicId);
+            }
+        }
+
         if (string.Equals(relicId, NeowOptionIds.Kaleidoscope, StringComparison.OrdinalIgnoreCase))
         {
             var kaleidoscopeDetails = BuildKaleidoscopePreview(context);
@@ -404,6 +413,32 @@ internal sealed class NeowRewardPreviewer
         AddTransformedDetail(results, TransformCardLabel, basics.DefendId, pool, context.PlayerCount, rng);
 
         return results.Count > 0 ? results : CreateLeafyFallback(basics);
+    }
+
+    private IReadOnlyList<RewardDetail> BuildNewLeafPreview(NeowGenerationContext context, CharacterId character)
+    {
+        var rng = CreateRunRng(context, "niche");
+        return BuildNewLeafPreview(context, character, rng);
+    }
+
+    private IReadOnlyList<RewardDetail> BuildNewLeafPreview(
+        NeowGenerationContext context,
+        CharacterId character,
+        GameRng rng)
+    {
+        if (!BasicCardMap.TryGetValue(character, out var basics))
+        {
+            return Array.Empty<RewardDetail>();
+        }
+
+        if (!_cardPools.TryGetValue(character, out var pool) || pool.Count == 0)
+        {
+            return [CreateCardDetail(TransformCardLabel, basics.StrikeId)];
+        }
+
+        var results = new List<RewardDetail>(1);
+        AddTransformedDetail(results, TransformCardLabel, basics.StrikeId, pool, context.PlayerCount, rng);
+        return results;
     }
 
     private void AddTransformedDetail(
@@ -938,6 +973,10 @@ internal sealed class NeowRewardPreviewer
 
             case NeowOptionIds.LeafyPoultice:
                 details.AddRange(ApplyDefaultSourcePath(BuildLeafyPreview(state.Context, state.Context.Character, state.TransformationsRng), BuildSourcePath(NeowOptionIds.NeowsBones, relicId)));
+                return;
+
+            case NeowOptionIds.NewLeaf:
+                details.AddRange(ApplyDefaultSourcePath(BuildNewLeafPreview(state.Context, state.Context.Character, state.NicheRng), BuildSourcePath(NeowOptionIds.NeowsBones, relicId)));
                 return;
 
             case NeowOptionIds.Kaleidoscope:

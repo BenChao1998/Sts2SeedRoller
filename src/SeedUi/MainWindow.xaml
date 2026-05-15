@@ -63,6 +63,11 @@
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="Border" Property="Background" Value="#F5F5F5"/>
                             </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="Border" Property="Background" Value="Transparent"/>
+                                <Setter TargetName="Icon" Property="Foreground" Value="#B8B8B8"/>
+                                <Setter TargetName="Text" Property="Foreground" Value="#B8B8B8"/>
+                            </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
@@ -163,9 +168,13 @@
                                  Checked="NavLogs_Checked"/>
                     <RadioButton x:Name="NavArchive" Style="{StaticResource NavButtonStyle}"
                                  Content="铺种" Tag="&#xE7C3;"
+                                 IsEnabled="False"
+                                 ToolTip="功能暂未完善，暂时不可用"
                                  Checked="NavArchive_Checked"/>
                     <RadioButton x:Name="NavViewer" Style="{StaticResource NavButtonStyle}"
                                  Content="&#x67E5;&#x770B;&#x5668;" Tag="&#xE8A5;"
+                                 IsEnabled="False"
+                                 ToolTip="功能暂未完善，暂时不可用"
                                  Checked="NavViewer_Checked"/>
                     <RadioButton x:Name="NavEventPools" Style="{StaticResource NavButtonStyle}"
                                  Content="事件池信息" Tag="&#xE8D2;"

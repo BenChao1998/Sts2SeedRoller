@@ -132,6 +132,9 @@ internal static class AncientDisplayCatalog
             }
         }
 
+        AddAncientIfPresent(act2, ancients, "DARV");
+        AddAncientIfPresent(act3, ancients, "DARV");
+
         var act2ReadOnly = act2.AsReadOnly();
         var act3ReadOnly = act3.AsReadOnly();
 
@@ -143,6 +146,24 @@ internal static class AncientDisplayCatalog
         AllowedForAct2 = act2ReadOnly;
         AllowedForAct3 = act3ReadOnly;
         _activeCacheKey = cacheKey;
+    }
+
+    private static void AddAncientIfPresent(
+        List<AncientDisplayOption> target,
+        IReadOnlyDictionary<string, AncientDisplayOption> source,
+        string ancientId)
+    {
+        if (!source.TryGetValue(ancientId, out var option))
+        {
+            return;
+        }
+
+        if (target.Any(existing => string.Equals(existing.Id, ancientId, StringComparison.OrdinalIgnoreCase)))
+        {
+            return;
+        }
+
+        target.Add(option);
     }
 
     private static IReadOnlyDictionary<string, AncientDisplayOption> GetAncientLookup()

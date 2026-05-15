@@ -124,6 +124,14 @@ public sealed class NeowOptionFilter
             return false;
         }
 
+        if (!string.IsNullOrWhiteSpace(filter.SecondarySourceRelicId) &&
+            !option.Details.Any(detail =>
+                detail.Type == RewardDetailType.Relic &&
+                string.Equals(detail.ModelId, filter.SecondarySourceRelicId, Comparison)))
+        {
+            return false;
+        }
+
         var sourcePath = filter.GetSourcePath();
         var scopedDetails = option.Details
             .Where(detail => string.Equals(detail.SourcePath, sourcePath, Comparison))
@@ -424,7 +432,11 @@ public sealed record NeowDerivedBindingFilter(
     IReadOnlyList<string> PotionIds)
 {
     public bool HasCriteria =>
-        !string.IsNullOrWhiteSpace(PrimarySourceRelicId);
+        !string.IsNullOrWhiteSpace(PrimarySourceRelicId) &&
+        (!string.IsNullOrWhiteSpace(SecondarySourceRelicId) ||
+         RelicIds.Count > 0 ||
+         CardIds.Count > 0 ||
+         PotionIds.Count > 0);
 
     public string GetSourcePath() =>
         string.IsNullOrWhiteSpace(SecondarySourceRelicId)
