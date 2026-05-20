@@ -1729,12 +1729,6 @@ internal sealed partial class MainWindowViewModel : ObservableObject
             return;
         }
 
-        if (Act1DerivedBindingCardChips.Any(chip => string.Equals(chip.Value, SelectedAct1DerivedCardItem.Value, StringComparison.OrdinalIgnoreCase)))
-        {
-            LogWarn("该派生卡牌已在当前绑定条件中。");
-            return;
-        }
-
         Act1DerivedBindingCardChips.Add(FilterChipViewModel.FromCatalog(SelectedAct1DerivedCardItem));
         SelectedAct1DerivedCardItem = null;
     }
@@ -1778,7 +1772,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         var primary = SelectedAct1DerivedPrimarySourceItem.Value;
         var secondary = SelectedAct1DerivedSecondarySourceItem?.Value;
         var relicIds = Act1DerivedBindingRelicChips.Select(chip => chip.Value).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
-        var cardIds = Act1DerivedBindingCardChips.Select(chip => chip.Value).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+        var cardIds = Act1DerivedBindingCardChips.Select(chip => chip.Value).ToList();
         var potionIds = Act1DerivedBindingPotionChips.Select(chip => chip.Value).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
         var condition = new Act1DerivedBindingConditionViewModel(
             primary,

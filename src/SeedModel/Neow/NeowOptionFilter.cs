@@ -449,17 +449,23 @@ public sealed record NeowDerivedBindingFilter(
             NormalizeValue(PrimarySourceRelicId) ?? string.Empty,
             NormalizeValue(SecondarySourceRelicId),
             NormalizeList(RelicIds),
-            NormalizeList(CardIds),
+            NormalizeList(CardIds, deduplicate: false),
             NormalizeList(PotionIds));
     }
 
     private static string? NormalizeValue(string? value) =>
         string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
-    private static IReadOnlyList<string> NormalizeList(IReadOnlyList<string> values) =>
-        values
+    private static IReadOnlyList<string> NormalizeList(
+        IReadOnlyList<string> values,
+        bool deduplicate = true)
+    {
+        var normalized = values
             .Where(value => !string.IsNullOrWhiteSpace(value))
             .Select(value => value.Trim())
-            .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToList();
+        return deduplicate
+            ? normalized.Distinct(StringComparer.OrdinalIgnoreCase).ToList()
+            : normalized;
+    }
 }

@@ -804,6 +804,7 @@ internal sealed partial class MainWindowViewModel
             }
 
             var actNameLookup = LoadActNameLookup(SelectedGameVersion.Id);
+            var sharedEventIds = NormalizeActEventIds(model.SharedEvents);
 
             _actEventPoolsByAct = model.Acts
                 .Where(act => act.Number is >= 1 and <= 3)
@@ -811,10 +812,7 @@ internal sealed partial class MainWindowViewModel
                 .ToDictionary(
                     group => group.Key,
                     group => (IReadOnlyList<HashSet<string>>)group
-                        .Select(act => (act.Events ?? Enumerable.Empty<string>())
-                            .Where(eventId => !string.IsNullOrWhiteSpace(eventId))
-                            .Select(ToLocalizationToken)
-                            .ToHashSet(StringComparer.OrdinalIgnoreCase))
+                        .Select(act => MergeActEventIds(act.Events, sharedEventIds))
                         .Where(pool => pool.Count > 0)
                         .ToList());
 
@@ -858,11 +856,16 @@ internal sealed partial class MainWindowViewModel
                 .GroupBy(act => act.Number)
                 .ToDictionary(
                     group => group.Key,
-                    group => group
-                        .SelectMany(act => act.Events ?? Enumerable.Empty<string>())
-                        .Where(eventId => !string.IsNullOrWhiteSpace(eventId))
-                        .Select(ToLocalizationToken)
-                        .ToHashSet(StringComparer.OrdinalIgnoreCase));
+                    group =>
+                    {
+                        var merged = new HashSet<string>(sharedEventIds, StringComparer.OrdinalIgnoreCase);
+                        foreach (var act in group)
+                        {
+                            merged.UnionWith(NormalizeActEventIds(act.Events));
+                        }
+
+                        return merged;
+                    });
         }
         catch (Exception ex)
         {
@@ -891,6 +894,27 @@ internal sealed partial class MainWindowViewModel
         {
             return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
+    }
+
+    private static HashSet<string> NormalizeActEventIds(IEnumerable<string>? eventIds)
+    {
+        return (eventIds ?? Enumerable.Empty<string>())
+            .Where(eventId => !string.IsNullOrWhiteSpace(eventId))
+            .Select(ToLocalizationToken)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+    }
+
+    private static HashSet<string> MergeActEventIds(
+        IEnumerable<string>? eventIds,
+        IEnumerable<string>? sharedEventIds)
+    {
+        var merged = NormalizeActEventIds(eventIds);
+        if (sharedEventIds != null)
+        {
+            merged.UnionWith(sharedEventIds);
+        }
+
+        return merged;
     }
 
     private static string GetActBranchDisplayName(
@@ -1147,6 +1171,9 @@ internal sealed partial class MainWindowViewModel
     {
         [JsonPropertyName("acts")]
         public List<Sts2ActCatalogEntry>? Acts { get; init; }
+
+        [JsonPropertyName("sharedEvents")]
+        public List<string>? SharedEvents { get; init; }
     }
 
     private sealed class Sts2ActCatalogEntry

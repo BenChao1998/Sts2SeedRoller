@@ -174,7 +174,8 @@ internal sealed class Sts2RelicVisibilityAnalyzer
             return true;
         }
 
-        if (actPools != null &&
+        if (request.UseExactRouteCoverage &&
+            actPools != null &&
             ancientPreview != null &&
             filter.HighProbabilitySeenThreshold > 0 &&
             !AllTargetRelicsReachableOnExactRoutes(dataset, request, actPools, ancientPreview, targetRelics))
@@ -201,31 +202,33 @@ internal sealed class Sts2RelicVisibilityAnalyzer
         var rewardModel = RewardSimulationModel.Create(dataset, request.Character, playerCount);
         var ancientMap = BuildAncientActRelicMap(ancientActs);
         var profiles = RouteProfile.All;
-        var profileMatches = new bool[profiles.Count][];
-        Parallel.For(0, profiles.Count, index =>
+        var matchedRelics = new bool[targetRelics.Count];
+        foreach (var profile in profiles)
         {
-            profileMatches[index] = RunTargetedProfileMatches(request, profiles[index], baseline, rewardModel, ancientMap, targetRelics, filter);
-        });
+            var profileMatches = RunTargetedProfileMatches(
+                request,
+                profile,
+                baseline,
+                rewardModel,
+                ancientMap,
+                targetRelics,
+                filter);
 
-        for (var relicIndex = 0; relicIndex < targetRelics.Count; relicIndex++)
-        {
-            var matched = false;
-            for (var profileIndex = 0; profileIndex < profileMatches.Length; profileIndex++)
+            for (var relicIndex = 0; relicIndex < targetRelics.Count; relicIndex++)
             {
-                if (profileMatches[profileIndex][relicIndex])
+                if (profileMatches[relicIndex])
                 {
-                    matched = true;
-                    break;
+                    matchedRelics[relicIndex] = true;
                 }
             }
 
-            if (!matched)
+            if (matchedRelics.All(static matched => matched))
             {
-                return false;
+                return true;
             }
         }
 
-        return true;
+        return matchedRelics.All(static matched => matched);
     }
 
     private bool AllTargetRelicsReachableOnExactRoutes(

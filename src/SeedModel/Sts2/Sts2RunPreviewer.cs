@@ -496,10 +496,14 @@ public sealed class Sts2RunPreviewer
 
         var requiredRelicIds = filter.HighProbabilityRelicIds;
         var needsAncientPreview = requiredRelicIds.Any(relicId => _ancientOptionIds.Contains(relicId));
-        var (ancientActs, rarityMap) = BuildRelicVisibilityInputs(dataset, request, includeAncientPreview: needsAncientPreview);
+        var needsExactRouteCoverage = request.UseExactRouteCoverage && requiredRelicIds.Count > 0;
+        var (ancientActs, rarityMap) = BuildRelicVisibilityInputs(
+            dataset,
+            request,
+            includeAncientPreview: needsAncientPreview || needsExactRouteCoverage);
         IReadOnlyList<Sts2ActPoolPreview>? actPools = null;
         Sts2RunPreview? ancientPreview = null;
-        if (requiredRelicIds.Count > 0)
+        if (needsExactRouteCoverage)
         {
             var ancientAvailability = request.ResolveAncientAvailability();
             var upFrontRng = new GameRng(request.SeedValue, "up_front");
