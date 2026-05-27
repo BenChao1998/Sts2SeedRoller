@@ -28,7 +28,8 @@ internal sealed class Sts2RelicShufflePrimer
         GameRng rng,
         CharacterId character,
         int playerCount,
-        Sts2AncientAvailability? availability = null)
+        Sts2AncientAvailability? availability = null,
+        IReadOnlyList<CharacterId>? teamCharacters = null)
     {
         if (rng is null)
         {
@@ -38,16 +39,19 @@ internal sealed class Sts2RelicShufflePrimer
         availability ??= Sts2AncientAvailability.Default;
         var sharedSequence = _pools.GetSharedSequence(availability);
         var combined = _pools.GetCombinedSequence(character, availability);
+        var team = ResolveTeamCharacters(character, playerCount, teamCharacters);
 
         // Save-backed replay shows the game shuffles the full shared bag first,
         // then immediately shuffles the player's tracked gameplay rarities
         // (Common/Uncommon/Rare/Shop) without an extra up_front sample between
         // the two steps.
         ShuffleBag(rng, sharedSequence, trackedOnly: false);
-        var players = Math.Max(1, playerCount);
-        for (var i = 0; i < players; i++)
+        foreach (var teamCharacter in team)
         {
-            ShuffleBag(rng, combined, trackedOnly: true);
+            var playerCombined = teamCharacter == character
+                ? combined
+                : _pools.GetCombinedSequence(teamCharacter, availability);
+            ShuffleBag(rng, playerCombined, trackedOnly: true);
         }
     }
 
@@ -55,7 +59,8 @@ internal sealed class Sts2RelicShufflePrimer
         GameRng rng,
         CharacterId character,
         int playerCount,
-        Sts2AncientAvailability? availability = null)
+        Sts2AncientAvailability? availability = null,
+        IReadOnlyList<CharacterId>? teamCharacters = null)
     {
         if (rng is null)
         {
@@ -65,13 +70,16 @@ internal sealed class Sts2RelicShufflePrimer
         availability ??= Sts2AncientAvailability.Default;
         var sharedSequence = _pools.GetSharedSequence(availability);
         var combined = _pools.GetCombinedSequence(character, availability);
+        var team = ResolveTeamCharacters(character, playerCount, teamCharacters);
 
         var sharedPools = ShuffleBagAndCapture(rng, sharedSequence, trackedOnly: false);
         var playerPools = Array.Empty<Sts2RelicPoolPreviewGroup>();
-        var players = Math.Max(1, playerCount);
-        for (var i = 0; i < players; i++)
+        foreach (var teamCharacter in team)
         {
-            playerPools = ShuffleBagAndCapture(rng, combined, trackedOnly: true).ToArray();
+            var playerCombined = teamCharacter == character
+                ? combined
+                : _pools.GetCombinedSequence(teamCharacter, availability);
+            playerPools = ShuffleBagAndCapture(rng, playerCombined, trackedOnly: true).ToArray();
         }
 
         return new RelicPoolPreviewResult(sharedPools, playerPools);
@@ -88,6 +96,21 @@ internal sealed class Sts2RelicShufflePrimer
 
             rng.Shuffle(list);
         }
+    }
+
+    private static IReadOnlyList<CharacterId> ResolveTeamCharacters(
+        CharacterId selectedCharacter,
+        int playerCount,
+        IReadOnlyList<CharacterId>? teamCharacters)
+    {
+        if (teamCharacters is { Count: > 0 })
+        {
+            return teamCharacters;
+        }
+
+        return Enumerable
+            .Repeat(selectedCharacter, Math.Max(1, playerCount))
+            .ToArray();
     }
 
     private IReadOnlyList<Sts2RelicPoolPreviewGroup> ShuffleBagAndCapture(

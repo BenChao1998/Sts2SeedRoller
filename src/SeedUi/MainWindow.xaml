@@ -23,6 +23,10 @@
     <hc:Window.Resources>
         <BooleanToVisibilityConverter x:Key="BooleanVisibilityConverter"/>
 
+        <Style TargetType="ComboBox">
+            <EventSetter Event="PreviewMouseWheel" Handler="ComboBox_PreviewMouseWheel"/>
+        </Style>
+
         <!-- 导航按钮样式 -->
         <Style x:Key="NavButtonStyle" TargetType="RadioButton">
             <Setter Property="Height" Value="48"/>
@@ -159,6 +163,8 @@
                                  Checked="NavConfig_Checked"/>
                     <RadioButton x:Name="NavSeedAnalysis" Style="{StaticResource NavButtonStyle}"
                                  Content="种子分析" Tag="&#xE8B7;"
+                                 IsEnabled="False"
+                                 ToolTip="功能暂未完善，暂时不可用"
                                  Checked="NavSeedAnalysis_Checked"/>
                     <RadioButton x:Name="NavResult" Style="{StaticResource NavButtonStyle}"
                                  Content="运行结果" Tag="&#xE9D2;"
@@ -237,6 +243,24 @@
                                     <ComboBox ItemsSource="{Binding GameVersionOptions}" DisplayMemberPath="DisplayName"
                                               SelectedItem="{Binding SelectedGameVersion}" Margin="0 0 0 12" MinHeight="25" VerticalContentAlignment="Center"/>
                                     <TextBlock Text="{Binding SelectedGameVersionStatusText}" FontSize="12" Foreground="#999" Margin="0 0 0 4"/>
+
+                                    <Border Background="#F7F9FC" BorderBrush="#DCE5EF" BorderThickness="1" CornerRadius="6" Padding="10" Margin="0 14 0 0">
+                                        <StackPanel>
+                                            <TextBlock Text="存档进度（progress.save）" FontSize="13" FontWeight="SemiBold" Foreground="#333" Margin="0 0 0 6"/>
+                                            <TextBlock Text="{Binding ProgressSaveLoadStatus}" FontSize="12" FontWeight="SemiBold" Foreground="#8A5A00" TextWrapping="Wrap"/>
+                                            <TextBlock Text="影响古神、事件池、Underdocks 与解锁内容；档案不一致会导致 roll 结果不同。"
+                                                       FontSize="12" Foreground="#666" TextWrapping="Wrap" Margin="0 6 0 0"/>
+                                            <TextBlock Text="{Binding ProgressSavePathText}"
+                                                       FontSize="12" Foreground="#666" TextTrimming="CharacterEllipsis" Margin="0 6 0 0"
+                                                       ToolTip="{Binding ProgressSaveSummary}"/>
+                                            <Button Content="选择其他 progress.save"
+                                                    Click="OnSelectProgressSave"
+                                                    Style="{StaticResource ButtonDefault}"
+                                                    HorizontalAlignment="Left"
+                                                    Padding="10 4"
+                                                    Margin="0 8 0 0"/>
+                                        </StackPanel>
+                                    </Border>
                                 </StackPanel>
                             </Border>
 
@@ -433,8 +457,8 @@
                                 <StackPanel>
                                     <StackPanel Orientation="Horizontal" Margin="0 0 0 16">
                                         <TextBlock Text="&#x79CD;&#x5B50;&#x5206;&#x6790;&#x7B5B;&#x9009;" FontSize="16" FontWeight="SemiBold" Foreground="#333"/>
-                                        <CheckBox IsChecked="{Binding IncludePoolFilter}" Content="启用" Margin="16 0 0 0" VerticalAlignment="Center"/>
-                                        <TextBlock Text="&#x57FA;&#x4E8E;&#x201C;&#x79CD;&#x5B50;&#x5206;&#x6790;&#x201D;&#x91CC;&#x7684;&#x4E8B;&#x4EF6;&#x6C60;&#x548C;&#x9057;&#x7269;&#x6982;&#x7387;&#x9884;&#x89C8;&#x6765;&#x8FDB;&#x884C;&#x547D;&#x4E2D;&#x7B5B;&#x9009;&#x3002;" FontSize="11" Foreground="#888" Margin="8 0 0 0" VerticalAlignment="Center" TextWrapping="Wrap" MaxWidth="300"/>
+                                        <CheckBox IsChecked="{Binding IncludePoolFilter}" IsEnabled="False" Content="启用" Margin="16 0 0 0" VerticalAlignment="Center" ToolTip="功能暂不稳定，暂时不可用"/>
+                                        <TextBlock Text="功能暂不稳定，暂时不可用。" FontSize="11" Foreground="#888" Margin="8 0 0 0" VerticalAlignment="Center" TextWrapping="Wrap" MaxWidth="300"/>
                                     </StackPanel>
 
                                     <TextBlock Text="{Binding PoolFilterSummary}" Foreground="#666" TextWrapping="Wrap" Margin="0 0 0 16"/>
@@ -1011,8 +1035,8 @@
                                 <StackPanel>
                                     <StackPanel Orientation="Horizontal" Margin="0 0 0 16">
                                         <TextBlock Text="&#x5546;&#x5E97;&#x7B5B;&#x9009;" FontSize="16" FontWeight="SemiBold" Foreground="#333"/>
-                                        <CheckBox IsChecked="{Binding IncludeShop}" Content="启用" Margin="16 0 0 0" VerticalAlignment="Center"/>
-                                        <TextBlock Text="模拟第一幕商店，筛选卡牌、遗物和药水" FontSize="11" Foreground="#888" Margin="8 0 0 0" VerticalAlignment="Center" TextWrapping="Wrap" MaxWidth="300"/>
+                                        <CheckBox IsChecked="{Binding IncludeShop}" IsEnabled="False" Content="启用" Margin="16 0 0 0" VerticalAlignment="Center" ToolTip="功能暂不稳定，暂时不可用"/>
+                                        <TextBlock Text="功能暂不稳定，暂时不可用。" FontSize="11" Foreground="#888" Margin="8 0 0 0" VerticalAlignment="Center" TextWrapping="Wrap" MaxWidth="300"/>
                                     </StackPanel>
 
                                     <StackPanel IsEnabled="{Binding IncludeShop}">
@@ -1260,11 +1284,83 @@
                         <Border Style="{StaticResource CardStyle}">
                             <StackPanel>
                                 <TextBlock Text="事件池信息" FontSize="16" FontWeight="SemiBold" Foreground="#333" Margin="0 0 0 8"/>
-                                <TextBlock Text="这里展示游戏内所有分幕事件池，以及每个池中可能出现的事件。悬浮事件名可查看说明和选项。"
+                                <TextBlock Text="百科口径：按全解锁状态展示。每幕实际事件池 = 本幕事件 + 全局共享事件；悬浮事件名可查看说明和选项。"
                                            FontSize="12"
                                            Foreground="#666"
                                            TextWrapping="Wrap"
                                            Margin="0 0 0 16"/>
+                                <Border Background="#FAFAFA"
+                                        BorderBrush="#E8E8E8"
+                                        BorderThickness="1"
+                                        CornerRadius="6"
+                                        Padding="14"
+                                        Margin="0 0 0 12"
+                                        Visibility="{Binding HasEventPoolCatalogSharedEvents, Converter={StaticResource BooleanVisibilityConverter}}">
+                                    <StackPanel>
+                                        <StackPanel Orientation="Horizontal" Margin="0 0 0 6">
+                                            <TextBlock Text="全局共享事件" FontSize="14" FontWeight="SemiBold" Foreground="#1976D2"/>
+                                            <Border Background="#E3F2FD" CornerRadius="4" Padding="6 2" Margin="10 0 0 0">
+                                                <TextBlock Text="{Binding EventPoolCatalogSharedEventCountText}" FontSize="11" Foreground="#1976D2"/>
+                                            </Border>
+                                        </StackPanel>
+                                        <TextBlock Text="这些事件会加入每一幕的事件池。"
+                                                   FontSize="11"
+                                                   Foreground="#8A5A00"
+                                                   Margin="0 0 0 10"/>
+                                        <ItemsControl ItemsSource="{Binding EventPoolCatalogSharedEvents}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border Padding="0 4 0 4">
+                                                        <StackPanel>
+                                                            <TextBlock Style="{StaticResource PoolResultEventNameStyle}">
+                                                                <Run Text="{Binding Title, Mode=OneWay}"/>
+                                                                <TextBlock.ToolTip>
+                                                                    <ToolTip Style="{StaticResource PoolResultTooltipStyle}"
+                                                                             Visibility="{Binding HasTooltipContent, Converter={StaticResource BooleanVisibilityConverter}}">
+                                                                        <StackPanel MaxWidth="420">
+                                                                            <TextBlock Text="{Binding Description, Mode=OneWay}"
+                                                                                       TextWrapping="Wrap"
+                                                                                       Foreground="#3E2B00"
+                                                                                       Visibility="{Binding HasDescription, Converter={StaticResource BooleanVisibilityConverter}}"/>
+                                                                            <Border Height="1"
+                                                                                    Margin="0 8 0 8"
+                                                                                    Background="#C8A24A"
+                                                                                    Visibility="{Binding HasDescriptionAndOptions, Converter={StaticResource BooleanVisibilityConverter}}"/>
+                                                                            <StackPanel Visibility="{Binding HasOptions, Converter={StaticResource BooleanVisibilityConverter}}">
+                                                                                <TextBlock Text="可选项"
+                                                                                           Foreground="#6A4700"
+                                                                                           FontWeight="SemiBold"
+                                                                                           Margin="0 0 0 6"/>
+                                                                                <ItemsControl ItemsSource="{Binding Options}">
+                                                                                    <ItemsControl.ItemTemplate>
+                                                                                        <DataTemplate>
+                                                                                            <Border Padding="0 0 0 8">
+                                                                                                <StackPanel>
+                                                                                                    <TextBlock Text="{Binding Title, Mode=OneWay}"
+                                                                                                               FontWeight="SemiBold"
+                                                                                                               Foreground="#3E2B00"
+                                                                                                               TextWrapping="Wrap"/>
+                                                                                                    <TextBlock Text="{Binding Description, Mode=OneWay}"
+                                                                                                               Margin="0 2 0 0"
+                                                                                                               Foreground="#5A4300"
+                                                                                                               TextWrapping="Wrap"/>
+                                                                                                </StackPanel>
+                                                                                            </Border>
+                                                                                        </DataTemplate>
+                                                                                    </ItemsControl.ItemTemplate>
+                                                                                </ItemsControl>
+                                                                            </StackPanel>
+                                                                        </StackPanel>
+                                                                    </ToolTip>
+                                                                </TextBlock.ToolTip>
+                                                            </TextBlock>
+                                                        </StackPanel>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+                                </Border>
                                 <ItemsControl ItemsSource="{Binding EventPoolCatalogActs}">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>

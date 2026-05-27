@@ -18,7 +18,6 @@ internal sealed class NeowRewardPreviewer
             [CharacterId.Regent] = ("STRIKE_REGENT", "DEFEND_REGENT")
         };
 
-    private const uint DefaultPlayerNetId = 1;
     private const string TransformationsSalt = "transformations";
     private const string PlayerRewardsSalt = "rewards";
     private const string CardRewardLabel = "\u5361\u724c\u5956\u52b1";
@@ -388,7 +387,7 @@ internal sealed class NeowRewardPreviewer
 
     private IReadOnlyList<RewardDetail> BuildLeafyPreview(NeowGenerationContext context, CharacterId character)
     {
-        var rngSeed = unchecked(context.RunSeed + DefaultPlayerNetId);
+        var rngSeed = unchecked((uint)((ulong)context.RunSeed + context.PlayerNetId));
         var rng = new GameRng(rngSeed, TransformationsSalt);
         return BuildLeafyPreview(context, character, rng);
     }
@@ -905,7 +904,7 @@ internal sealed class NeowRewardPreviewer
         {
             Context = context,
             RewardsRng = CreatePlayerRewardsRng(context),
-            TransformationsRng = new GameRng(unchecked(context.RunSeed + DefaultPlayerNetId), TransformationsSalt),
+            TransformationsRng = new GameRng(unchecked((uint)((ulong)context.RunSeed + context.PlayerNetId)), TransformationsSalt),
             CombatPotionGenerationRng = CreateRunRng(context, "combat_potion_generation"),
             NicheRng = CreateRunRng(context, "niche"),
             RelicBag = CreateRelicGrabBag(context)
@@ -1037,7 +1036,7 @@ internal sealed class NeowRewardPreviewer
 
     private GameRng CreatePlayerRewardsRng(NeowGenerationContext context)
     {
-        var seed = unchecked(context.RunSeed + DefaultPlayerNetId);
+        var seed = unchecked((uint)((ulong)context.RunSeed + context.PlayerNetId));
         return new GameRng(seed, PlayerRewardsSalt);
     }
 

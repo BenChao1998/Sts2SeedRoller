@@ -9,10 +9,9 @@ namespace SeedUi.ViewModels;
 
 internal static class UiAncientAvailabilityResolver
 {
-    public static ResolvedAncientAvailabilityResult Resolve()
+    public static ResolvedAncientAvailabilityResult Resolve(string? preferredProgressSavePath = null)
     {
-        var candidatePath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "progress.save"));
-        if (File.Exists(candidatePath))
+        foreach (var candidatePath in EnumerateProgressSaveCandidates(preferredProgressSavePath))
         {
             try
             {
@@ -25,7 +24,7 @@ internal static class UiAncientAvailabilityResolver
                     candidatePath,
                     UsedProgressSave: false,
                     RevealedEpochIds: Array.Empty<string>(),
-                    $"读取软件根目录下的 progress.save 失败，已回退为默认全解锁古神规则：{ex.Message}");
+                    $"读取 progress.save 失败，已回退为默认全解锁古神规则：路径={candidatePath}，错误={ex.Message}");
             }
         }
 
@@ -34,7 +33,64 @@ internal static class UiAncientAvailabilityResolver
             ProgressSavePath: null,
             UsedProgressSave: false,
             RevealedEpochIds: Array.Empty<string>(),
-            "未在软件根目录找到 progress.save，已回退为默认全解锁古神规则（包含 DARV / OROBAS）。");
+            "未找到 progress.save，已回退为默认全解锁古神规则（包含 DARV / OROBAS）。");
+    }
+
+    private static IEnumerable<string> EnumerateProgressSaveCandidates(string? preferredProgressSavePath)
+    {
+        if (!string.IsNullOrWhiteSpace(preferredProgressSavePath))
+        {
+            yield return Path.GetFullPath(preferredProgressSavePath);
+            yield break;
+        }
+
+        var localOverride = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "progress.save"));
+        if (File.Exists(localOverride))
+        {
+            yield return localOverride;
+        }
+
+        var appData = Environment.GetEnvironmentVariable("APPDATA");
+        if (string.IsNullOrWhiteSpace(appData))
+        {
+            appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+        }
+
+        if (string.IsNullOrWhiteSpace(appData))
+        {
+            yield break;
+        }
+
+        var root = Path.Combine(appData, "SlayTheSpire2");
+        if (!Directory.Exists(root))
+        {
+            yield break;
+        }
+
+        IEnumerable<string> candidates;
+        try
+        {
+            candidates = Directory.EnumerateFiles(root, "progress.save", SearchOption.AllDirectories)
+                .Where(path => path.EndsWith(
+                    Path.Combine("saves", "progress.save"),
+                    StringComparison.OrdinalIgnoreCase))
+                .OrderBy(path => path.Contains(
+                    $"{Path.DirectorySeparatorChar}modded{Path.DirectorySeparatorChar}",
+                    StringComparison.OrdinalIgnoreCase)
+                    ? 1
+                    : 0)
+                .ThenByDescending(File.GetLastWriteTimeUtc)
+                .ToList();
+        }
+        catch
+        {
+            yield break;
+        }
+
+        foreach (var candidate in candidates)
+        {
+            yield return candidate;
+        }
     }
 
     private static ResolvedAncientAvailabilityResult LoadFromProgressSave(string path)
@@ -50,7 +106,7 @@ internal static class UiAncientAvailabilityResolver
             path,
             UsedProgressSave: true,
             revealedEpochIds,
-            $"已从软件根目录的 progress.save 读取古神解锁：路径={path}，已识别纪元=[{string.Join(", ", revealedEpochIds)}]");
+            $"已从 progress.save 读取古神解锁：路径={path}，已识别纪元=[{string.Join(", ", revealedEpochIds)}]");
     }
 
     private static IReadOnlyList<string> ReadRevealedEpochIds(JsonElement root)

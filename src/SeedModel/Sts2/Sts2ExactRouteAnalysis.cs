@@ -12,9 +12,13 @@ public sealed class Sts2ExactRouteAnalysisRequest
 
     public IReadOnlyList<CharacterId>? UnlockedCharacters { get; init; }
 
+    public IReadOnlyList<CharacterId>? TeamCharacters { get; init; }
+
     public int AscensionLevel { get; init; }
 
     public int PlayerCount { get; init; } = 1;
+
+    public ulong PlayerNetId { get; init; } = NeowGenerationContext.DefaultPlayerNetId;
 
     public Sts2AncientAvailability? AncientAvailability { get; init; }
 

@@ -1,34 +1,35 @@
 .vs/
-Slay the Spire 2/
-Slay the Spire 2/**
-Slay the Spire 2 版本0.99.1源码（游戏源码，读取用）/
-Slay the Spire 2 版本0.99.1源码（游戏源码，读取用）/**
-Slay the Spire 2 版本0.103.2源码（游戏源码，读取用）/
-Slay the Spire 2 版本0.103.2源码（游戏源码，读取用）/**
-Slay the Spire 2 版本0.105.1源码（游戏源码，读取用）/
-Slay the Spire 2 版本0.105.1源码（游戏源码，读取用）/**
-临时回收站/
-临时回收站/**
-存档/
-存档/**
-artifacts/
-scratch/**/bin/
-scratch/**/obj/
-src/**/logs/
-src/**/results/
-src/**/bin/Debug/
+.vscode/
 *.user
 *.suo
+
+# Build outputs
 bin/
 obj/
 **/bin/
 **/obj/
+src/**/logs/
+src/**/results/
 
-# Local temporary comparison/probe files
-/temp_compare*.cs
+# Local game source dumps
+/Slay the Spire 2*/
+
+# Local saves and recycled scratch folders
+/存档/
+/临时回收站/
+
+# Local generated artifacts and probes
+/artifacts/
+**/artifacts/
+/.codex_tmp/
+/.deepseek/
 /tmp/
+/temp_compare*.cs
 
 # Ad-hoc scratch outputs and one-off scripts
+/scratch/
+/scratch/**/bin/
+/scratch/**/obj/
 /scratch/tmp_*
 /scratch/*probe_output.txt
 /scratch/*.txt

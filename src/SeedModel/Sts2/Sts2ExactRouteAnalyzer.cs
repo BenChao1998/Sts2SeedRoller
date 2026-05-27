@@ -106,7 +106,9 @@ internal sealed class Sts2ExactRouteAnalyzer
             RunSeed = request.SeedValue,
             Character = request.Character,
             UnlockedCharacters = unlockedCharacters,
+            TeamCharacters = request.TeamCharacters,
             PlayerCount = request.PlayerCount,
+            PlayerNetId = request.PlayerNetId,
             AscensionLevel = request.AscensionLevel,
             AncientAvailability = request.AncientAvailability,
             IncludeDarvSharedAncient = request.IncludeDarvSharedAncient
@@ -190,8 +192,10 @@ internal sealed class Sts2ExactRouteAnalyzer
             SeedValue = request.SeedValue,
             Character = request.Character,
             UnlockedCharacters = request.UnlockedCharacters,
+            TeamCharacters = request.TeamCharacters,
             AscensionLevel = request.AscensionLevel,
             PlayerCount = request.PlayerCount,
+            PlayerNetId = request.PlayerNetId,
             AncientAvailability = request.AncientAvailability,
             IncludeDarvSharedAncient = request.IncludeDarvSharedAncient,
             ShopStrategy = Sts2ExactRouteShopStrategy.NoPurchase,
@@ -208,7 +212,9 @@ internal sealed class Sts2ExactRouteAnalyzer
             RunSeed = request.SeedValue,
             Character = request.Character,
             UnlockedCharacters = unlockedCharacters,
+            TeamCharacters = request.TeamCharacters,
             PlayerCount = request.PlayerCount,
+            PlayerNetId = request.PlayerNetId,
             AscensionLevel = request.AscensionLevel,
             AncientAvailability = request.AncientAvailability,
             IncludeDarvSharedAncient = request.IncludeDarvSharedAncient
@@ -1771,11 +1777,21 @@ internal sealed class Sts2ExactRouteAnalyzer
             var upFrontRng = new GameRng(_request.SeedValue, "up_front");
 
             var sharedSequence = _pools.GetSharedSequence(ancientAvailability);
-            var playerSequence = _pools.GetCombinedSequence(_request.Character, ancientAvailability);
             var sharedBag = RelicBag.Create(sharedSequence, _rarityMap, upFrontRng, trackedOnly: false);
-            var playerBag = RelicBag.Create(playerSequence, _rarityMap, upFrontRng, trackedOnly: true);
+            RelicBag? playerBag = null;
+            foreach (var teamCharacter in ResolveTeamCharacters(_request.Character, _request.PlayerCount, _request.TeamCharacters))
+            {
+                var playerSequence = _pools.GetCombinedSequence(teamCharacter, ancientAvailability);
+                playerBag = RelicBag.Create(playerSequence, _rarityMap, upFrontRng, trackedOnly: true);
+            }
+
+            playerBag ??= RelicBag.Create(
+                _pools.GetCombinedSequence(_request.Character, ancientAvailability),
+                _rarityMap,
+                upFrontRng,
+                trackedOnly: true);
             ApplyPlayerCountRestrictions(sharedBag, playerBag, _request.PlayerCount);
-            var playerSeed = unchecked((uint)GameRng.GetDeterministicHashCode(_request.SeedText) + (uint)Math.Max(1, _request.PlayerCount));
+            var playerSeed = unchecked((uint)((ulong)GameRng.GetDeterministicHashCode(_request.SeedText) + _request.PlayerNetId));
 
             var state = new RewardRelicState(
                 sharedBag,
@@ -1794,6 +1810,21 @@ internal sealed class Sts2ExactRouteAnalyzer
         {
             // Keep the raw bag order intact. Official grab bags lazily filter
             // disallowed relics at pull time instead of removing them up front.
+        }
+
+        private static IReadOnlyList<CharacterId> ResolveTeamCharacters(
+            CharacterId selectedCharacter,
+            int playerCount,
+            IReadOnlyList<CharacterId>? teamCharacters)
+        {
+            if (teamCharacters is { Count: > 0 })
+            {
+                return teamCharacters;
+            }
+
+            return Enumerable
+                .Repeat(selectedCharacter, Math.Max(1, playerCount))
+                .ToArray();
         }
     }
 

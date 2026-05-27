@@ -38,7 +38,8 @@ public sealed class SeedRunEvaluator
             scrollBoxesEligible: context.ScrollBoxesEligible,
             hasRunModifiers: context.HasRunModifiers,
             character: context.Character,
-            ascensionLevel: context.AscensionLevel);
+            ascensionLevel: context.AscensionLevel,
+            playerNetId: context.PlayerNetId);
 
         var neowOptions = _neowGenerator.Generate(neowContext);
         var neowMatches = filter.NeowFilter.HasCriteria
@@ -112,7 +113,9 @@ public sealed class SeedRunEvaluator
                         SeedValue = context.RunSeed,
                         Character = context.Character,
                         UnlockedCharacters = context.UnlockedCharacters,
+                        TeamCharacters = context.TeamCharacters,
                         AscensionLevel = context.AscensionLevel,
+                        PlayerCount = context.PlayerCount,
                         AncientAvailability = context.ResolveAncientAvailability(),
                         IncludeDarvSharedAncient = context.IncludeDarvSharedAncient
                     });
@@ -128,8 +131,10 @@ public sealed class SeedRunEvaluator
                         SeedValue = context.RunSeed,
                         Character = context.Character,
                         UnlockedCharacters = context.UnlockedCharacters,
+                        TeamCharacters = context.TeamCharacters,
                         AscensionLevel = context.AscensionLevel,
                         PlayerCount = context.PlayerCount,
+                        PlayerNetId = context.PlayerNetId,
                         Samples = filter.PoolFilter.VisibilitySamples,
                         AncientAvailability = context.ResolveAncientAvailability(),
                         IncludeDarvSharedAncient = context.IncludeDarvSharedAncient
@@ -151,8 +156,10 @@ public sealed class SeedRunEvaluator
                             SeedValue = context.RunSeed,
                             Character = context.Character,
                             UnlockedCharacters = context.UnlockedCharacters,
+                            TeamCharacters = context.TeamCharacters,
                             AscensionLevel = context.AscensionLevel,
                             PlayerCount = context.PlayerCount,
+                            PlayerNetId = context.PlayerNetId,
                             Samples = filter.PoolFilter.VisibilitySamples,
                             AncientAvailability = context.ResolveAncientAvailability(),
                             IncludeDarvSharedAncient = context.IncludeDarvSharedAncient
@@ -212,8 +219,7 @@ public sealed class SeedRunEvaluator
                 else
                 {
                     // Fallback to the original direct shop simulation when act data is unavailable.
-                    var netId = context.PlayerCount;
-                    var baseSeed = unchecked((uint)GameRng.GetDeterministicHashCode(context.SeedText) + (uint)netId);
+                    var baseSeed = unchecked((uint)GameRng.GetDeterministicHashCode(context.SeedText) + (uint)context.PlayerNetId);
                     var rewardsHash = (uint)GameRng.GetDeterministicHashCode("rewards");
                     var shopsHash = (uint)GameRng.GetDeterministicHashCode("shops");
                     var rewardsSeed = unchecked(baseSeed + rewardsHash);
@@ -257,8 +263,10 @@ public sealed class SeedRunEvaluator
                 SeedValue = context.RunSeed,
                 Character = context.Character,
                 UnlockedCharacters = context.UnlockedCharacters,
+                TeamCharacters = context.TeamCharacters,
                 AscensionLevel = context.AscensionLevel,
                 PlayerCount = context.PlayerCount,
+                PlayerNetId = context.PlayerNetId,
                 Samples = filter.PoolFilter.VisibilitySamples,
                 AncientAvailability = context.ResolveAncientAvailability(),
                 IncludeDarvSharedAncient = context.IncludeDarvSharedAncient
@@ -274,8 +282,10 @@ public sealed class SeedRunEvaluator
                 SeedValue = context.RunSeed,
                 Character = context.Character,
                 UnlockedCharacters = context.UnlockedCharacters,
+                TeamCharacters = context.TeamCharacters,
                 AscensionLevel = context.AscensionLevel,
                 PlayerCount = context.PlayerCount,
+                PlayerNetId = context.PlayerNetId,
                 Samples = filter.PoolFilter.VisibilitySamples,
                 AncientAvailability = context.ResolveAncientAvailability(),
                 IncludeDarvSharedAncient = context.IncludeDarvSharedAncient
@@ -325,7 +335,9 @@ public sealed class SeedRunEvaluator
             SeedText = context.SeedText,
             Character = context.Character,
             UnlockedCharacters = context.UnlockedCharacters,
+            TeamCharacters = context.TeamCharacters,
             PlayerCount = context.PlayerCount,
+            PlayerNetId = context.PlayerNetId,
             AscensionLevel = context.AscensionLevel,
             AncientAvailability = context.ResolveAncientAvailability(),
             IncludeDarvSharedAncient = context.IncludeDarvSharedAncient,

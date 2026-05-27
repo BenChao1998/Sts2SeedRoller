@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
+using System.Windows.Media;
 using SeedUi.ViewModels;
 
 namespace SeedUi;
@@ -75,6 +76,40 @@ public partial class MainWindow : HandyControl.Controls.Window
         e.Handled = true;
     }
 
+    private void ComboBox_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+    {
+        if (sender is not ComboBox comboBox || comboBox.IsDropDownOpen)
+        {
+            return;
+        }
+
+        var scrollViewer = FindAncestor<ScrollViewer>(comboBox);
+        if (scrollViewer == null)
+        {
+            return;
+        }
+
+        scrollViewer.ScrollToVerticalOffset(scrollViewer.VerticalOffset - e.Delta / 3.0);
+        e.Handled = true;
+    }
+
+    private static T? FindAncestor<T>(DependencyObject source)
+        where T : DependencyObject
+    {
+        var current = VisualTreeHelper.GetParent(source);
+        while (current != null)
+        {
+            if (current is T match)
+            {
+                return match;
+            }
+
+            current = VisualTreeHelper.GetParent(current);
+        }
+
+        return null;
+    }
+
     private void NavConfig_Checked(object sender, RoutedEventArgs e) => NavigateToPage(0);
 
     private void NavSeedAnalysis_Checked(object sender, RoutedEventArgs e) => NavigateToPage(1);
@@ -140,6 +175,20 @@ public partial class MainWindow : HandyControl.Controls.Window
         if (dialog.ShowDialog() == true && DataContext is MainWindowViewModel vm)
         {
             await vm.SaveConfigToFileAsync(dialog.FileName);
+        }
+    }
+    private void OnSelectProgressSave(object sender, RoutedEventArgs e)
+    {
+        var dialog = new Microsoft.Win32.OpenFileDialog
+        {
+            Filter = "progress.save|progress.save|\u6240\u6709\u6587\u4ef6 (*.*)|*.*",
+            Title = "\u9009\u62e9 progress.save",
+            FileName = "progress.save"
+        };
+
+        if (dialog.ShowDialog() == true && DataContext is MainWindowViewModel vm)
+        {
+            vm.UseProgressSaveFile(dialog.FileName);
         }
     }
 }

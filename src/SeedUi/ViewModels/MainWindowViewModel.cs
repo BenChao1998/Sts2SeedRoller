@@ -91,6 +91,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
 
     private readonly string _configFilePath = Path.Combine(AppContext.BaseDirectory, "config.json");
     private readonly string _debugLogFilePath = Path.Combine(AppContext.BaseDirectory, "logs", "ui-debug.log");
+    private string? _preferredProgressSavePath;
     private readonly AsyncRelayCommand _rollCommand;
     private readonly RelayCommand _cancelCommand;
     private readonly AsyncRelayCommand _loadDatasetCommand;
@@ -1018,10 +1019,10 @@ internal sealed partial class MainWindowViewModel : ObservableObject
 
     public bool IncludeShop
     {
-        get => _includeShop;
+        get => false;
         set
         {
-            if (SetProperty(ref _includeShop, value))
+            if (SetProperty(ref _includeShop, false))
             {
                 UpdateShopFilterSummary();
             }
@@ -2438,9 +2439,12 @@ internal sealed partial class MainWindowViewModel : ObservableObject
             }
         }
 
-        var orderedHits = hits.OrderBy(static h => h.Index).ToList();
-        var finalResults = orderedHits.Select(static h => h.Result).ToList();
+        var firstHit = hits.OrderBy(static h => h.Index).FirstOrDefault();
+        var finalResults = firstHit == null
+            ? new List<RollResultViewModel>()
+            : new List<RollResultViewModel> { firstHit.Result };
         state.TotalHitSeeds = finalResults.Count;
+        state.TotalHitOptions = firstHit?.OptionCount ?? 0;
         var wasCancelled = Volatile.Read(ref state.CancellationFlag) == 1 && finalResults.Count == 0;
         var summary = BuildSummary(wasCancelled, config.StopOnFirstMatch, state.TotalScanned, finalResults.Count, state.TotalHitOptions);
         var firstSeedText = firstSeed ?? config.InitialSeed;

@@ -56,6 +56,21 @@ internal sealed partial class MainWindowViewModel
         private set => SetProperty(ref _hasProgressSavePath, value);
     }
 
+    public void UseProgressSaveFile(string path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            StatusMessage = "未选择 progress.save。";
+            return;
+        }
+
+        _preferredProgressSavePath = path;
+        RefreshAncientAvailabilityStatus("manual progress.save", shouldLog: true);
+        StatusMessage = IsProgressSaveLoaded
+            ? "已切换 progress.save。"
+            : "progress.save 读取失败，已回退默认进度规则。";
+    }
+
     private Sts2AncientAvailability ResolveEffectiveAncientAvailability(string scenario)
     {
         var resolved = RefreshAncientAvailabilityStatus(scenario, shouldLog: true);
@@ -66,7 +81,7 @@ internal sealed partial class MainWindowViewModel
         string scenario,
         bool shouldLog)
     {
-        var resolved = UiAncientAvailabilityResolver.Resolve();
+        var resolved = UiAncientAvailabilityResolver.Resolve(_preferredProgressSavePath);
         var ruleText = FormatAncientAvailability(resolved.Availability);
 
         IsProgressSaveLoaded = resolved.UsedProgressSave;

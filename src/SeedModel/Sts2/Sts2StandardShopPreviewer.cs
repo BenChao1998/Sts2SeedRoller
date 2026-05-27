@@ -36,7 +36,7 @@ internal sealed class Sts2StandardShopPreviewer
         ArgumentNullException.ThrowIfNull(neowOptions);
         ArgumentNullException.ThrowIfNull(request);
 
-        var playerSeed = unchecked((uint)GameRng.GetDeterministicHashCode(context.SeedText) + (uint)Math.Max(1, context.PlayerCount));
+        var playerSeed = unchecked((uint)((ulong)GameRng.GetDeterministicHashCode(context.SeedText) + context.PlayerNetId));
         var runRng = new RunRngSet(context.RunSeed);
         var ancientAvailability = context.ResolveAncientAvailability();
 
@@ -45,6 +45,7 @@ internal sealed class Sts2StandardShopPreviewer
             _world,
             context.Character,
             context.PlayerCount,
+            context.TeamCharacters,
             context.AscensionLevel,
             ancientAvailability,
             runRng,
@@ -973,6 +974,7 @@ internal sealed class Sts2StandardShopPreviewer
             Sts2WorldData world,
             CharacterId character,
             int playerCount,
+            IReadOnlyList<CharacterId>? teamCharacters,
             int ascensionLevel,
             Sts2AncientAvailability ancientAvailability,
             RunRngSet runRng,
@@ -983,6 +985,7 @@ internal sealed class Sts2StandardShopPreviewer
             World = world;
             Character = character;
             PlayerCount = playerCount;
+            TeamCharacters = teamCharacters;
             AscensionLevel = ascensionLevel;
             RewardsRng = rewardsRng;
             ShopsRng = shopsRng;
@@ -993,6 +996,7 @@ internal sealed class Sts2StandardShopPreviewer
                 world.RelicPools,
                 character,
                 playerCount,
+                teamCharacters,
                 ancientAvailability,
                 runRng.UpFront);
 
@@ -1033,6 +1037,8 @@ internal sealed class Sts2StandardShopPreviewer
         public CharacterId Character { get; }
 
         public int PlayerCount { get; }
+
+        public IReadOnlyList<CharacterId>? TeamCharacters { get; }
 
         public int AscensionLevel { get; }
 
@@ -1367,6 +1373,7 @@ internal sealed class Sts2StandardShopPreviewer
             Sts2WorldData.RelicPoolInfo pools,
             CharacterId character,
             int playerCount,
+            IReadOnlyList<CharacterId>? teamCharacters,
             Sts2AncientAvailability availability,
             GameRng rng)
         {
@@ -1374,15 +1381,29 @@ internal sealed class Sts2StandardShopPreviewer
             ShuffleBuckets(BuildBuckets(sharedSequence, pools.RarityMap, trackedOnly: false), rng);
 
             Dictionary<RelicRarity, List<string>>? playerBuckets = null;
-            var players = Math.Max(1, playerCount);
-            for (var i = 0; i < players; i++)
+            foreach (var teamCharacter in ResolveTeamCharacters(character, playerCount, teamCharacters))
             {
-                var relics = pools.GetCombinedSequence(character, availability);
+                var relics = pools.GetCombinedSequence(teamCharacter, availability);
                 playerBuckets = BuildBuckets(relics, pools.RarityMap, trackedOnly: true);
                 ShuffleBuckets(playerBuckets, rng);
             }
 
             return new StandardRelicGrabBag(playerBuckets ?? new Dictionary<RelicRarity, List<string>>());
+        }
+
+        private static IReadOnlyList<CharacterId> ResolveTeamCharacters(
+            CharacterId selectedCharacter,
+            int playerCount,
+            IReadOnlyList<CharacterId>? teamCharacters)
+        {
+            if (teamCharacters is { Count: > 0 })
+            {
+                return teamCharacters;
+            }
+
+            return Enumerable
+                .Repeat(selectedCharacter, Math.Max(1, playerCount))
+                .ToArray();
         }
 
         private static Dictionary<RelicRarity, List<string>> BuildBuckets(

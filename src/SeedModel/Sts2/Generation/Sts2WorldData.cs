@@ -95,10 +95,13 @@ internal sealed class Sts2WorldData
     public IReadOnlyList<Sts2ActBlueprint> ResolveActs(
         uint runSeed,
         Sts2AncientAvailability? availability = null,
-        bool isMultiplayer = false)
+        bool isMultiplayer = false,
+        string? forcedActOneName = null)
     {
         var resolved = new List<Sts2ActBlueprint>(LaterActs.Count + 1);
-        var actOne = ResolveActOne(runSeed, availability, isMultiplayer);
+        var actOne = !string.IsNullOrWhiteSpace(forcedActOneName)
+            ? ActOneChoices.FirstOrDefault(act => string.Equals(act.Name, forcedActOneName, StringComparison.OrdinalIgnoreCase))
+            : ResolveActOne(runSeed, availability, isMultiplayer);
         if (actOne != null)
         {
             resolved.Add(actOne);

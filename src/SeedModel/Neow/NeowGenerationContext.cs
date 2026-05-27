@@ -4,7 +4,7 @@ namespace SeedModel.Neow;
 
 public sealed record NeowGenerationContext
 {
-    private const ulong DefaultPlayerNetId = 1;
+    public const ulong DefaultPlayerNetId = 1;
     private const ulong NeowEventHash = 348630327; // hash("NEOW")
 
     public uint Seed { get; init; }
@@ -12,6 +12,8 @@ public sealed record NeowGenerationContext
     public uint RunSeed { get; init; }
 
     public int PlayerCount { get; init; } = 1;
+
+    public ulong PlayerNetId { get; init; } = DefaultPlayerNetId;
 
     public bool ScrollBoxesEligible { get; init; }
 
@@ -27,20 +29,22 @@ public sealed record NeowGenerationContext
         bool scrollBoxesEligible = true,
         bool hasRunModifiers = false,
         CharacterId character = CharacterId.Ironclad,
-        int ascensionLevel = 0)
+        int ascensionLevel = 0,
+        ulong playerNetId = DefaultPlayerNetId)
     {
         if (playerCount <= 0)
         {
             throw new ArgumentOutOfRangeException(nameof(playerCount));
         }
 
-        var neowSeed = unchecked((uint)((ulong)seed + DefaultPlayerNetId + NeowEventHash));
+        var neowSeed = unchecked((uint)((ulong)seed + playerNetId + NeowEventHash));
 
         return new NeowGenerationContext
         {
             RunSeed = seed,
             Seed = neowSeed,
             PlayerCount = playerCount,
+            PlayerNetId = playerNetId,
             ScrollBoxesEligible = scrollBoxesEligible,
             HasRunModifiers = hasRunModifiers,
             Character = character,

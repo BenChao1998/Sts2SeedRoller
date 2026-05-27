@@ -151,16 +151,15 @@ internal sealed class TezcataraEventLogic : AncientEventLogic
 {
     private static readonly string[] Pool1 =
     [
-        "NUTRITIOUS_SOUP",
         "VERY_HOT_COCOA",
-        "YUMMY_COOKIE"
+        "YUMMY_COOKIE",
+        "NUTRITIOUS_SOUP"
     ];
 
     private static readonly string[] Pool2 =
     [
         "BIIIG_HUG",
         "STORYBOOK",
-        "SEAL_OF_GOLD",
         "TOASTY_MITTENS"
     ];
 
@@ -168,7 +167,8 @@ internal sealed class TezcataraEventLogic : AncientEventLogic
     [
         "GOLDEN_COMPASS",
         "PUMPKIN_CANDLE",
-        "TOY_BOX"
+        "TOY_BOX",
+        "SEAL_OF_GOLD"
     ];
 
     public TezcataraEventLogic()
@@ -178,6 +178,9 @@ internal sealed class TezcataraEventLogic : AncientEventLogic
 
     public override IReadOnlyList<AncientOptionResult> GenerateOptions(AncientGenerationContext context, GameRng rng)
     {
+        // Nutritious Soup is gated by having a basic Strike in the real event.
+        // Opening-route previews do not model the Act 1 deck, so keep the
+        // starting-deck case enabled and preserve the official 0.106.1 order.
         var option1 = CreateOption(Pool1[rng.NextInt(Pool1.Length)]);
         var option2 = CreateOption(Pool2[rng.NextInt(Pool2.Length)]);
         var option3 = CreateOption(Pool3[rng.NextInt(Pool3.Length)]);

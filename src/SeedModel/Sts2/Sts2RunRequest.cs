@@ -12,9 +12,15 @@ public sealed record Sts2RunRequest
 
     public IReadOnlyList<CharacterId>? UnlockedCharacters { get; init; }
 
+    public IReadOnlyList<CharacterId>? TeamCharacters { get; init; }
+
     public int AscensionLevel { get; init; }
 
     public int PlayerCount { get; init; } = 1;
+
+    public ulong PlayerNetId { get; init; } = NeowGenerationContext.DefaultPlayerNetId;
+
+    public string? ActOneName { get; init; }
 
     public Sts2AncientAvailability? AncientAvailability { get; init; }
 

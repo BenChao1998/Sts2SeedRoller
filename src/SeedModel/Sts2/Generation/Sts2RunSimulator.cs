@@ -26,9 +26,11 @@ internal sealed class Sts2RunSimulator
     public IReadOnlyList<ActAncientResult> Simulate(
         GameRng rng,
         uint runSeed,
-        Sts2AncientAvailability? ancientAvailability = null)
+        Sts2AncientAvailability? ancientAvailability = null,
+        bool isMultiplayer = false,
+        string? forcedActOneName = null)
     {
-        return Analyze(rng, runSeed, ancientAvailability)
+        return Analyze(rng, runSeed, ancientAvailability, isMultiplayer, forcedActOneName)
             .Select(result => new ActAncientResult(result.ActIndex, result.ActNumber, result.AncientId))
             .ToList();
     }
@@ -41,7 +43,9 @@ internal sealed class Sts2RunSimulator
     public IReadOnlyList<ActPoolResult> Analyze(
         GameRng rng,
         uint runSeed,
-        Sts2AncientAvailability? ancientAvailability = null)
+        Sts2AncientAvailability? ancientAvailability = null,
+        bool isMultiplayer = false,
+        string? forcedActOneName = null)
     {
         if (rng is null)
         {
@@ -49,7 +53,7 @@ internal sealed class Sts2RunSimulator
         }
 
         ancientAvailability ??= Sts2AncientAvailability.Default;
-        var acts = _world.ResolveActs(runSeed, ancientAvailability);
+        var acts = _world.ResolveActs(runSeed, ancientAvailability, isMultiplayer, forcedActOneName);
         var sharedAssignments = AssignSharedAncients(rng, acts, ancientAvailability);
         var results = new List<ActPoolResult>(acts.Count);
 
@@ -58,7 +62,7 @@ internal sealed class Sts2RunSimulator
             var act = acts[i];
             sharedAssignments.TryGetValue(i, out var shared);
             var sharedAncients = (IReadOnlyList<string>?)shared ?? Array.Empty<string>();
-            results.Add(ConsumeAct(i, act, rng, sharedAncients, ancientAvailability));
+            results.Add(ConsumeAct(i, act, rng, sharedAncients, ancientAvailability, isMultiplayer));
         }
 
         return results;
@@ -69,10 +73,12 @@ internal sealed class Sts2RunSimulator
         Sts2ActBlueprint act,
         GameRng rng,
         IReadOnlyList<string> sharedAncients,
-        Sts2AncientAvailability ancientAvailability)
+        Sts2AncientAvailability ancientAvailability,
+        bool isMultiplayer)
     {
+        var roomCount = isMultiplayer ? Math.Max(0, act.BaseRooms - 1) : act.BaseRooms;
         var events = ShuffleEvents(act, rng, ancientAvailability);
-        var normalEncounters = GenerateNormalEncounters(act, rng);
+        var normalEncounters = GenerateNormalEncounters(act, rng, roomCount);
         var eliteEncounters = GenerateEliteEncounters(act, rng);
         SelectBoss(act, rng);
         var chosenAncient = SelectAncient(act, rng, sharedAncients, ancientAvailability);
@@ -80,7 +86,7 @@ internal sealed class Sts2RunSimulator
             actIndex,
             act.ActNumber,
             act.Name,
-            act.BaseRooms,
+            roomCount,
             events,
             normalEncounters.Select(encounter => encounter.Id).ToList(),
             eliteEncounters.Select(encounter => encounter.Id).ToList(),
@@ -99,13 +105,17 @@ internal sealed class Sts2RunSimulator
         return events;
     }
 
-    private static IReadOnlyList<EncounterMetadata> GenerateNormalEncounters(Sts2ActBlueprint act, GameRng rng)
+    private static IReadOnlyList<EncounterMetadata> GenerateNormalEncounters(
+        Sts2ActBlueprint act,
+        GameRng rng,
+        int roomCount)
     {
-        var normalEncounters = new List<EncounterMetadata>(act.BaseRooms);
+        var normalEncounters = new List<EncounterMetadata>(roomCount);
         var weakBag = BuildBag(act.WeakEncounters);
         var regularBag = BuildBag(act.RegularEncounters);
 
-        for (var i = 0; i < act.WeakRooms; i++)
+        var weakRooms = Math.Min(act.WeakRooms, roomCount);
+        for (var i = 0; i < weakRooms; i++)
         {
             if (!weakBag.Any())
             {
@@ -115,7 +125,7 @@ internal sealed class Sts2RunSimulator
             AddWithoutRepeatingTags(normalEncounters, weakBag, rng);
         }
 
-        for (var i = act.WeakRooms; i < act.BaseRooms; i++)
+        for (var i = weakRooms; i < roomCount; i++)
         {
             if (!regularBag.Any())
             {

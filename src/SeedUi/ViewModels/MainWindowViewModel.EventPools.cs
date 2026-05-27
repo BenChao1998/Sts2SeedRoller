@@ -9,10 +9,17 @@ namespace SeedUi.ViewModels;
 internal sealed partial class MainWindowViewModel
 {
     private IReadOnlyList<EventPoolCatalogActViewModel> _eventPoolCatalogActs = Array.Empty<EventPoolCatalogActViewModel>();
+    private IReadOnlyList<SeedAnalysisDisplayItemViewModel> _eventPoolCatalogSharedEvents = Array.Empty<SeedAnalysisDisplayItemViewModel>();
 
     public IReadOnlyList<EventPoolCatalogActViewModel> EventPoolCatalogActs => _eventPoolCatalogActs;
 
+    public IReadOnlyList<SeedAnalysisDisplayItemViewModel> EventPoolCatalogSharedEvents => _eventPoolCatalogSharedEvents;
+
     public bool HasEventPoolCatalogActs => _eventPoolCatalogActs.Count > 0;
+
+    public bool HasEventPoolCatalogSharedEvents => _eventPoolCatalogSharedEvents.Count > 0;
+
+    public string EventPoolCatalogSharedEventCountText => $"事件数：{_eventPoolCatalogSharedEvents.Count}";
 
     private void InitializeEventPoolCatalog()
     {
@@ -26,7 +33,9 @@ internal sealed partial class MainWindowViewModel
             using var stream = OpenActsDataStream(SelectedGameVersion.Id);
             if (stream == null)
             {
+                _eventPoolCatalogSharedEvents = Array.Empty<SeedAnalysisDisplayItemViewModel>();
                 _eventPoolCatalogActs = Array.Empty<EventPoolCatalogActViewModel>();
+                RaiseEventPoolCatalogSharedEventPropertiesChanged();
                 RaisePropertyChanged(nameof(EventPoolCatalogActs));
                 RaisePropertyChanged(nameof(HasEventPoolCatalogActs));
                 return;
@@ -34,6 +43,11 @@ internal sealed partial class MainWindowViewModel
 
             var model = JsonSerializer.Deserialize<Sts2ActsFileModel>(stream);
             var actNameLookup = LoadActNameLookup(SelectedGameVersion.Id);
+
+            _eventPoolCatalogSharedEvents = (model?.SharedEvents ?? [])
+                .Where(eventId => !string.IsNullOrWhiteSpace(eventId))
+                .Select(eventId => CreateSeedAnalysisEventDisplayItem(eventId))
+                .ToList();
 
             _eventPoolCatalogActs = (model?.Acts ?? [])
                 .Where(act => act.Number is >= 1 and <= 3)
@@ -49,16 +63,26 @@ internal sealed partial class MainWindowViewModel
                 .ThenBy(item => item.BranchName, StringComparer.OrdinalIgnoreCase)
                 .ToList();
 
+            RaiseEventPoolCatalogSharedEventPropertiesChanged();
             RaisePropertyChanged(nameof(EventPoolCatalogActs));
             RaisePropertyChanged(nameof(HasEventPoolCatalogActs));
         }
         catch (Exception ex)
         {
             LogWarn($"加载事件池信息失败：{ex.Message}");
+            _eventPoolCatalogSharedEvents = Array.Empty<SeedAnalysisDisplayItemViewModel>();
             _eventPoolCatalogActs = Array.Empty<EventPoolCatalogActViewModel>();
+            RaiseEventPoolCatalogSharedEventPropertiesChanged();
             RaisePropertyChanged(nameof(EventPoolCatalogActs));
             RaisePropertyChanged(nameof(HasEventPoolCatalogActs));
         }
+    }
+
+    private void RaiseEventPoolCatalogSharedEventPropertiesChanged()
+    {
+        RaisePropertyChanged(nameof(EventPoolCatalogSharedEvents));
+        RaisePropertyChanged(nameof(HasEventPoolCatalogSharedEvents));
+        RaisePropertyChanged(nameof(EventPoolCatalogSharedEventCountText));
     }
 
     private static string FormatAncientSummary(IReadOnlyList<string>? ancients)

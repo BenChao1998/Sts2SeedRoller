@@ -133,16 +133,12 @@ internal sealed partial class MainWindowViewModel
 
     public bool IncludePoolFilter
     {
-        get => _includePoolFilter;
+        get => false;
         set
         {
-            if (SetProperty(ref _includePoolFilter, value))
+            if (SetProperty(ref _includePoolFilter, false))
             {
-                if (!value)
-                {
-                    ClearEventPoolConflictMessage();
-                }
-
+                ClearEventPoolConflictMessage();
                 UpdatePoolFilterSummaryCore();
             }
         }

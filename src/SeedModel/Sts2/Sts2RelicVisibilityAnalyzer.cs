@@ -92,6 +92,8 @@ internal sealed class Sts2RelicVisibilityAnalyzer
             request.SeedValue,
             request.Character,
             playerCount,
+            request.PlayerNetId,
+            request.TeamCharacters,
             request.AscensionLevel,
             ancientAvailability);
         var rewardModel = RewardSimulationModel.Create(dataset, request.Character, playerCount);
@@ -197,6 +199,8 @@ internal sealed class Sts2RelicVisibilityAnalyzer
             request.SeedValue,
             request.Character,
             playerCount,
+            request.PlayerNetId,
+            request.TeamCharacters,
             request.AscensionLevel,
             ancientAvailability);
         var rewardModel = RewardSimulationModel.Create(dataset, request.Character, playerCount);
@@ -247,7 +251,9 @@ internal sealed class Sts2RelicVisibilityAnalyzer
             RunSeed = request.SeedValue,
             Character = request.Character,
             UnlockedCharacters = unlockedCharacters,
+            TeamCharacters = request.TeamCharacters,
             PlayerCount = request.PlayerCount,
+            PlayerNetId = request.PlayerNetId,
             AscensionLevel = request.AscensionLevel,
             AncientAvailability = request.AncientAvailability,
             IncludeDarvSharedAncient = request.IncludeDarvSharedAncient
@@ -262,8 +268,11 @@ internal sealed class Sts2RelicVisibilityAnalyzer
                 SeedText = request.SeedText,
                 SeedValue = request.SeedValue,
                 Character = request.Character,
+                UnlockedCharacters = unlockedCharacters,
+                TeamCharacters = request.TeamCharacters,
                 AscensionLevel = request.AscensionLevel,
                 PlayerCount = request.PlayerCount,
+                PlayerNetId = request.PlayerNetId,
                 AncientAvailability = request.AncientAvailability,
                 IncludeDarvSharedAncient = request.IncludeDarvSharedAncient,
                 MaxResults = maxResults,
@@ -637,7 +646,9 @@ internal sealed class Sts2RelicVisibilityAnalyzer
             RunSeed = request.SeedValue,
             Character = request.Character,
             UnlockedCharacters = unlockedCharacters,
+            TeamCharacters = request.TeamCharacters,
             PlayerCount = request.PlayerCount,
+            PlayerNetId = request.PlayerNetId,
             AscensionLevel = request.AscensionLevel,
             AncientAvailability = request.AncientAvailability,
             IncludeDarvSharedAncient = request.IncludeDarvSharedAncient
@@ -653,8 +664,11 @@ internal sealed class Sts2RelicVisibilityAnalyzer
                 SeedText = request.SeedText,
                 SeedValue = request.SeedValue,
                 Character = request.Character,
+                UnlockedCharacters = unlockedCharacters,
+                TeamCharacters = request.TeamCharacters,
                 AscensionLevel = request.AscensionLevel,
                 PlayerCount = request.PlayerCount,
+                PlayerNetId = request.PlayerNetId,
                 AncientAvailability = request.AncientAvailability,
                 IncludeDarvSharedAncient = request.IncludeDarvSharedAncient,
                 MaxResults = maxResults,
@@ -1829,8 +1843,6 @@ internal sealed class Sts2RelicVisibilityAnalyzer
 
     private sealed class BaselineState
     {
-        private const uint DefaultPlayerNetId = 1;
-
         private BaselineState(
             string seedText,
             CharacterId character,
@@ -1917,21 +1929,33 @@ internal sealed class Sts2RelicVisibilityAnalyzer
             uint runSeed,
             CharacterId character,
             int playerCount,
+            ulong playerNetId,
+            IReadOnlyList<CharacterId>? teamCharacters,
             int ascensionLevel,
             Sts2AncientAvailability availability)
         {
             var upFrontRng = new GameRng(runSeed, "up_front");
             var sharedSequence = pools.GetSharedSequence(availability);
-            var playerSequence = pools.GetCombinedSequence(character, availability);
 
             // Match the run creation order from the game: shuffle every unlocked
             // shared relic rarity first, then immediately shuffle only the
-            // tracked gameplay rarities for the player's combined grab bag.
+            // tracked gameplay rarities for each player's combined grab bag.
             var sharedBag = RelicBag.CreateFromSequence(sharedSequence, rarityMap, upFrontRng, trackedOnly: false);
-            var playerBag = RelicBag.CreateFromSequence(playerSequence, rarityMap, upFrontRng, trackedOnly: true);
+            RelicBag? playerBag = null;
+            foreach (var teamCharacter in ResolveTeamCharacters(character, playerCount, teamCharacters))
+            {
+                var playerSequence = pools.GetCombinedSequence(teamCharacter, availability);
+                playerBag = RelicBag.CreateFromSequence(playerSequence, rarityMap, upFrontRng, trackedOnly: true);
+            }
+
+            playerBag ??= RelicBag.CreateFromSequence(
+                pools.GetCombinedSequence(character, availability),
+                rarityMap,
+                upFrontRng,
+                trackedOnly: true);
             ApplyPlayerCountRestrictions(sharedBag, playerBag, playerCount);
 
-            var playerSeed = unchecked(runSeed + DefaultPlayerNetId);
+            var playerSeed = unchecked((uint)((ulong)runSeed + playerNetId));
             return new BaselineState(
                 seedText,
                 character,
@@ -1947,6 +1971,21 @@ internal sealed class Sts2RelicVisibilityAnalyzer
                 0.4f,
                 new RewardCardBuffer(),
                 act3RestrictionsApplied: false);
+        }
+
+        private static IReadOnlyList<CharacterId> ResolveTeamCharacters(
+            CharacterId selectedCharacter,
+            int playerCount,
+            IReadOnlyList<CharacterId>? teamCharacters)
+        {
+            if (teamCharacters is { Count: > 0 })
+            {
+                return teamCharacters;
+            }
+
+            return Enumerable
+                .Repeat(selectedCharacter, Math.Max(1, playerCount))
+                .ToArray();
         }
 
         private static void ApplyPlayerCountRestrictions(RelicBag sharedBag, RelicBag playerBag, int playerCount)

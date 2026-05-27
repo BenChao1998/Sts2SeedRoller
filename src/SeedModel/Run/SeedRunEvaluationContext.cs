@@ -13,7 +13,11 @@ public sealed record SeedRunEvaluationContext
 
     public IReadOnlyList<CharacterId>? UnlockedCharacters { get; init; }
 
+    public IReadOnlyList<CharacterId>? TeamCharacters { get; init; }
+
     public int PlayerCount { get; init; } = 1;
+
+    public ulong PlayerNetId { get; init; } = NeowGenerationContext.DefaultPlayerNetId;
 
     public bool ScrollBoxesEligible { get; init; }
 

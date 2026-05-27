@@ -12,7 +12,6 @@ namespace SeedModel.Sts2;
 
 public sealed class Sts2RunPreviewer
 {
-    private const uint DefaultPlayerNetId = 1;
     private static readonly CharacterId[] DefaultUnlockedCharacters =
     [
         CharacterId.Ironclad,
@@ -105,7 +104,7 @@ public sealed class Sts2RunPreviewer
         var unlockedCharacters = ResolveUnlockedCharacters(request.Character, request.UnlockedCharacters);
         var ancientAvailability = request.ResolveAncientAvailability();
         var upFrontRng = new GameRng(request.SeedValue, "up_front");
-        _primer.Prime(upFrontRng, request.Character, request.PlayerCount, ancientAvailability);
+        _primer.Prime(upFrontRng, request.Character, request.PlayerCount, ancientAvailability, request.TeamCharacters);
 
         var generationContext = new AncientGenerationContext(
             request.SeedValue,
@@ -117,11 +116,13 @@ public sealed class Sts2RunPreviewer
         var actResults = _simulator.Simulate(
             upFrontRng,
             request.SeedValue,
-            ancientAvailability);
+            ancientAvailability,
+            request.PlayerCount > 1,
+            ResolveActOneName(request.SeedValue, ancientAvailability, request.PlayerCount > 1, request.ActOneName));
         if (dataset != null && (request.SeaGlassPreviewSamples ?? 0) > 0)
         {
             var analysisRng = new GameRng(request.SeedValue, "up_front");
-            actPoolResults = _simulator.Analyze(analysisRng, request.SeedValue, ancientAvailability);
+            actPoolResults = _simulator.Analyze(analysisRng, request.SeedValue, ancientAvailability, request.PlayerCount > 1, request.ActOneName);
         }
 
         foreach (var result in actResults)
@@ -139,7 +140,7 @@ public sealed class Sts2RunPreviewer
                 continue;
             }
 
-            var eventRngSeed = unchecked(request.SeedValue + DefaultPlayerNetId);
+            var eventRngSeed = unchecked((uint)((ulong)request.SeedValue + request.PlayerNetId));
             var eventRng = new GameRng(eventRngSeed, logic.Id);
             var context = generationContext with { ActIndex = result.ActIndex };
             var optionResults = logic.GenerateOptions(context, eventRng);
@@ -286,11 +287,13 @@ public sealed class Sts2RunPreviewer
 
         var ancientAvailability = request.ResolveAncientAvailability();
         var upFrontRng = new GameRng(request.SeedValue, "up_front");
-        var relicPools = _primer.PrimeAndCapture(upFrontRng, request.Character, playerCount: 1, ancientAvailability);
+        var relicPools = _primer.PrimeAndCapture(upFrontRng, request.Character, request.PlayerCount, ancientAvailability, request.TeamCharacters);
         var actPools = _simulator.Analyze(
             upFrontRng,
             request.SeedValue,
-            ancientAvailability);
+            ancientAvailability,
+            request.PlayerCount > 1,
+            request.ActOneName);
 
         return new Sts2SeedAnalysis
         {
@@ -332,12 +335,14 @@ public sealed class Sts2RunPreviewer
         {
             var ancientAvailability = request.ResolveAncientAvailability();
             var upFrontRng = new GameRng(request.SeedValue, "up_front");
-            _primer.Prime(upFrontRng, request.Character, request.PlayerCount, ancientAvailability);
+            _primer.Prime(upFrontRng, request.Character, request.PlayerCount, ancientAvailability, request.TeamCharacters);
 
             actPools = _simulator.Analyze(
                 upFrontRng,
                 request.SeedValue,
-                ancientAvailability)
+                ancientAvailability,
+                request.PlayerCount > 1,
+                ResolveActOneName(request.SeedValue, ancientAvailability, request.PlayerCount > 1, null))
                 .Select(act => new Sts2ActPoolPreview
                 {
                     ActNumber = act.ActNumber,
@@ -357,8 +362,10 @@ public sealed class Sts2RunPreviewer
                 SeedValue = request.SeedValue,
                 Character = request.Character,
                 UnlockedCharacters = ResolveUnlockedCharacters(request.Character, request.UnlockedCharacters),
+                TeamCharacters = request.TeamCharacters,
                 AscensionLevel = request.AscensionLevel,
                 PlayerCount = request.PlayerCount,
+                PlayerNetId = request.PlayerNetId,
                 AncientAvailability = ancientAvailability,
                 IncludeDarvSharedAncient = request.IncludeDarvSharedAncient,
                 IncludeAct2 = true,
@@ -379,12 +386,14 @@ public sealed class Sts2RunPreviewer
 
         var ancientAvailability = request.ResolveAncientAvailability();
         var upFrontRng = new GameRng(request.SeedValue, "up_front");
-        _primer.Prime(upFrontRng, request.Character, request.PlayerCount, ancientAvailability);
+        _primer.Prime(upFrontRng, request.Character, request.PlayerCount, ancientAvailability, request.TeamCharacters);
 
         var actPools = _simulator.Analyze(
             upFrontRng,
             request.SeedValue,
-            ancientAvailability);
+            ancientAvailability,
+            request.PlayerCount > 1,
+            ResolveActOneName(request.SeedValue, ancientAvailability, request.PlayerCount > 1, null));
 
         var ancientPreview = Preview(new Sts2RunRequest
         {
@@ -392,8 +401,10 @@ public sealed class Sts2RunPreviewer
             SeedValue = request.SeedValue,
             Character = request.Character,
             UnlockedCharacters = ResolveUnlockedCharacters(request.Character, request.UnlockedCharacters),
+            TeamCharacters = request.TeamCharacters,
             AscensionLevel = request.AscensionLevel,
             PlayerCount = request.PlayerCount,
+            PlayerNetId = request.PlayerNetId,
             AncientAvailability = ancientAvailability,
             IncludeDarvSharedAncient = request.IncludeDarvSharedAncient,
             IncludeAct2 = true,
@@ -418,7 +429,9 @@ public sealed class Sts2RunPreviewer
             SeedValue = request.SeedValue,
             Character = request.Character,
             UnlockedCharacters = unlockedCharacters,
+            TeamCharacters = request.TeamCharacters,
             AscensionLevel = request.AscensionLevel,
+            PlayerCount = request.PlayerCount,
             AncientAvailability = request.AncientAvailability,
             IncludeDarvSharedAncient = request.IncludeDarvSharedAncient
         });
@@ -429,8 +442,10 @@ public sealed class Sts2RunPreviewer
             SeedValue = request.SeedValue,
             Character = request.Character,
             UnlockedCharacters = unlockedCharacters,
+            TeamCharacters = request.TeamCharacters,
             AscensionLevel = request.AscensionLevel,
             PlayerCount = request.PlayerCount,
+            PlayerNetId = request.PlayerNetId,
             AncientAvailability = request.AncientAvailability,
             IncludeDarvSharedAncient = request.IncludeDarvSharedAncient,
             IncludeAct2 = true,
@@ -456,12 +471,14 @@ public sealed class Sts2RunPreviewer
 
         var ancientAvailability = request.ResolveAncientAvailability();
         var upFrontRng = new GameRng(request.SeedValue, "up_front");
-        _primer.Prime(upFrontRng, request.Character, request.PlayerCount, ancientAvailability);
+        _primer.Prime(upFrontRng, request.Character, request.PlayerCount, ancientAvailability, request.TeamCharacters);
 
         var actPools = _simulator.Analyze(
             upFrontRng,
             request.SeedValue,
-            ancientAvailability);
+            ancientAvailability,
+            request.PlayerCount > 1,
+            ResolveActOneName(request.SeedValue, ancientAvailability, request.PlayerCount > 1, null));
 
         var ancientPreview = Preview(new Sts2RunRequest
         {
@@ -469,8 +486,10 @@ public sealed class Sts2RunPreviewer
             SeedValue = request.SeedValue,
             Character = request.Character,
             UnlockedCharacters = ResolveUnlockedCharacters(request.Character, request.UnlockedCharacters),
+            TeamCharacters = request.TeamCharacters,
             AscensionLevel = request.AscensionLevel,
             PlayerCount = request.PlayerCount,
+            PlayerNetId = request.PlayerNetId,
             AncientAvailability = ancientAvailability,
             IncludeDarvSharedAncient = request.IncludeDarvSharedAncient,
             IncludeAct2 = true,
@@ -507,12 +526,14 @@ public sealed class Sts2RunPreviewer
         {
             var ancientAvailability = request.ResolveAncientAvailability();
             var upFrontRng = new GameRng(request.SeedValue, "up_front");
-            _primer.Prime(upFrontRng, request.Character, request.PlayerCount, ancientAvailability);
+            _primer.Prime(upFrontRng, request.Character, request.PlayerCount, ancientAvailability, request.TeamCharacters);
 
             actPools = _simulator.Analyze(
                 upFrontRng,
                 request.SeedValue,
-                ancientAvailability)
+                ancientAvailability,
+                request.PlayerCount > 1,
+                ResolveActOneName(request.SeedValue, ancientAvailability, request.PlayerCount > 1, null))
                 .Select(act => new Sts2ActPoolPreview
                 {
                     ActNumber = act.ActNumber,
@@ -532,8 +553,10 @@ public sealed class Sts2RunPreviewer
                 SeedValue = request.SeedValue,
                 Character = request.Character,
                 UnlockedCharacters = ResolveUnlockedCharacters(request.Character, request.UnlockedCharacters),
+                TeamCharacters = request.TeamCharacters,
                 AscensionLevel = request.AscensionLevel,
                 PlayerCount = request.PlayerCount,
+                PlayerNetId = request.PlayerNetId,
                 AncientAvailability = ancientAvailability,
                 IncludeDarvSharedAncient = request.IncludeDarvSharedAncient,
                 IncludeAct2 = true,
@@ -615,8 +638,10 @@ public sealed class Sts2RunPreviewer
                 SeedValue = request.SeedValue,
                 Character = request.Character,
                 UnlockedCharacters = ResolveUnlockedCharacters(request.Character, request.UnlockedCharacters),
+                TeamCharacters = request.TeamCharacters,
                 AscensionLevel = request.AscensionLevel,
                 PlayerCount = request.PlayerCount,
+                PlayerNetId = request.PlayerNetId,
                 AncientAvailability = ancientAvailability,
                 IncludeDarvSharedAncient = request.IncludeDarvSharedAncient,
                 IncludeAct2 = true,
@@ -675,5 +700,30 @@ public sealed class Sts2RunPreviewer
         }
 
         return null;
+    }
+
+    private static string? ResolveActOneName(
+        uint seedValue,
+        Sts2AncientAvailability ancientAvailability,
+        bool isMultiplayer,
+        string? requestedActOneName)
+    {
+        if (!string.IsNullOrWhiteSpace(requestedActOneName))
+        {
+            return requestedActOneName;
+        }
+
+        if (!ancientAvailability.IsUnderdocksUnlocked)
+        {
+            return "Overgrowth";
+        }
+
+        if (!isMultiplayer && !ancientAvailability.HasDiscoveredUnderdocks)
+        {
+            return "Underdocks";
+        }
+
+        var actSelectionRng = new GameRng(seedValue);
+        return actSelectionRng.NextBool() ? "Underdocks" : "Overgrowth";
     }
 }

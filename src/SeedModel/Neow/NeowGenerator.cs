@@ -62,12 +62,44 @@ public sealed class NeowGenerator : ISeedEventGenerator<NeowGenerationContext, I
         NeowOptionIds.SilverCrucible
     ];
 
+    private static readonly string[] V01061PositiveOptions =
+    [
+        NeowOptionIds.ArcaneScroll,
+        NeowOptionIds.BoomingConch,
+        NeowOptionIds.FishingRod,
+        NeowOptionIds.GoldenPearl,
+        NeowOptionIds.Kaleidoscope,
+        NeowOptionIds.LeadPaperweight,
+        NeowOptionIds.LostCoffer,
+        NeowOptionIds.MassiveScroll,
+        NeowOptionIds.NeowsTorment,
+        NeowOptionIds.NewLeaf,
+        NeowOptionIds.PhialHolster,
+        NeowOptionIds.PreciseScissors,
+        NeowOptionIds.ScrollBoxes,
+        NeowOptionIds.WingedBoots
+    ];
+
+    private static readonly string[] V01061NegativeOptions =
+    [
+        NeowOptionIds.CursedPearl,
+        NeowOptionIds.HeftyTablet,
+        NeowOptionIds.LargeCapsule,
+        NeowOptionIds.LeafyPoultice,
+        NeowOptionIds.NeowsBones,
+        NeowOptionIds.PrecariousShears,
+        NeowOptionIds.SilkenTress,
+        NeowOptionIds.SilverCrucible
+    ];
+
     private readonly NeowOptionDataset _dataset;
     private readonly NeowRewardPreviewer _rewardPreviewer;
 
     public SeedEventType EventType => SeedEventType.Act1Neow;
 
     private bool UsesModernRules => IsModernRulesVersion(_dataset.Version);
+
+    private bool UsesV01061Rules => IsV01061RulesVersion(_dataset.Version);
 
     public NeowGenerator(NeowOptionDataset dataset)
     {
@@ -109,6 +141,17 @@ public sealed class NeowGenerator : ISeedEventGenerator<NeowGenerationContext, I
 
     private List<string> BuildNegativePool(NeowGenerationContext context)
     {
+        if (UsesV01061Rules)
+        {
+            var v01061Pool = new List<string>(V01061NegativeOptions);
+            if (context.PlayerCount > 1)
+            {
+                v01061Pool.Remove(NeowOptionIds.SilverCrucible);
+            }
+
+            return v01061Pool;
+        }
+
         if (UsesModernRules)
         {
             var modernPool = new List<string>(ModernNegativeOptions);
@@ -143,7 +186,7 @@ public sealed class NeowGenerator : ISeedEventGenerator<NeowGenerationContext, I
     {
         if (UsesModernRules)
         {
-            var modernPool = new List<string>(ModernPositiveOptions);
+            var modernPool = new List<string>(UsesV01061Rules ? V01061PositiveOptions : ModernPositiveOptions);
 
             if (context.PlayerCount <= 1)
             {
@@ -244,5 +287,11 @@ public sealed class NeowGenerator : ISeedEventGenerator<NeowGenerationContext, I
     {
         return Version.TryParse(version, out var parsedVersion) &&
                parsedVersion >= new Version(0, 103, 2);
+    }
+
+    private static bool IsV01061RulesVersion(string? version)
+    {
+        return Version.TryParse(version, out var parsedVersion) &&
+               parsedVersion >= new Version(0, 106, 1);
     }
 }
