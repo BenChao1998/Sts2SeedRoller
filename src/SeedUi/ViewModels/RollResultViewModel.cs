@@ -25,6 +25,8 @@ internal sealed class RollResultViewModel
         bool requiresAct2,
         bool requiresAct3,
         int ascensionLevel,
+        Sts2ExactRouteAnalysis? exactRouteAnalysis = null,
+        Sts2ExactRouteFilter? exactRouteFilter = null,
         ShopPreview? shopPreview = null,
         bool shopFilterMatched = false)
     {
@@ -74,6 +76,21 @@ internal sealed class RollResultViewModel
         AncientActs = ancientPreview == null
             ? Array.Empty<AncientActViewModel>()
             : ancientPreview.Acts.Select(act => new AncientActViewModel(act)).ToList();
+
+        ExactRouteHitEvents = BuildExactRouteEventCoverageEntries(
+            exactRouteAnalysis?.Coverage.EventCoverage,
+            exactRouteFilter?.EventTargets);
+        ExactRouteHitRelics = BuildExactRouteRelicCoverageEntries(
+            exactRouteAnalysis?.Coverage.RelicCoverage,
+            exactRouteFilter?.RelicTargets);
+        ExactRouteHitOpenings = Array.Empty<string>();
+        HasExactRouteCoverageHit = exactRouteAnalysis != null &&
+                                   (ExactRouteHitEvents.Count > 0 || ExactRouteHitRelics.Count > 0);
+        ExactRouteCoverageSummary = BuildExactRouteCoverageSummary(
+            exactRouteAnalysis,
+            ExactRouteHitOpenings.Count,
+            ExactRouteHitEvents.Count,
+            ExactRouteHitRelics.Count);
 
         ShopPreview = shopPreview;
         ShopFilterMatched = shopFilterMatched;
@@ -128,6 +145,22 @@ internal sealed class RollResultViewModel
     public IReadOnlyList<AncientActViewModel> AncientActs { get; }
 
     public bool HasAncientActs => AncientActs.Count > 0;
+
+    public bool HasExactRouteCoverageHit { get; }
+
+    public string ExactRouteCoverageSummary { get; }
+
+    public IReadOnlyList<string> ExactRouteHitOpenings { get; }
+
+    public IReadOnlyList<ExactRouteCoverageHitViewModel> ExactRouteHitEvents { get; }
+
+    public IReadOnlyList<ExactRouteCoverageHitViewModel> ExactRouteHitRelics { get; }
+
+    public bool HasExactRouteHitOpenings => ExactRouteHitOpenings.Count > 0;
+
+    public bool HasExactRouteHitEvents => ExactRouteHitEvents.Count > 0;
+
+    public bool HasExactRouteHitRelics => ExactRouteHitRelics.Count > 0;
 
     public bool RequiresAct2 { get; }
 
@@ -575,6 +608,156 @@ internal sealed class RollResultViewModel
         public string DisplayName { get; }
         public string PriceDisplay => Price.ToString();
         public string DiscountLabel => IsDiscounted ? " (折)" : string.Empty;
+    }
+
+    internal sealed class ExactRouteCoverageHitViewModel
+    {
+        public ExactRouteCoverageHitViewModel(
+            string title,
+            string actLabel,
+            string coverageText,
+            string firstRowText,
+            string sourceText)
+        {
+            Title = title;
+            ActLabel = actLabel;
+            CoverageText = coverageText;
+            FirstRowText = firstRowText;
+            SourceText = sourceText;
+        }
+
+        public string Title { get; }
+
+        public string ActLabel { get; }
+
+        public string CoverageText { get; }
+
+        public string FirstRowText { get; }
+
+        public string SourceText { get; }
+    }
+
+    private static IReadOnlyList<ExactRouteCoverageHitViewModel> BuildExactRouteEventCoverageEntries(
+        IReadOnlyList<Sts2ExactRouteCoverageItem>? coverage,
+        IReadOnlyList<Sts2ExactRouteEventTargetRequest>? targets)
+    {
+        if (coverage == null || coverage.Count == 0 || targets == null || targets.Count == 0)
+        {
+            return Array.Empty<ExactRouteCoverageHitViewModel>();
+        }
+
+        var entries = new List<ExactRouteCoverageHitViewModel>();
+        foreach (var target in targets)
+        {
+            var item = coverage.FirstOrDefault(candidate =>
+                (!target.ActNumber.HasValue || candidate.ActNumber == target.ActNumber.Value) &&
+                string.Equals(candidate.Id, target.EventId, StringComparison.OrdinalIgnoreCase));
+            if (item == null)
+            {
+                continue;
+            }
+
+            entries.Add(CreateExactRouteCoverageHitViewModel(
+                item,
+                MainWindowViewModel.CreateSeedAnalysisEventDisplayItem(item.Id).Title));
+        }
+
+        return entries;
+    }
+
+    private static IReadOnlyList<ExactRouteCoverageHitViewModel> BuildExactRouteRelicCoverageEntries(
+        IReadOnlyList<Sts2ExactRouteCoverageItem>? coverage,
+        IReadOnlyList<Sts2ExactRouteRelicTargetRequest>? targets)
+    {
+        if (coverage == null || coverage.Count == 0 || targets == null || targets.Count == 0)
+        {
+            return Array.Empty<ExactRouteCoverageHitViewModel>();
+        }
+
+        var entries = new List<ExactRouteCoverageHitViewModel>();
+        foreach (var target in targets)
+        {
+            var item = coverage.FirstOrDefault(candidate =>
+                (!target.ActNumber.HasValue || candidate.ActNumber == target.ActNumber.Value) &&
+                string.Equals(candidate.Id, target.RelicId, StringComparison.OrdinalIgnoreCase));
+            if (item == null)
+            {
+                continue;
+            }
+
+            entries.Add(CreateExactRouteCoverageHitViewModel(
+                item,
+                MainWindowViewModel.GetRelicDisplayName(item.Id)));
+        }
+
+        return entries;
+    }
+
+    private static ExactRouteCoverageHitViewModel CreateExactRouteCoverageHitViewModel(
+        Sts2ExactRouteCoverageItem item,
+        string title)
+    {
+        return new ExactRouteCoverageHitViewModel(
+            title,
+            $"第 {item.ActNumber} 幕",
+            $"{(double)item.SeenRouteCount / Math.Max(1, item.TotalRouteCount):P1} ({item.SeenRouteCount:N0}/{item.TotalRouteCount:N0})",
+            FormatExactRouteFirstRowText(item.FirstRowMin, item.FirstRowMax),
+            item.Sources.Count == 0
+                ? "-"
+                : string.Join("、", item.Sources.Select(FormatExactRouteCoverageSource)));
+    }
+
+    private static string BuildExactRouteCoverageSummary(
+        Sts2ExactRouteAnalysis? exactRouteAnalysis,
+        int openingCount,
+        int eventCount,
+        int relicCount)
+    {
+        if (exactRouteAnalysis == null)
+        {
+            return string.Empty;
+        }
+
+        var builder = new StringBuilder();
+        builder.Append($"已检查 {exactRouteAnalysis.CheckedRoutes:N0} 条路线");
+        if (openingCount > 0)
+        {
+            builder.Append($"，命中 {openingCount:N0} 个开局");
+        }
+        builder.Append($"，覆盖 {eventCount:N0} 个事件");
+        builder.Append($"，覆盖 {relicCount:N0} 个遗物");
+        if (exactRouteAnalysis.WasTruncated)
+        {
+            builder.Append("；已触达当前路线检查上限");
+        }
+
+        return builder.ToString();
+    }
+
+    private static string FormatExactRouteFirstRowText(int? minRow, int? maxRow)
+    {
+        return (minRow, maxRow) switch
+        {
+            (int min, int max) when min == max => $"第 {min} 层",
+            (int min, int max) => $"第 {min}-{max} 层",
+            _ => "-"
+        };
+    }
+
+    private static string FormatExactRouteCoverageSource(string source)
+    {
+        return source switch
+        {
+            "Event" => "事件",
+            "Treasure" => "宝箱",
+            "Elite" => "精英",
+            "Shop" => "商店购买",
+            "ShopDisplay" => "商店货架",
+            "Monster" => "普通战斗",
+            "Boss" => "Boss",
+            "Rest" => "篝火",
+            _ => source
+        };
     }
 
     private static HashSet<string> ToIdSet(IReadOnlyList<string>? values)

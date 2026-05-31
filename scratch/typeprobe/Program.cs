@@ -361,6 +361,165 @@ DumpMethodBody(
     "Populate",
     parameterCount: 0,
     parameterTypeNames: []);
+DumpMatchingTypes(asm, "Treasure");
+DumpMatchingTypes(asm, "RelicFactory");
+DumpMatchingTypes(asm, "RelicGrabBag");
+DumpMatchingTypes(asm, "RelicPicking");
+DumpType(asm, "MegaCrit.Sts2.Core.Rooms.TreasureRoom");
+DumpType(asm, "MegaCrit.Sts2.Core.Factories.RelicFactory");
+DumpType(asm, "MegaCrit.Sts2.Core.Runs.RelicGrabBag");
+DumpType(asm, "MegaCrit.Sts2.Core.Multiplayer.Game.TreasureRoomRelicSynchronizer");
+DumpType(asm, "MegaCrit.Sts2.Core.Multiplayer.Game.OneOffSynchronizer");
+DumpMethodBody(
+    asm,
+    "MegaCrit.Sts2.Core.Rooms.TreasureRoom",
+    ".ctor",
+    parameterCount: 1,
+    parameterTypeNames: ["Int32"]);
+DumpMethodReferences(
+    asm,
+    "MegaCrit.Sts2.Core.Rooms.TreasureRoom",
+    "EnterInternal",
+    parameterCount: 2,
+    parameterTypeNames: ["IRunState", "Boolean"]);
+DumpMethodBody(
+    asm,
+    "MegaCrit.Sts2.Core.Rooms.TreasureRoom",
+    "EnterInternal",
+    parameterCount: 2,
+    parameterTypeNames: ["IRunState", "Boolean"]);
+DumpMethodBody(
+    asm,
+    "MegaCrit.Sts2.Core.Rooms.TreasureRoom+<EnterInternal>d__9",
+    "MoveNext",
+    parameterCount: 0,
+    parameterTypeNames: []);
+DumpMethodReferences(
+    asm,
+    "MegaCrit.Sts2.Core.Rooms.TreasureRoom+<EnterInternal>d__9",
+    "MoveNext",
+    parameterCount: 0,
+    parameterTypeNames: []);
+DumpMethodBody(
+    asm,
+    "MegaCrit.Sts2.Core.Rooms.TreasureRoom",
+    "DoNormalRewards",
+    parameterCount: 0,
+    parameterTypeNames: []);
+DumpMethodBody(
+    asm,
+    "MegaCrit.Sts2.Core.Rooms.TreasureRoom+<DoNormalRewards>d__15",
+    "MoveNext",
+    parameterCount: 0,
+    parameterTypeNames: []);
+DumpMethodReferences(
+    asm,
+    "MegaCrit.Sts2.Core.Rooms.TreasureRoom+<DoNormalRewards>d__15",
+    "MoveNext",
+    parameterCount: 0,
+    parameterTypeNames: []);
+DumpMethodBody(
+    asm,
+    "MegaCrit.Sts2.Core.Rooms.TreasureRoom",
+    "DoExtraRewardsIfNeeded",
+    parameterCount: 0,
+    parameterTypeNames: []);
+DumpMethodBody(
+    asm,
+    "MegaCrit.Sts2.Core.Rooms.TreasureRoom+<DoExtraRewardsIfNeeded>d__10",
+    "MoveNext",
+    parameterCount: 0,
+    parameterTypeNames: []);
+DumpMethodReferences(
+    asm,
+    "MegaCrit.Sts2.Core.Rooms.TreasureRoom+<DoExtraRewardsIfNeeded>d__10",
+    "MoveNext",
+    parameterCount: 0,
+    parameterTypeNames: []);
+DumpMethodBody(
+    asm,
+    "MegaCrit.Sts2.Core.Multiplayer.Game.OneOffSynchronizer",
+    "DoLocalTreasureRoomRewards",
+    parameterCount: 0,
+    parameterTypeNames: []);
+DumpMethodBody(
+    asm,
+    "MegaCrit.Sts2.Core.Multiplayer.Game.OneOffSynchronizer",
+    "DoTreasureRoomRewards",
+    parameterCount: 0,
+    parameterTypeNames: []);
+DumpMethodBody(
+    asm,
+    "MegaCrit.Sts2.Core.Multiplayer.Game.OneOffSynchronizer+<DoTreasureRoomRewards>d__13",
+    "MoveNext",
+    parameterCount: 0,
+    parameterTypeNames: []);
+DumpMethodReferences(
+    asm,
+    "MegaCrit.Sts2.Core.Multiplayer.Game.OneOffSynchronizer+<DoTreasureRoomRewards>d__13",
+    "MoveNext",
+    parameterCount: 0,
+    parameterTypeNames: []);
+DumpMethodBody(
+    asm,
+    "MegaCrit.Sts2.Core.Multiplayer.Game.TreasureRoomRelicSynchronizer",
+    "BeginRelicPicking",
+    parameterCount: 0,
+    parameterTypeNames: []);
+DumpMethodReferences(
+    asm,
+    "MegaCrit.Sts2.Core.Multiplayer.Game.TreasureRoomRelicSynchronizer",
+    "BeginRelicPicking",
+    parameterCount: 0,
+    parameterTypeNames: []);
+DumpMethodBody(
+    asm,
+    "MegaCrit.Sts2.Core.Multiplayer.Game.TreasureRoomRelicSynchronizer",
+    "AwardRelics",
+    parameterCount: 0,
+    parameterTypeNames: []);
+DumpMethodReferences(
+    asm,
+    "MegaCrit.Sts2.Core.Multiplayer.Game.TreasureRoomRelicSynchronizer",
+    "AwardRelics",
+    parameterCount: 0,
+    parameterTypeNames: []);
+DumpMethodBody(
+    asm,
+    "MegaCrit.Sts2.Core.Factories.RelicFactory",
+    "PullNextRelicFromFront",
+    parameterCount: 1,
+    parameterTypeNames: ["Player"]);
+DumpMethodBody(
+    asm,
+    "MegaCrit.Sts2.Core.Factories.RelicFactory",
+    "PullNextRelicFromFront",
+    parameterCount: 2,
+    parameterTypeNames: ["Player", "Rng"]);
+DumpMethodBody(
+    asm,
+    "MegaCrit.Sts2.Core.Factories.RelicFactory",
+    "PullNextRelicFromFront",
+    parameterCount: 2,
+    parameterTypeNames: ["Player", "RelicRarity"]);
+DumpMethodBody(
+    asm,
+    "MegaCrit.Sts2.Core.Factories.RelicFactory",
+    "RollRarity",
+    parameterCount: 1,
+    parameterTypeNames: ["Player"]);
+DumpMethodBody(
+    asm,
+    "MegaCrit.Sts2.Core.Factories.RelicFactory",
+    "RollRarity",
+    parameterCount: 1,
+    parameterTypeNames: ["Rng"]);
+DumpMethodBody(
+    asm,
+    "MegaCrit.Sts2.Core.Runs.RelicGrabBag",
+    "PullFromFront",
+    parameterCount: 1,
+    parameterTypeNames: ["RelicRarity"]);
 
 static void DumpType(Assembly asm, string fullName)
 {

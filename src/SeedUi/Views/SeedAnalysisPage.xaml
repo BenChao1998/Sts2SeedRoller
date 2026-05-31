@@ -100,11 +100,75 @@
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Background" Value="#FAFAFA"/>
         </Style>
+
+        <Style x:Key="RunValidationCellTextStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource Brush.TextSecondary}"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+
+        <Style x:Key="RunValidationDataGridStyle" TargetType="DataGrid">
+            <Setter Property="Background" Value="{StaticResource Brush.Surface}"/>
+            <Setter Property="Foreground" Value="{StaticResource Brush.TextPrimary}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Brush.Border}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="RowHeaderWidth" Value="0"/>
+            <Setter Property="HeadersVisibility" Value="Column"/>
+            <Setter Property="GridLinesVisibility" Value="Horizontal"/>
+            <Setter Property="HorizontalGridLinesBrush" Value="{StaticResource Brush.Border}"/>
+            <Setter Property="VerticalGridLinesBrush" Value="Transparent"/>
+            <Setter Property="AlternatingRowBackground" Value="{StaticResource Brush.SurfaceSubtle}"/>
+            <Setter Property="CanUserAddRows" Value="False"/>
+            <Setter Property="CanUserDeleteRows" Value="False"/>
+            <Setter Property="CanUserResizeRows" Value="False"/>
+            <Setter Property="IsReadOnly" Value="True"/>
+            <Setter Property="AutoGenerateColumns" Value="False"/>
+        </Style>
+
+        <Style x:Key="RunValidationColumnHeaderStyle" TargetType="DataGridColumnHeader">
+            <Setter Property="Background" Value="{StaticResource Brush.SurfaceSubtle}"/>
+            <Setter Property="Foreground" Value="{StaticResource Brush.TextSecondary}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Brush.Border}"/>
+            <Setter Property="BorderThickness" Value="0 0 0 1"/>
+            <Setter Property="Padding" Value="10 9"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+        </Style>
+
+        <Style x:Key="RunValidationRowStyle" TargetType="DataGridRow">
+            <Setter Property="MinHeight" Value="36"/>
+            <Setter Property="Background" Value="{StaticResource Brush.Surface}"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{StaticResource Brush.PrimaryMuted}"/>
+                </Trigger>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="{StaticResource Brush.PrimarySubtle}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="RunValidationCellStyle" TargetType="DataGridCell">
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="10 7"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="DataGridCell">
+                        <Border Background="Transparent" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </UserControl.Resources>
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -121,8 +185,6 @@
                         <ColumnDefinition Width="0.95*"/>
                         <ColumnDefinition Width="0.95*"/>
                         <ColumnDefinition Width="0.8*"/>
-                        <ColumnDefinition Width="0.85*"/>
-                        <ColumnDefinition Width="0.85*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
@@ -155,21 +217,18 @@
                                   MinHeight="25"/>
                     </StackPanel>
 
-                    <StackPanel Grid.Column="4" Margin="0 0 12 0">
-                        <TextBlock Text="概率采样次数" FontSize="12" Foreground="#666" Margin="0 0 0 6"/>
-                        <TextBox Text="{Binding VisibilitySampleCountText, UpdateSourceTrigger=PropertyChanged}" Height="30"/>
-                    </StackPanel>
-
-                    <StackPanel Grid.Column="5" Margin="0 0 12 0">
-                        <TextBlock Text="海玻璃采样次数" FontSize="12" Foreground="#666" Margin="0 0 0 6"/>
-                        <TextBox Text="{Binding SeaGlassSampleCountText, UpdateSourceTrigger=PropertyChanged}" Height="30"/>
-                    </StackPanel>
-
-                    <StackPanel Grid.Column="6" VerticalAlignment="Bottom">
-                        <Button Content="分析"
-                                Command="{Binding AnalyzeSeedCommand}"
-                                Style="{StaticResource ButtonPrimary}"
-                                Padding="20 6"/>
+                    <StackPanel Grid.Column="4" VerticalAlignment="Bottom">
+                        <StackPanel Orientation="Horizontal">
+                            <Button Content="分析"
+                                    Command="{Binding AnalyzeSeedCommand}"
+                                    Style="{StaticResource ButtonPrimary}"
+                                    Padding="20 6"
+                                    Margin="0 0 8 0"/>
+                            <Button Content="停止"
+                                    Command="{Binding CancelSeedAnalysisCommand}"
+                                    Style="{StaticResource ButtonDefault}"
+                                    Padding="16 6"/>
+                        </StackPanel>
                     </StackPanel>
                 </Grid>
 
@@ -182,22 +241,99 @@
                 <TextBlock Text="{Binding SeedAnalysisSeedValueText}" Foreground="#1976D2" FontSize="12"/>
 
                 <Border Margin="0 12 0 0"
+                        Background="#FAFAFA"
+                        BorderBrush="#E8E8E8"
+                        BorderThickness="1"
+                        CornerRadius="6"
+                        Padding="10">
+                    <StackPanel>
+                        <DockPanel Margin="0 0 0 6">
+                            <TextBlock Text="分析进度"
+                                       FontSize="13"
+                                       FontWeight="SemiBold"
+                                       Foreground="#333"
+                                       DockPanel.Dock="Left"/>
+                            <TextBlock Text="{Binding SeedAnalysisRouteProgressText}"
+                                       Foreground="#666"
+                                       HorizontalAlignment="Right"
+                                       TextWrapping="Wrap"/>
+                        </DockPanel>
+                        <ProgressBar Value="{Binding SeedAnalysisRouteProgressValue, Mode=OneWay}"
+                                     Height="4"
+                                     Minimum="0"
+                                     Maximum="1"/>
+                        <Grid Margin="0 10 0 0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="0.75*"/>
+                                <ColumnDefinition Width="1.15*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" Margin="0 0 12 0">
+                                <TextBlock Text="总检查上限" FontSize="12" Foreground="#666" Margin="0 0 0 6"/>
+                                <TextBox Text="{Binding SeedAnalysisRouteMaxChecksText, UpdateSourceTrigger=PropertyChanged}" Height="30"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Margin="0 0 12 0">
+                                <TextBlock Text="模拟模式" FontSize="12" Foreground="#666" Margin="0 0 0 6"/>
+                                <StackPanel Orientation="Horizontal">
+                                    <RadioButton Content="严格"
+                                                 IsChecked="{Binding IsSeedAnalysisRouteStrictMode, Mode=TwoWay}"
+                                                 VerticalAlignment="Center"
+                                                 Margin="0 0 12 0"/>
+                                    <RadioButton Content="快速"
+                                                 IsChecked="{Binding IsSeedAnalysisRouteFastMode, Mode=TwoWay}"
+                                                 VerticalAlignment="Center"
+                                                 Margin="0 0 12 0"/>
+                                    <TextBlock Text="商店上限"
+                                               FontSize="12"
+                                               Foreground="#666"
+                                               VerticalAlignment="Center"
+                                               Margin="0 0 6 0"/>
+                                    <TextBox Text="{Binding SeedAnalysisRouteShopOutputLimitText, UpdateSourceTrigger=PropertyChanged}"
+                                             Width="52"
+                                             Height="30"
+                                             IsEnabled="{Binding IsSeedAnalysisRouteFastMode}"/>
+                                </StackPanel>
+                                <TextBlock Text="{Binding SeedAnalysisRouteSimulationModeText}"
+                                           FontSize="12"
+                                           Foreground="#666"
+                                           TextWrapping="Wrap"
+                                           Margin="0 6 0 0"/>
+                            </StackPanel>
+                            <TextBlock Grid.Column="2"
+                                       Text="{Binding SeedAnalysisRouteSummary}"
+                                       Foreground="#333"
+                                       TextWrapping="Wrap"
+                                       VerticalAlignment="Bottom"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <Border Margin="0 12 0 0"
                         Padding="12"
                         CornerRadius="6"
                         BorderThickness="1"
-                        BorderBrush="#D7CCC8"
-                        Background="#FAFAFA">
+                        BorderBrush="#DCE5EF"
+                        Background="#F7F9FC">
                     <StackPanel>
-                        <TextBlock Text="进度存档说明"
-                                   FontSize="13"
-                                   FontWeight="SemiBold"
-                                   Foreground="#333"
-                                   Margin="0 0 0 8"/>
-                        <TextBlock Text="{Binding ProgressSaveLoadStatus}" Foreground="#8A5A00" FontWeight="SemiBold" TextWrapping="Wrap"/>
-                        <TextBlock Text="{Binding ProgressSaveSummary}" Foreground="#666" TextWrapping="Wrap" Margin="0 6 0 0"/>
-                        <TextBlock Text="{Binding ProgressSavePathText}" Foreground="#666" TextWrapping="Wrap" Margin="0 6 0 0"/>
-                        <TextBlock Text="{Binding ProgressSaveEpochText}" Foreground="#666" TextWrapping="Wrap" Margin="0 6 0 0"/>
-                        <TextBlock Text="{Binding ProgressSaveAncientRuleText}" Foreground="#666" TextWrapping="Wrap" Margin="0 6 0 0"/>
+                        <TextBlock Text="存档进度（progress.save）" FontSize="13" FontWeight="SemiBold" Foreground="#333" Margin="0 0 0 6"/>
+                        <TextBlock Text="{Binding ProgressSaveLoadStatus}" FontSize="12" FontWeight="SemiBold" Foreground="#8A5A00" TextWrapping="Wrap"/>
+                        <TextBlock Text="影响古神、事件池、Underdocks 与解锁内容；档案不一致会导致分析结果不同。"
+                                   FontSize="12"
+                                   Foreground="#666"
+                                   TextWrapping="Wrap"
+                                   Margin="0 6 0 0"/>
+                        <TextBlock Text="{Binding ProgressSavePathText}"
+                                   FontSize="12"
+                                   Foreground="#666"
+                                   TextTrimming="CharacterEllipsis"
+                                   Margin="0 6 0 0"
+                                   ToolTip="{Binding ProgressSaveSummary}"/>
+                        <Button Content="选择其他 progress.save"
+                                Command="{Binding SelectProgressSaveCommand}"
+                                Style="{StaticResource ButtonDefault}"
+                                HorizontalAlignment="Left"
+                                Padding="10 4"
+                                Margin="0 8 0 0"/>
                     </StackPanel>
                 </Border>
             </StackPanel>
@@ -266,231 +402,85 @@
 
         <Border Grid.Row="2" Style="{StaticResource CardStyle}" Margin="0 0 0 16">
             <StackPanel>
-                <TextBlock Text="遗物概率预览" FontSize="16" FontWeight="SemiBold" Foreground="#333" Margin="0 0 0 12"/>
-                <TextBlock Text="{Binding SeedAnalysisRelicVisibilitySummary}" Foreground="#666" TextWrapping="Wrap" Margin="0 0 0 12"/>
+                <TextBlock Text="路线覆盖率汇总"
+                           FontSize="16"
+                           FontWeight="SemiBold"
+                           Foreground="#333"
+                           Margin="0 0 0 8"/>
+                <TextBlock Text="{Binding SeedAnalysisRouteCoverageSummary}"
+                           Foreground="#666"
+                           TextWrapping="Wrap"
+                           Margin="0 0 0 12"/>
 
-                <ItemsControl ItemsSource="{Binding SeedAnalysisRelicVisibilityProfiles}">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <Expander Header="{Binding Title}" IsExpanded="{Binding IsExpandedByDefault, Mode=OneWay}" Margin="0 0 0 12">
-                                <StackPanel Margin="0 8 0 0">
-                                    <TextBlock Text="{Binding Description}"
-                                               Foreground="#666"
-                                               TextWrapping="Wrap"
-                                               Visibility="{Binding HasDescription, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                <TabControl Style="{StaticResource RouteTabControlStyle}">
+                    <TabItem Header="事件出现率" Style="{StaticResource RouteTabItemStyle}">
+                        <DataGrid Style="{StaticResource RunValidationDataGridStyle}"
+                                  ItemsSource="{Binding SeedAnalysisRouteCoverageEvents}"
+                                  ColumnHeaderStyle="{StaticResource RunValidationColumnHeaderStyle}"
+                                  RowStyle="{StaticResource RunValidationRowStyle}"
+                                  CellStyle="{StaticResource RunValidationCellStyle}"
+                                  MinHeight="320"
+                                  MaxHeight="520"
+                                  Margin="0 12 0 0"
+                                  SelectionMode="Single"
+                                  SelectionUnit="FullRow">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="名称" Binding="{Binding Name}" Width="260" ElementStyle="{StaticResource RunValidationCellTextStyle}"/>
+                                <DataGridTextColumn Header="幕" Binding="{Binding ActLabel}" Width="90" ElementStyle="{StaticResource RunValidationCellTextStyle}"/>
+                                <DataGridTextColumn Header="出现率" Binding="{Binding CoverageText}" Width="160" ElementStyle="{StaticResource RunValidationCellTextStyle}"/>
+                                <DataGridTextColumn Header="首见" Binding="{Binding FirstRowText}" Width="110" ElementStyle="{StaticResource RunValidationCellTextStyle}"/>
+                                <DataGridTextColumn Header="来源" Binding="{Binding SourceText}" Width="*" MinWidth="220" ElementStyle="{StaticResource RunValidationCellTextStyle}"/>
+                                <DataGridTemplateColumn Header="操作" Width="150">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Button Content="加入路线分析"
+                                                    Command="{Binding DataContext.AddSeedAnalysisRouteCoverageTargetCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    CommandParameter="{Binding}"
+                                                    Padding="8 2"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </TabItem>
 
-                                    <ItemsControl ItemsSource="{Binding ActSummaries}" Margin="0 8 0 0">
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate>
-                                                <TextBlock Text="{Binding}" Margin="0 2 0 2" Foreground="#555" TextWrapping="Wrap"/>
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
-
-                                    <Grid Margin="0 12 0 0">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="*"/>
-                                        </Grid.ColumnDefinitions>
-
-                                        <StackPanel Grid.Column="0" Margin="0 0 12 0">
-                                            <TextBlock Text="更容易前期见到" Style="{StaticResource SectionHeaderStyle}"/>
-                                            <ItemsControl ItemsSource="{Binding EarlyRelics}">
-                                                <ItemsControl.ItemTemplate>
-                                                    <DataTemplate>
-                                                        <TextBlock Text="{Binding Text}" Margin="0 2 0 2" Foreground="#444" TextWrapping="Wrap"/>
-                                                    </DataTemplate>
-                                                </ItemsControl.ItemTemplate>
-                                            </ItemsControl>
-                                        </StackPanel>
-
-                                        <StackPanel Grid.Column="1" Margin="12 0 0 0">
-                                            <TextBlock Text="整体更可能出现" Style="{StaticResource SectionHeaderStyle}"/>
-                                            <ItemsControl ItemsSource="{Binding SeenRelics}">
-                                                <ItemsControl.ItemTemplate>
-                                                    <DataTemplate>
-                                                        <TextBlock Text="{Binding Text}" Margin="0 2 0 2" Foreground="#444" TextWrapping="Wrap"/>
-                                                    </DataTemplate>
-                                                </ItemsControl.ItemTemplate>
-                                            </ItemsControl>
-                                        </StackPanel>
-                                    </Grid>
-
-                                    <StackPanel Margin="0 12 0 0"
-                                                Visibility="{Binding HasSamples, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                        <TextBlock Text="前期样本序列" Style="{StaticResource SectionHeaderStyle}"/>
-                                        <ItemsControl ItemsSource="{Binding SampleLines}">
-                                            <ItemsControl.ItemTemplate>
-                                                <DataTemplate>
-                                                    <TextBlock Text="{Binding}" Margin="0 2 0 2" Foreground="#666" TextWrapping="Wrap"/>
-                                                </DataTemplate>
-                                            </ItemsControl.ItemTemplate>
-                                        </ItemsControl>
-                                    </StackPanel>
-                                </StackPanel>
-                            </Expander>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
+                    <TabItem Header="遗物出现率" Style="{StaticResource RouteTabItemStyle}">
+                        <DataGrid Style="{StaticResource RunValidationDataGridStyle}"
+                                  ItemsSource="{Binding SeedAnalysisRouteCoverageRelics}"
+                                  ColumnHeaderStyle="{StaticResource RunValidationColumnHeaderStyle}"
+                                  RowStyle="{StaticResource RunValidationRowStyle}"
+                                  CellStyle="{StaticResource RunValidationCellStyle}"
+                                  MinHeight="320"
+                                  MaxHeight="520"
+                                  Margin="0 12 0 0"
+                                  SelectionMode="Single"
+                                  SelectionUnit="FullRow">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="名称" Binding="{Binding Name}" Width="260" ElementStyle="{StaticResource RunValidationCellTextStyle}"/>
+                                <DataGridTextColumn Header="幕" Binding="{Binding ActLabel}" Width="90" ElementStyle="{StaticResource RunValidationCellTextStyle}"/>
+                                <DataGridTextColumn Header="出现率" Binding="{Binding CoverageText}" Width="160" ElementStyle="{StaticResource RunValidationCellTextStyle}"/>
+                                <DataGridTextColumn Header="首见" Binding="{Binding FirstRowText}" Width="110" ElementStyle="{StaticResource RunValidationCellTextStyle}"/>
+                                <DataGridTextColumn Header="来源" Binding="{Binding SourceText}" Width="*" MinWidth="220" ElementStyle="{StaticResource RunValidationCellTextStyle}"/>
+                                <DataGridTemplateColumn Header="操作" Width="150">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Button Content="加入路线分析"
+                                                    Command="{Binding DataContext.AddSeedAnalysisRouteCoverageTargetCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    CommandParameter="{Binding}"
+                                                    Padding="8 2"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </TabItem>
+                </TabControl>
             </StackPanel>
         </Border>
 
         <Border Grid.Row="3" Style="{StaticResource CardStyle}" Margin="0 0 0 16">
             <StackPanel>
-                <TextBlock Text="事件概率预览" FontSize="16" FontWeight="SemiBold" Foreground="#333" Margin="0 0 0 12"/>
-                <TextBlock Text="{Binding SeedAnalysisEventVisibilitySummary}" Foreground="#666" TextWrapping="Wrap" Margin="0 0 0 12"/>
-
-                <ItemsControl ItemsSource="{Binding SeedAnalysisEventVisibilityProfiles}">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <Expander Header="{Binding Title}" IsExpanded="{Binding IsExpandedByDefault, Mode=OneWay}" Margin="0 0 0 12">
-                                <StackPanel Margin="0 8 0 0">
-                                    <TextBlock Text="{Binding Description}"
-                                               Foreground="#666"
-                                               TextWrapping="Wrap"
-                                               Visibility="{Binding HasDescription, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-
-                                    <ItemsControl ItemsSource="{Binding ActSummaries}" Margin="0 8 0 0">
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate>
-                                                <TextBlock Text="{Binding}" Margin="0 2 0 2" Foreground="#555" TextWrapping="Wrap"/>
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
-
-                                    <Grid Margin="0 12 0 0">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="*"/>
-                                        </Grid.ColumnDefinitions>
-
-                                        <StackPanel Grid.Column="0" Margin="0 0 12 0">
-                                            <TextBlock Text="更容易前期见到" Style="{StaticResource SectionHeaderStyle}"/>
-                                            <ItemsControl ItemsSource="{Binding EarlyEvents}">
-                                                <ItemsControl.ItemTemplate>
-                                                    <DataTemplate>
-                                                        <StackPanel Margin="0 2 0 6">
-                                                            <TextBlock Style="{StaticResource EventNameStyle}">
-                                                                <Run Text="{Binding RankText, Mode=OneWay}"/>
-                                                                <Run Text=" "/>
-                                                                <Run Text="{Binding Title, Mode=OneWay}"/>
-                                                                <TextBlock.ToolTip>
-                                                                    <ToolTip Style="{StaticResource EventTooltipStyle}"
-                                                                             Visibility="{Binding HasTooltipContent, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                                                        <StackPanel MaxWidth="420">
-                                                                            <TextBlock Text="{Binding Description}"
-                                                                                       TextWrapping="Wrap"
-                                                                                       Foreground="#3E2B00"
-                                                                                       Visibility="{Binding HasDescription, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-                                                                            <Border Height="1"
-                                                                                    Margin="0 8 0 8"
-                                                                                    Background="#C8A24A"
-                                                                                    Visibility="{Binding HasDescriptionAndOptions, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-                                                                            <StackPanel Visibility="{Binding HasOptions, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                                                                <TextBlock Text="可选项" FontWeight="SemiBold" Margin="0 0 0 6" Foreground="#6D4900"/>
-                                                                                <ItemsControl ItemsSource="{Binding Options}">
-                                                                                    <ItemsControl.ItemTemplate>
-                                                                                        <DataTemplate>
-                                                                                            <Border Padding="0 0 0 8">
-                                                                                                <StackPanel>
-                                                                                                    <TextBlock Text="{Binding Title}" FontWeight="SemiBold" Foreground="#3E2B00" TextWrapping="Wrap"/>
-                                                                                                    <TextBlock Text="{Binding Description}"
-                                                                                                               Margin="0 2 0 0"
-                                                                                                               TextWrapping="Wrap"
-                                                                                                               Foreground="#3E2B00"
-                                                                                                               Visibility="{Binding HasDescription, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-                                                                                                </StackPanel>
-                                                                                            </Border>
-                                                                                        </DataTemplate>
-                                                                                    </ItemsControl.ItemTemplate>
-                                                                                </ItemsControl>
-                                                                            </StackPanel>
-                                                                        </StackPanel>
-                                                                    </ToolTip>
-                                                                </TextBlock.ToolTip>
-                                                            </TextBlock>
-                                                            <TextBlock Text="{Binding MetricsText}" Margin="20 2 0 0" Foreground="#666" TextWrapping="Wrap"/>
-                                                        </StackPanel>
-                                                    </DataTemplate>
-                                                </ItemsControl.ItemTemplate>
-                                            </ItemsControl>
-                                        </StackPanel>
-
-                                        <StackPanel Grid.Column="1" Margin="12 0 0 0">
-                                            <TextBlock Text="整体更可能出现" Style="{StaticResource SectionHeaderStyle}"/>
-                                            <ItemsControl ItemsSource="{Binding SeenEvents}">
-                                                <ItemsControl.ItemTemplate>
-                                                    <DataTemplate>
-                                                        <StackPanel Margin="0 2 0 6">
-                                                            <TextBlock Style="{StaticResource EventNameStyle}">
-                                                                <Run Text="{Binding RankText, Mode=OneWay}"/>
-                                                                <Run Text=" "/>
-                                                                <Run Text="{Binding Title, Mode=OneWay}"/>
-                                                                <TextBlock.ToolTip>
-                                                                    <ToolTip Style="{StaticResource EventTooltipStyle}"
-                                                                             Visibility="{Binding HasTooltipContent, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                                                        <StackPanel MaxWidth="420">
-                                                                            <TextBlock Text="{Binding Description}"
-                                                                                       TextWrapping="Wrap"
-                                                                                       Foreground="#3E2B00"
-                                                                                       Visibility="{Binding HasDescription, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-                                                                            <Border Height="1"
-                                                                                    Margin="0 8 0 8"
-                                                                                    Background="#C8A24A"
-                                                                                    Visibility="{Binding HasDescriptionAndOptions, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-                                                                            <StackPanel Visibility="{Binding HasOptions, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                                                                <TextBlock Text="可选项" FontWeight="SemiBold" Margin="0 0 0 6" Foreground="#6D4900"/>
-                                                                                <ItemsControl ItemsSource="{Binding Options}">
-                                                                                    <ItemsControl.ItemTemplate>
-                                                                                        <DataTemplate>
-                                                                                            <Border Padding="0 0 0 8">
-                                                                                                <StackPanel>
-                                                                                                    <TextBlock Text="{Binding Title}" FontWeight="SemiBold" Foreground="#3E2B00" TextWrapping="Wrap"/>
-                                                                                                    <TextBlock Text="{Binding Description}"
-                                                                                                               Margin="0 2 0 0"
-                                                                                                               TextWrapping="Wrap"
-                                                                                                               Foreground="#3E2B00"
-                                                                                                               Visibility="{Binding HasDescription, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-                                                                                                </StackPanel>
-                                                                                            </Border>
-                                                                                        </DataTemplate>
-                                                                                    </ItemsControl.ItemTemplate>
-                                                                                </ItemsControl>
-                                                                            </StackPanel>
-                                                                        </StackPanel>
-                                                                    </ToolTip>
-                                                                </TextBlock.ToolTip>
-                                                            </TextBlock>
-                                                            <TextBlock Text="{Binding MetricsText}" Margin="20 2 0 0" Foreground="#666" TextWrapping="Wrap"/>
-                                                        </StackPanel>
-                                                    </DataTemplate>
-                                                </ItemsControl.ItemTemplate>
-                                            </ItemsControl>
-                                        </StackPanel>
-                                    </Grid>
-
-                                    <StackPanel Margin="0 12 0 0"
-                                                Visibility="{Binding HasSamples, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                        <TextBlock Text="前期样本序列" Style="{StaticResource SectionHeaderStyle}"/>
-                                        <ItemsControl ItemsSource="{Binding SampleLines}">
-                                            <ItemsControl.ItemTemplate>
-                                                <DataTemplate>
-                                                    <TextBlock Text="{Binding}" Margin="0 2 0 2" Foreground="#666" TextWrapping="Wrap"/>
-                                                </DataTemplate>
-                                            </ItemsControl.ItemTemplate>
-                                        </ItemsControl>
-                                    </StackPanel>
-                                </StackPanel>
-                            </Expander>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </StackPanel>
-        </Border>
-
-        <Border Grid.Row="4" Style="{StaticResource CardStyle}" Margin="0 0 0 16">
-            <StackPanel>
-                <TextBlock Text="精确路线分析" FontSize="16" FontWeight="SemiBold" Foreground="#333" Margin="0 0 0 12"/>
+                <TextBlock Text="具体路线反查" FontSize="16" FontWeight="SemiBold" Foreground="#333" Margin="0 0 0 12"/>
                 <TextBlock Text="这部分不走概率采样，而是按真实地图路线逐条推进，反查目标事件或遗物能通过哪些路线命中。"
                            Foreground="#666"
                            TextWrapping="Wrap"
@@ -628,49 +618,33 @@
 
                 <Grid Margin="0 0 0 12">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="0.75*"/>
-                        <ColumnDefinition Width="0.75*"/>
-                        <ColumnDefinition Width="0.95*"/>
-                        <ColumnDefinition Width="0.95*"/>
+                        <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
                     <StackPanel Grid.Column="0" Margin="0 0 12 0">
-                        <TextBlock Text="最多返回路线数" FontSize="12" Foreground="#666" Margin="0 0 0 6"/>
-                        <TextBox Text="{Binding SeedAnalysisRouteMaxResultsText, UpdateSourceTrigger=PropertyChanged}" Height="30"/>
+                        <TextBlock Text="检查上限沿用上方种子分析设置；覆盖率里的“加入精准路线分析”会自动加入目标。"
+                                   Foreground="#666"
+                                   TextWrapping="Wrap"
+                                   VerticalAlignment="Center"/>
                     </StackPanel>
 
-                    <StackPanel Grid.Column="1" Margin="0 0 12 0">
-                        <TextBlock Text="最多检查路线组合" FontSize="12" Foreground="#666" Margin="0 0 0 6"/>
-                        <TextBox Text="{Binding SeedAnalysisRouteMaxChecksText, UpdateSourceTrigger=PropertyChanged}" Height="30"/>
-                    </StackPanel>
-
-                    <StackPanel Grid.Column="2" Margin="0 0 12 0">
-                        <TextBlock Text="商店策略" FontSize="12" Foreground="#666" Margin="0 0 0 6"/>
-                        <ComboBox ItemsSource="{Binding SeedAnalysisRouteShopStrategyOptions}"
-                                  DisplayMemberPath="DisplayName"
-                                  SelectedItem="{Binding SelectedSeedAnalysisRouteShopStrategyOption}"
-                                  MinHeight="25"/>
-                    </StackPanel>
-
-                    <StackPanel Grid.Column="3" Margin="0 0 12 0">
-                        <TextBlock Text="路线偏好" FontSize="12" Foreground="#666" Margin="0 0 0 6"/>
-                        <ComboBox ItemsSource="{Binding SeedAnalysisRoutePreferenceOptions}"
-                                  DisplayMemberPath="DisplayName"
-                                  SelectedItem="{Binding SelectedSeedAnalysisRoutePreferenceOption}"
-                                  MinHeight="25"/>
-                    </StackPanel>
-
-                    <StackPanel Grid.Column="4" VerticalAlignment="Bottom">
-                        <Button Content="搜索路线"
-                                Command="{Binding AnalyzeSeedRoutesCommand}"
-                                Style="{StaticResource ButtonPrimary}"
-                                Padding="20 6"/>
+                    <StackPanel Grid.Column="1" VerticalAlignment="Bottom">
+                        <StackPanel Orientation="Horizontal">
+                            <Button Content="搜索路线"
+                                    Command="{Binding AnalyzeSeedRoutesCommand}"
+                                    Style="{StaticResource ButtonPrimary}"
+                                    Padding="20 6"
+                                    Margin="0 0 8 0"/>
+                            <Button Content="停止"
+                                    Command="{Binding CancelSeedAnalysisRouteCommand}"
+                                    Style="{StaticResource ButtonDefault}"
+                                    Padding="16 6"/>
+                        </StackPanel>
                     </StackPanel>
                 </Grid>
 
                 <TextBlock Text="{Binding SeedAnalysisRouteSummary}" Foreground="#333" TextWrapping="Wrap" Margin="0 0 0 12"/>
-
                 <ItemsControl ItemsSource="{Binding SeedAnalysisRouteMatches}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>

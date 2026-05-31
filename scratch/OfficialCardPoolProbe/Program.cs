@@ -15,7 +15,11 @@ Console.OutputEncoding = Encoding.UTF8;
 var root = FindWorkspaceRoot();
 var characterArg = args.Length > 0 ? args[0] : "Silent";
 var seedText = args.Length > 1 ? args[1] : "V8DFWW6W3V";
-var dataset = NeowOptionDataLoader.LoadFromFile(Path.Combine(root, "data", "0.103.2", "neow", "options.json"));
+var dataArg = args.Length > 2 ? args[2] : "0.106.1";
+var datasetPath = File.Exists(dataArg)
+    ? dataArg
+    : Path.Combine(root, "data", dataArg, "neow", "options.json");
+var dataset = NeowOptionDataLoader.LoadFromFile(datasetPath);
 if (!Enum.TryParse<CharacterId>(characterArg, ignoreCase: true, out var seedCharacter))
 {
     throw new InvalidOperationException($"Unsupported SeedModel character: {characterArg}");
@@ -66,6 +70,7 @@ Console.WriteLine();
 DumpComparison("official.combat", officialCombat.Select(card => card.Id.Entry));
 DumpComparison("dataset.combat", datasetCombat);
 Console.WriteLine($"combatEqual={SequenceEqual(officialCombat.Select(card => card.Id.Entry), datasetCombat)}");
+Console.WriteLine($"datasetPath={datasetPath}");
 Console.WriteLine();
 
 PrintDiff("merchant", officialMerchant.Select(card => card.Id.Entry).ToList(), datasetMerchant);
@@ -74,6 +79,7 @@ PrintSetDiff("full", officialUnlocked.Select(card => card.Id.Entry).ToList(), da
 PrintSetDiff("merchant", officialMerchant.Select(card => card.Id.Entry).ToList(), datasetMerchant);
 PrintSetDiff("combat", officialCombat.Select(card => card.Id.Entry).ToList(), datasetCombat);
 PrintMerchantBuckets(officialMerchant, datasetMerchant, dataset);
+PrintNonCombatRewardLikeCards(datasetPool, dataset);
 
 static void DumpComparison(string label, IEnumerable<string> ids)
 {
@@ -141,6 +147,30 @@ static void PrintMerchantBuckets(
 
             Console.WriteLine($"bucket.{cardType}.{rarity}.official={string.Join(" / ", official)}");
             Console.WriteLine($"bucket.{cardType}.{rarity}.dataset={string.Join(" / ", runtime)}");
+        }
+    }
+}
+
+static void PrintNonCombatRewardLikeCards(
+    IReadOnlyList<string> datasetPool,
+    NeowOptionDataset dataset)
+{
+    foreach (var rarity in new[] { CardRarity.Common, CardRarity.Uncommon, CardRarity.Rare })
+    {
+        var rewardLike = datasetPool
+            .Where(cardId => dataset.CardMetadataMap.TryGetValue(cardId, out var metadata) &&
+                             metadata.ParsedConstraint != CardMultiplayerConstraint.MultiplayerOnly &&
+                             metadata.ParsedRarity == rarity)
+            .ToList();
+        var nonCombat = rewardLike
+            .Select((cardId, index) => (cardId, index))
+            .Where(item => dataset.CardMetadataMap.TryGetValue(item.cardId, out var metadata) &&
+                           !metadata.CanBeGeneratedInCombat)
+            .Select(item => $"{item.index}:{item.cardId}")
+            .ToList();
+        if (nonCombat.Count > 0)
+        {
+            Console.WriteLine($"rewardLike.nonCombat.{rarity}={string.Join(" / ", nonCombat)}");
         }
     }
 }

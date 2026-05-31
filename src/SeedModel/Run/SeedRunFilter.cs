@@ -12,4 +12,6 @@ public sealed record SeedRunFilter
     public Sts2ShopFilter ShopFilter { get; init; } = Sts2ShopFilter.Empty;
 
     public Sts2PoolFilter PoolFilter { get; init; } = Sts2PoolFilter.Empty;
+
+    public Sts2ExactRouteFilter ExactRouteFilter { get; init; } = Sts2ExactRouteFilter.Empty;
 }

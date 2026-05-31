@@ -17,6 +17,10 @@ internal sealed partial class MainWindowViewModel
 {
     private const int MaxVisibilitySampleCount = 1_000_000;
     private const int DefaultSeaGlassSampleCount = 1000;
+    private const long DefaultRollExactRouteMaxChecks = 200;
+    private const long MaxRollExactRouteMaxChecks = 1_000_000;
+    private const int DefaultRollExactRouteShopOutputLimit = 12;
+    private const int MaxRollExactRouteShopOutputLimit = 200;
 
     private static readonly IReadOnlyList<EventVisibilitySourceFilterOption> _highProbabilityEventMostCommonSourceOptions =
     [
@@ -46,6 +50,10 @@ internal sealed partial class MainWindowViewModel
     private RelayCommand? _removeHighProbabilityEventFilterCommand;
     private RelayCommand? _addHighProbabilityRelicFilterCommand;
     private RelayCommand? _removeHighProbabilityRelicFilterCommand;
+    private RelayCommand? _addRollExactRouteEventTargetCommand;
+    private RelayCommand? _removeRollExactRouteEventTargetCommand;
+    private RelayCommand? _addRollExactRouteRelicTargetCommand;
+    private RelayCommand? _removeRollExactRouteRelicTargetCommand;
     private bool _includePoolFilter;
     private string _poolFilterSummary = "分析池：关闭";
     private string _act1EventPoolCatalogFilter = string.Empty;
@@ -71,6 +79,17 @@ internal sealed partial class MainWindowViewModel
     private CatalogItem? _selectedAct3EventPoolCatalogItem;
     private CatalogItem? _selectedHighProbabilityEventCatalogItem;
     private CatalogItem? _selectedHighProbabilityRelicCatalogItem;
+    private CatalogItem? _selectedRollExactRouteEventCatalogItem;
+    private CatalogItem? _selectedRollExactRouteRelicCatalogItem;
+    private RouteActOption? _selectedRollExactRouteEventActOption;
+    private RouteActOption? _selectedRollExactRouteRelicActOption;
+    private string _rollExactRouteEventCatalogFilter = string.Empty;
+    private string _rollExactRouteRelicCatalogFilter = string.Empty;
+    private IReadOnlyList<CatalogItem> _filteredRollExactRouteEventCatalog = Array.Empty<CatalogItem>();
+    private IReadOnlyList<CatalogItem> _filteredRollExactRouteRelicCatalog = Array.Empty<CatalogItem>();
+    private string _rollExactRouteMaxChecksText = DefaultRollExactRouteMaxChecks.ToString(CultureInfo.InvariantCulture);
+    private bool _isRollExactRouteFastMode = true;
+    private string _rollExactRouteShopOutputLimitText = DefaultRollExactRouteShopOutputLimit.ToString(CultureInfo.InvariantCulture);
     private IReadOnlyDictionary<int, IReadOnlyList<HashSet<string>>> _actEventPoolsByAct =
         new Dictionary<int, IReadOnlyList<HashSet<string>>>();
     private IReadOnlyDictionary<int, IReadOnlyDictionary<string, string>> _actEventBranchLabelByAct =
@@ -97,6 +116,10 @@ internal sealed partial class MainWindowViewModel
 
     public ObservableCollection<FilterChipViewModel> HighProbabilityRelicFilterChips { get; } = new();
 
+    public ObservableCollection<SeedAnalysisRouteTargetChipViewModel> RollExactRouteEventTargetChips { get; } = new();
+
+    public ObservableCollection<SeedAnalysisRouteTargetChipViewModel> RollExactRouteRelicTargetChips { get; } = new();
+
     public IEnumerable<CatalogItem> Act1EventPoolCatalogView => _filteredAct1EventPoolCatalog;
 
     public IEnumerable<CatalogItem> Act2EventPoolCatalogView => _filteredAct2EventPoolCatalog;
@@ -106,6 +129,18 @@ internal sealed partial class MainWindowViewModel
     public IEnumerable<CatalogItem> HighProbabilityEventCatalogView => _filteredHighProbabilityEventCatalog;
 
     public IEnumerable<CatalogItem> HighProbabilityRelicCatalogView => _filteredHighProbabilityRelicCatalog;
+
+    public IEnumerable<CatalogItem> RollExactRouteEventCatalogView => _filteredRollExactRouteEventCatalog;
+
+    public IEnumerable<CatalogItem> RollExactRouteRelicCatalogView => _filteredRollExactRouteRelicCatalog;
+
+    public IReadOnlyList<RouteActOption> RollExactRouteActOptions { get; } =
+    [
+        new(null, "任意幕"),
+        new(1, "第一幕"),
+        new(2, "第二幕"),
+        new(3, "第三幕")
+    ];
 
     public IReadOnlyList<EventVisibilitySourceFilterOption> HighProbabilityEventMostCommonSourceOptions => _highProbabilityEventMostCommonSourceOptions;
 
@@ -131,12 +166,20 @@ internal sealed partial class MainWindowViewModel
 
     public RelayCommand RemoveHighProbabilityRelicFilterCommand => _removeHighProbabilityRelicFilterCommand ??= new RelayCommand(RemoveHighProbabilityRelicFilter);
 
+    public RelayCommand AddRollExactRouteEventTargetCommand => _addRollExactRouteEventTargetCommand ??= new RelayCommand(AddRollExactRouteEventTarget);
+
+    public RelayCommand RemoveRollExactRouteEventTargetCommand => _removeRollExactRouteEventTargetCommand ??= new RelayCommand(RemoveRollExactRouteEventTarget);
+
+    public RelayCommand AddRollExactRouteRelicTargetCommand => _addRollExactRouteRelicTargetCommand ??= new RelayCommand(AddRollExactRouteRelicTarget);
+
+    public RelayCommand RemoveRollExactRouteRelicTargetCommand => _removeRollExactRouteRelicTargetCommand ??= new RelayCommand(RemoveRollExactRouteRelicTarget);
+
     public bool IncludePoolFilter
     {
-        get => false;
+        get => _includePoolFilter;
         set
         {
-            if (SetProperty(ref _includePoolFilter, false))
+            if (SetProperty(ref _includePoolFilter, value))
             {
                 ClearEventPoolConflictMessage();
                 UpdatePoolFilterSummaryCore();
@@ -163,6 +206,8 @@ internal sealed partial class MainWindowViewModel
     }
 
     public bool HasEventPoolConflictMessage => !string.IsNullOrWhiteSpace(EventPoolConflictMessage);
+
+    public bool HasRollExactRouteTargets => RollExactRouteEventTargetChips.Count > 0 || RollExactRouteRelicTargetChips.Count > 0;
 
     public int HighProbabilityEventFilterCount =>
         Act1EventPoolFilterChips.Count + Act2EventPoolFilterChips.Count + Act3EventPoolFilterChips.Count;
@@ -269,6 +314,103 @@ internal sealed partial class MainWindowViewModel
     {
         get => _selectedHighProbabilityRelicCatalogItem;
         set => SetProperty(ref _selectedHighProbabilityRelicCatalogItem, value);
+    }
+
+    public CatalogItem? SelectedRollExactRouteEventCatalogItem
+    {
+        get => _selectedRollExactRouteEventCatalogItem;
+        set => SetProperty(ref _selectedRollExactRouteEventCatalogItem, value);
+    }
+
+    public CatalogItem? SelectedRollExactRouteRelicCatalogItem
+    {
+        get => _selectedRollExactRouteRelicCatalogItem;
+        set => SetProperty(ref _selectedRollExactRouteRelicCatalogItem, value);
+    }
+
+    public RouteActOption? SelectedRollExactRouteEventActOption
+    {
+        get => _selectedRollExactRouteEventActOption;
+        set => SetProperty(ref _selectedRollExactRouteEventActOption, value);
+    }
+
+    public RouteActOption? SelectedRollExactRouteRelicActOption
+    {
+        get => _selectedRollExactRouteRelicActOption;
+        set => SetProperty(ref _selectedRollExactRouteRelicActOption, value);
+    }
+
+    public string RollExactRouteEventCatalogFilter
+    {
+        get => _rollExactRouteEventCatalogFilter;
+        set
+        {
+            if (SetProperty(ref _rollExactRouteEventCatalogFilter, value ?? string.Empty))
+            {
+                ApplyRollExactRouteEventFilter();
+            }
+        }
+    }
+
+    public string RollExactRouteRelicCatalogFilter
+    {
+        get => _rollExactRouteRelicCatalogFilter;
+        set
+        {
+            if (SetProperty(ref _rollExactRouteRelicCatalogFilter, value ?? string.Empty))
+            {
+                ApplyRollExactRouteRelicFilter();
+            }
+        }
+    }
+
+    public string RollExactRouteMaxChecksText
+    {
+        get => _rollExactRouteMaxChecksText;
+        set
+        {
+            if (SetProperty(ref _rollExactRouteMaxChecksText, value ?? string.Empty))
+            {
+                UpdatePoolFilterSummaryCore();
+            }
+        }
+    }
+
+    public bool IsRollExactRouteStrictMode
+    {
+        get => !_isRollExactRouteFastMode;
+        set
+        {
+            if (value)
+            {
+                IsRollExactRouteFastMode = false;
+            }
+        }
+    }
+
+    public bool IsRollExactRouteFastMode
+    {
+        get => _isRollExactRouteFastMode;
+        set
+        {
+            if (SetProperty(ref _isRollExactRouteFastMode, value))
+            {
+                RaisePropertyChanged(nameof(IsRollExactRouteStrictMode));
+                UpdatePoolFilterSummaryCore();
+            }
+        }
+    }
+
+    public string RollExactRouteShopOutputLimitText
+    {
+        get => _rollExactRouteShopOutputLimitText;
+        set
+        {
+            if (SetProperty(ref _rollExactRouteShopOutputLimitText, value ?? string.Empty))
+            {
+                UpdatePoolFilterSummaryCore();
+            }
+        }
     }
 
     public string HighProbabilityEventSeenThresholdPercentText
@@ -431,6 +573,10 @@ internal sealed partial class MainWindowViewModel
         Act3EventPoolFilterChips.CollectionChanged += OnPoolFilterChipsChanged;
         HighProbabilityEventFilterChips.CollectionChanged += OnPoolFilterChipsChanged;
         HighProbabilityRelicFilterChips.CollectionChanged += OnPoolFilterChipsChanged;
+        RollExactRouteEventTargetChips.CollectionChanged += OnPoolFilterChipsChanged;
+        RollExactRouteRelicTargetChips.CollectionChanged += OnPoolFilterChipsChanged;
+        SelectedRollExactRouteEventActOption = RollExactRouteActOptions.First();
+        SelectedRollExactRouteRelicActOption = RollExactRouteActOptions.First();
 
         RefreshPoolEventCatalog();
         RefreshPoolRelicCatalog();
@@ -479,6 +625,7 @@ internal sealed partial class MainWindowViewModel
         ApplyAct2EventPoolFilter();
         ApplyAct3EventPoolFilter();
         ApplyHighProbabilityEventFilter();
+        ApplyRollExactRouteEventFilter();
         RefreshSeedAnalysisRouteCatalogs();
     }
 
@@ -500,6 +647,7 @@ internal sealed partial class MainWindowViewModel
             .ToList();
 
         ApplyHighProbabilityRelicFilter();
+        ApplyRollExactRouteRelicFilter();
         RefreshAct1DerivedRewardRelicCatalog();
         ApplyAct1DerivedRelicFilter();
         RefreshSeedAnalysisRouteCatalogs();
@@ -533,6 +681,18 @@ internal sealed partial class MainWindowViewModel
     {
         _filteredHighProbabilityRelicCatalog = FilterCatalog(_poolRelicCatalog, _highProbabilityRelicCatalogFilter);
         RaisePropertyChanged(nameof(HighProbabilityRelicCatalogView));
+    }
+
+    private void ApplyRollExactRouteEventFilter()
+    {
+        _filteredRollExactRouteEventCatalog = FilterCatalog(_eventVisibilityCatalog, _rollExactRouteEventCatalogFilter);
+        RaisePropertyChanged(nameof(RollExactRouteEventCatalogView));
+    }
+
+    private void ApplyRollExactRouteRelicFilter()
+    {
+        _filteredRollExactRouteRelicCatalog = FilterCatalog(_poolRelicCatalog, _rollExactRouteRelicCatalogFilter);
+        RaisePropertyChanged(nameof(RollExactRouteRelicCatalogView));
     }
 
     private string GetPoolRelicTitle(string relicId)
@@ -627,6 +787,65 @@ internal sealed partial class MainWindowViewModel
         RemoveChipById(HighProbabilityRelicFilterChips, parameter as string);
     }
 
+    private void AddRollExactRouteEventTarget()
+    {
+        if (TryAddRollExactRouteTargetChip(
+                RollExactRouteEventTargetChips,
+                SelectedRollExactRouteEventCatalogItem,
+                SelectedRollExactRouteEventActOption,
+                "事件"))
+        {
+            SelectedRollExactRouteEventCatalogItem = null;
+        }
+    }
+
+    private void RemoveRollExactRouteEventTarget(object? parameter)
+    {
+        RemoveRouteTargetChipById(RollExactRouteEventTargetChips, parameter as string);
+    }
+
+    private void AddRollExactRouteRelicTarget()
+    {
+        if (TryAddRollExactRouteTargetChip(
+                RollExactRouteRelicTargetChips,
+                SelectedRollExactRouteRelicCatalogItem,
+                SelectedRollExactRouteRelicActOption,
+                "遗物"))
+        {
+            SelectedRollExactRouteRelicCatalogItem = null;
+        }
+    }
+
+    private void RemoveRollExactRouteRelicTarget(object? parameter)
+    {
+        RemoveRouteTargetChipById(RollExactRouteRelicTargetChips, parameter as string);
+    }
+
+    private bool TryAddRollExactRouteTargetChip(
+        ObservableCollection<SeedAnalysisRouteTargetChipViewModel> chips,
+        CatalogItem? selectedItem,
+        RouteActOption? selectedActOption,
+        string itemName)
+    {
+        if (selectedItem == null)
+        {
+            LogWarn($"请选择要添加的{itemName}。");
+            return false;
+        }
+
+        var actNumber = selectedActOption?.ActNumber;
+        if (chips.Any(chip =>
+                chip.ActNumber == actNumber &&
+                string.Equals(chip.Value, selectedItem.Value, StringComparison.OrdinalIgnoreCase)))
+        {
+            LogWarn($"该{itemName}条件已存在。");
+            return false;
+        }
+
+        chips.Add(SeedAnalysisRouteTargetChipViewModel.FromCatalog(selectedItem, actNumber, GetRouteActLabel(actNumber)));
+        return true;
+    }
+
     private bool TryAddCatalogChip(
         ObservableCollection<FilterChipViewModel> chips,
         CatalogItem? selectedItem,
@@ -700,60 +919,33 @@ internal sealed partial class MainWindowViewModel
     {
         if (!IncludePoolFilter)
         {
-            PoolFilterSummary = "分析池：关闭";
+            PoolFilterSummary = "\u79cd\u5b50\u5206\u6790\u7b5b\u9009\uff1a\u5173\u95ed";
             return;
         }
 
         var parts = new List<string>();
-
-        AppendChipSummary(parts, "第一幕高概率事件", Act1EventPoolFilterChips);
-        AppendChipSummary(parts, "第二幕高概率事件", Act2EventPoolFilterChips);
-        AppendChipSummary(parts, "第三幕高概率事件", Act3EventPoolFilterChips);
-
-        if (HasHighProbabilityEventFilters)
-        {
-            parts.Add($"事件整局概率：{FormatThresholdPercent(GetHighProbabilityEventSeenThreshold())}%");
-            AppendOptionalSummary(
-                parts,
-                "事件平均首次事件位≤",
-                GetOptionalPositiveDouble(HighProbabilityEventAverageFirstOpportunityMaxText),
-                value => value.ToString("0.##", CultureInfo.InvariantCulture));
-
-            var eventMostCommonSource = GetHighProbabilityEventMostCommonSource();
-            if (eventMostCommonSource.HasValue)
-            {
-                parts.Add($"事件多来自：{GetEventVisibilitySourceDisplayName(eventMostCommonSource.Value)}");
-            }
-        }
-
-        if (HighProbabilityRelicFilterChips.Count > 0)
-        {
-            AppendChipSummary(parts, "高概率遗物", HighProbabilityRelicFilterChips);
-            parts.Add($"遗物出现概率：{FormatThresholdPercent(GetHighProbabilitySeenThreshold())}%");
-            AppendOptionalSummary(parts, "非商店≥", GetOptionalThresholdPercent(HighProbabilityNonShopThresholdPercentText), value => $"{FormatThresholdPercent(value)}%");
-            AppendOptionalSummary(parts, "商店≥", GetOptionalThresholdPercent(HighProbabilityShopThresholdPercentText), value => $"{FormatThresholdPercent(value)}%");
-            AppendOptionalSummary(parts, "遗物前期≥", GetOptionalThresholdPercent(HighProbabilityEarlyThresholdPercentText), value => $"{FormatThresholdPercent(value)}%");
-            AppendOptionalSummary(
-                parts,
-                "遗物平均首次机会≤",
-                GetOptionalPositiveDouble(HighProbabilityAverageFirstOpportunityMaxText),
-                value => value.ToString("0.##", CultureInfo.InvariantCulture));
-
-            var mostCommonSource = GetHighProbabilityMostCommonSource();
-            if (mostCommonSource.HasValue)
-            {
-                parts.Add($"遗物多来自：{GetRelicVisibilitySourceDisplayName(mostCommonSource.Value)}");
-            }
-        }
-
-        if (HasHighProbabilityEventFilters || HighProbabilityRelicFilterChips.Count > 0)
-        {
-            parts.Add($"采样次数：{GetVisibilitySampleCount()}");
-        }
+        AppendRouteTargetSummary(parts, "\u76ee\u6807\u4e8b\u4ef6", RollExactRouteEventTargetChips);
+        AppendRouteTargetSummary(parts, "\u76ee\u6807\u9057\u7269", RollExactRouteRelicTargetChips);
+        parts.Add($"\u603b\u8def\u7ebf\u68c0\u67e5\u4e0a\u9650\uff1a{GetRollExactRouteMaxChecks():N0}");
+        parts.Add(IsRollExactRouteFastMode
+            ? $"\u5feb\u901f\u6a21\u5f0f\uff0c\u5546\u5e97\u8f93\u51fa\u4e0a\u9650\uff1a{GetRollExactRouteShopOutputLimit()}"
+            : "\u4e25\u683c\u6a21\u5f0f");
 
         PoolFilterSummary = parts.Count > 0
             ? string.Join(" | ", parts)
-            : "分析池：任意";
+            : "\u79cd\u5b50\u5206\u6790\u7b5b\u9009\uff1a\u5df2\u542f\u7528\uff0c\u8bf7\u6dfb\u52a0\u76ee\u6807\u4e8b\u4ef6\u6216\u76ee\u6807\u9057\u7269\u3002";
+    }
+
+    private static void AppendRouteTargetSummary(
+        ICollection<string> parts,
+        string label,
+        IEnumerable<SeedAnalysisRouteTargetChipViewModel> chips)
+    {
+        var values = chips.Select(chip => chip.Display).ToList();
+        if (values.Count > 0)
+        {
+            parts.Add($"{label}\uff1a{string.Join(", ", values)}");
+        }
     }
 
     private static void AppendChipSummary(
@@ -1055,6 +1247,20 @@ internal sealed partial class MainWindowViewModel
         }
 
         return DefaultSeaGlassSampleCount;
+    }
+
+    private long GetRollExactRouteMaxChecks()
+    {
+        return long.TryParse(RollExactRouteMaxChecksText, NumberStyles.Integer, CultureInfo.InvariantCulture, out var value)
+            ? Math.Clamp(value, 1, MaxRollExactRouteMaxChecks)
+            : DefaultRollExactRouteMaxChecks;
+    }
+
+    private int GetRollExactRouteShopOutputLimit()
+    {
+        return int.TryParse(RollExactRouteShopOutputLimitText, NumberStyles.Integer, CultureInfo.InvariantCulture, out var value)
+            ? Math.Clamp(value, 1, MaxRollExactRouteShopOutputLimit)
+            : DefaultRollExactRouteShopOutputLimit;
     }
 
     private static string FormatThresholdPercent(double threshold)

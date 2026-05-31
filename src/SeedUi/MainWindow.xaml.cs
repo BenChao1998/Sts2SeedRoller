@@ -2,8 +2,8 @@ using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media.Imaging;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using SeedUi.ViewModels;
 
 namespace SeedUi;
@@ -23,9 +23,10 @@ public partial class MainWindow : HandyControl.Controls.Window
         if (NavSeedAnalysis != null) NavSeedAnalysis.IsChecked = tabIndex == 1;
         if (NavResult != null) NavResult.IsChecked = tabIndex == 2;
         if (NavLogs != null) NavLogs.IsChecked = tabIndex == 3;
-        if (NavArchive != null) NavArchive.IsChecked = tabIndex == 4;
-        if (NavViewer != null) NavViewer.IsChecked = tabIndex == 5;
-        if (NavEventPools != null) NavEventPools.IsChecked = tabIndex == 6;
+        if (NavRunValidation != null) NavRunValidation.IsChecked = tabIndex == 4;
+        if (NavArchive != null) NavArchive.IsChecked = tabIndex == 5;
+        if (NavViewer != null) NavViewer.IsChecked = tabIndex == 6;
+        if (NavEventPools != null) NavEventPools.IsChecked = tabIndex == 7;
 
         if (PageTitle != null)
         {
@@ -35,9 +36,10 @@ public partial class MainWindow : HandyControl.Controls.Window
                 1 => "种子分析",
                 2 => "运行结果",
                 3 => "运行日志",
-                4 => "铺种",
-                5 => "查看器",
-                6 => "事件池信息",
+                4 => "存档验证",
+                5 => "铺种",
+                6 => "查看器",
+                7 => "事件池信息",
                 _ => PageTitle.Text
             };
         }
@@ -46,17 +48,19 @@ public partial class MainWindow : HandyControl.Controls.Window
         if (PageSeedAnalysisScroll != null) PageSeedAnalysisScroll.Visibility = tabIndex == 1 ? Visibility.Visible : Visibility.Collapsed;
         if (PageResultScroll != null) PageResultScroll.Visibility = tabIndex == 2 ? Visibility.Visible : Visibility.Collapsed;
         if (PageLogsScroll != null) PageLogsScroll.Visibility = tabIndex == 3 ? Visibility.Visible : Visibility.Collapsed;
-        if (PageArchiveScroll != null) PageArchiveScroll.Visibility = tabIndex == 4 ? Visibility.Visible : Visibility.Collapsed;
-        if (PageViewerScroll != null) PageViewerScroll.Visibility = tabIndex == 5 ? Visibility.Visible : Visibility.Collapsed;
-        if (PageEventPoolsScroll != null) PageEventPoolsScroll.Visibility = tabIndex == 6 ? Visibility.Visible : Visibility.Collapsed;
+        if (PageRunValidationScroll != null) PageRunValidationScroll.Visibility = tabIndex == 4 ? Visibility.Visible : Visibility.Collapsed;
+        if (PageArchiveScroll != null) PageArchiveScroll.Visibility = tabIndex == 5 ? Visibility.Visible : Visibility.Collapsed;
+        if (PageViewerScroll != null) PageViewerScroll.Visibility = tabIndex == 6 ? Visibility.Visible : Visibility.Collapsed;
+        if (PageEventPoolsScroll != null) PageEventPoolsScroll.Visibility = tabIndex == 7 ? Visibility.Visible : Visibility.Collapsed;
 
         if (PageConfig != null) PageConfig.Visibility = tabIndex == 0 ? Visibility.Visible : Visibility.Collapsed;
         if (PageSeedAnalysis != null) PageSeedAnalysis.Visibility = tabIndex == 1 ? Visibility.Visible : Visibility.Collapsed;
         if (PageResult != null) PageResult.Visibility = tabIndex == 2 ? Visibility.Visible : Visibility.Collapsed;
         if (PageLogs != null) PageLogs.Visibility = tabIndex == 3 ? Visibility.Visible : Visibility.Collapsed;
-        if (PageArchive != null) PageArchive.Visibility = tabIndex == 4 ? Visibility.Visible : Visibility.Collapsed;
-        if (PageViewer != null) PageViewer.Visibility = tabIndex == 5 ? Visibility.Visible : Visibility.Collapsed;
-        if (PageEventPools != null) PageEventPools.Visibility = tabIndex == 6 ? Visibility.Visible : Visibility.Collapsed;
+        if (PageRunValidation != null) PageRunValidation.Visibility = tabIndex == 4 ? Visibility.Visible : Visibility.Collapsed;
+        if (PageArchive != null) PageArchive.Visibility = tabIndex == 5 ? Visibility.Visible : Visibility.Collapsed;
+        if (PageViewer != null) PageViewer.Visibility = tabIndex == 6 ? Visibility.Visible : Visibility.Collapsed;
+        if (PageEventPools != null) PageEventPools.Visibility = tabIndex == 7 ? Visibility.Visible : Visibility.Collapsed;
     }
 
     private void ResultsListBox_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
@@ -118,11 +122,13 @@ public partial class MainWindow : HandyControl.Controls.Window
 
     private void NavLogs_Checked(object sender, RoutedEventArgs e) => NavigateToPage(3);
 
-    private void NavArchive_Checked(object sender, RoutedEventArgs e) => NavigateToPage(4);
+    private void NavRunValidation_Checked(object sender, RoutedEventArgs e) => NavigateToPage(4);
 
-    private void NavViewer_Checked(object sender, RoutedEventArgs e) => NavigateToPage(5);
+    private void NavArchive_Checked(object sender, RoutedEventArgs e) => NavigateToPage(5);
 
-    private void NavEventPools_Checked(object sender, RoutedEventArgs e) => NavigateToPage(6);
+    private void NavViewer_Checked(object sender, RoutedEventArgs e) => NavigateToPage(6);
+
+    private void NavEventPools_Checked(object sender, RoutedEventArgs e) => NavigateToPage(7);
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
@@ -177,12 +183,13 @@ public partial class MainWindow : HandyControl.Controls.Window
             await vm.SaveConfigToFileAsync(dialog.FileName);
         }
     }
+
     private void OnSelectProgressSave(object sender, RoutedEventArgs e)
     {
         var dialog = new Microsoft.Win32.OpenFileDialog
         {
-            Filter = "progress.save|progress.save|\u6240\u6709\u6587\u4ef6 (*.*)|*.*",
-            Title = "\u9009\u62e9 progress.save",
+            Filter = "progress.save|progress.save|所有文件 (*.*)|*.*",
+            Title = "选择 progress.save",
             FileName = "progress.save"
         };
 

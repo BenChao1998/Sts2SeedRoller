@@ -90,6 +90,8 @@ internal static class UiDataPathResolver
             : LegacyDefaultVersion;
     }
 
+    public static string? FindWorkspaceRoot() => TryFindWorkspaceRoot();
+
     private static void CollectVersionDirectories(string dataRoot, HashSet<string> results)
     {
         if (!Directory.Exists(dataRoot))

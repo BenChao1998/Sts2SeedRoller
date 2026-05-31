@@ -5,6 +5,8 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
 using SeedModel.Neow;
 using SeedModel.Seeds;
 using SeedModel.Sts2;
@@ -22,8 +24,11 @@ internal sealed partial class MainWindowViewModel
     private static readonly Regex AncientConditionalRegex = new(@"\{[^}]*:cond:[^{}]*(?:\{[^}]*\}[^{}]*)*\|[^{}]*\}", RegexOptions.Compiled);
     private static readonly Regex AncientVariableRegex = new(@"\{[^}]+\}", RegexOptions.Compiled);
 
-    private RelayCommand? _analyzeSeedCommand;
+    private AsyncRelayCommand? _analyzeSeedCommand;
+    private RelayCommand? _cancelSeedAnalysisCommand;
+    private CancellationTokenSource? _seedAnalysisCancellation;
     private bool _hasSeedAnalysisResult;
+    private bool _isSeedAnalysisRunning;
     private string _seedAnalysisSummary = "输入种子后点击分析。";
     private string _seedAnalysisSeedValueText = string.Empty;
     private IReadOnlyDictionary<string, string> _seedAnalysisActLocalization = EmptyLocalizationTable;
@@ -37,12 +42,27 @@ internal sealed partial class MainWindowViewModel
 
     public ObservableCollection<SeedAnalysisOpeningActViewModel> SeedAnalysisOpeningActs { get; } = new();
 
-    public RelayCommand AnalyzeSeedCommand => _analyzeSeedCommand ??= new RelayCommand(AnalyzeSeed);
+    public AsyncRelayCommand AnalyzeSeedCommand => _analyzeSeedCommand ??= new AsyncRelayCommand(AnalyzeSeedAsync, () => !IsSeedAnalysisRunning);
+
+    public RelayCommand CancelSeedAnalysisCommand => _cancelSeedAnalysisCommand ??= new RelayCommand(CancelSeedAnalysis, () => IsSeedAnalysisRunning);
 
     public bool HasSeedAnalysisResult
     {
         get => _hasSeedAnalysisResult;
         private set => SetProperty(ref _hasSeedAnalysisResult, value);
+    }
+
+    public bool IsSeedAnalysisRunning
+    {
+        get => _isSeedAnalysisRunning;
+        private set
+        {
+            if (SetProperty(ref _isSeedAnalysisRunning, value))
+            {
+                _analyzeSeedCommand?.RaiseCanExecuteChanged();
+                _cancelSeedAnalysisCommand?.RaiseCanExecuteChanged();
+            }
+        }
     }
 
     public string SeedAnalysisSummary
@@ -57,7 +77,7 @@ internal sealed partial class MainWindowViewModel
         private set => SetProperty(ref _seedAnalysisSeedValueText, value);
     }
 
-    private void AnalyzeSeed()
+    private async Task AnalyzeSeedAsync()
     {
         if (_ancientPreviewer == null)
         {
@@ -73,8 +93,13 @@ internal sealed partial class MainWindowViewModel
             return;
         }
 
+        _seedAnalysisCancellation?.Dispose();
+        _seedAnalysisCancellation = new CancellationTokenSource();
+        var cancellationToken = _seedAnalysisCancellation.Token;
+
         try
         {
+            IsSeedAnalysisRunning = true;
             var seedAnalysisDataset = EnsureSeedAnalysisDataset();
             if (seedAnalysisDataset == null)
             {
@@ -86,8 +111,18 @@ internal sealed partial class MainWindowViewModel
             var seedValue = SeedFormatter.ToUIntSeed(normalizedSeed);
             var unlockedCharacters = GetConfiguredUnlockedCharacters();
             var ancientAvailability = ResolveEffectiveAncientAvailability("种子分析");
+            SeedAnalysisSummary = $"正在分析种子 {normalizedSeed}，并生成路线覆盖率...";
+            StatusMessage = SeedAnalysisSummary;
             LogInfo(
                 $"[种子分析] 输入参数: seed={normalizedSeed}, seedValue={seedValue}, character={SelectedCharacter}, ascension={SelectedAscensionLevel}, unlocked={FormatCharacterList(unlockedCharacters)}, {FormatAncientAvailability(ancientAvailability)}");
+
+            await Task.Yield();
+            if (cancellationToken.IsCancellationRequested)
+            {
+                SeedAnalysisSummary = "种子分析已停止。";
+                StatusMessage = SeedAnalysisSummary;
+                return;
+            }
 
             var analysisRequest = new Sts2SeedAnalysisRequest
             {
@@ -98,43 +133,30 @@ internal sealed partial class MainWindowViewModel
                 AscensionLevel = SelectedAscensionLevel,
                 AncientAvailability = ancientAvailability
             };
-            var analysis = _ancientPreviewer.AnalyzePools(analysisRequest);
+            var analysis = await Task.Run(() => _ancientPreviewer!.AnalyzePools(analysisRequest), cancellationToken);
             LogInfo($"[种子分析] AnalyzePools: {FormatActPoolSummary(analysis)}");
-
-            var relicVisibilityRequest = new Sts2RelicVisibilityRequest
-            {
-                SeedText = normalizedSeed,
-                SeedValue = seedValue,
-                Character = SelectedCharacter,
-                UnlockedCharacters = unlockedCharacters,
-                AscensionLevel = SelectedAscensionLevel,
-                PlayerCount = 1,
-                Samples = GetVisibilitySampleCount(),
-                AncientAvailability = ancientAvailability
-            };
-            var relicVisibility = _ancientPreviewer.AnalyzeRelicVisibility(seedAnalysisDataset, relicVisibilityRequest);
-            var eventVisibilityRequest = new Sts2EventVisibilityRequest
-            {
-                SeedText = normalizedSeed,
-                SeedValue = seedValue,
-                Character = SelectedCharacter,
-                UnlockedCharacters = unlockedCharacters,
-                AscensionLevel = SelectedAscensionLevel,
-                PlayerCount = 1,
-                Samples = GetVisibilitySampleCount(),
-                AncientAvailability = ancientAvailability
-            };
-            var eventVisibility = _ancientPreviewer.AnalyzeEventVisibility(seedAnalysisDataset, eventVisibilityRequest);
 
             var openingActs = BuildSeedAnalysisOpeningActs(normalizedSeed, seedValue);
             ApplySeedAnalysis(analysis);
             ApplySeedAnalysisOpenings(openingActs);
-            ApplySeedAnalysisRelicVisibility(relicVisibility);
-            ApplySeedAnalysisEventVisibility(eventVisibility);
+            await AnalyzeDefaultSeedRouteAsync(cancellationToken);
+            if (cancellationToken.IsCancellationRequested)
+            {
+                SeedAnalysisSummary = "种子分析已停止。";
+                StatusMessage = SeedAnalysisSummary;
+                return;
+            }
+
             SeedAnalysisSummary = $"已分析种子 {normalizedSeed}，角色：{GetCharacterDisplayName(SelectedCharacter)}，进阶等级：{SelectedAscensionLevel}";
             SeedAnalysisSeedValueText = $"uint seed: {analysis.SeedValue}";
             StatusMessage = "种子分析完成。";
             LogInfo($"种子分析完成：{normalizedSeed}");
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            SeedAnalysisSummary = "种子分析已停止。";
+            SeedAnalysisSeedValueText = string.Empty;
+            StatusMessage = SeedAnalysisSummary;
         }
         catch (Exception ex)
         {
@@ -144,6 +166,21 @@ internal sealed partial class MainWindowViewModel
             StatusMessage = SeedAnalysisSummary;
             LogError(SeedAnalysisSummary);
         }
+        finally
+        {
+            IsSeedAnalysisRunning = false;
+            _seedAnalysisCancellation?.Dispose();
+            _seedAnalysisCancellation = null;
+        }
+    }
+
+    private void CancelSeedAnalysis()
+    {
+        _seedAnalysisCancellation?.Cancel();
+        _seedAnalysisRouteCancellation?.Cancel();
+        SeedAnalysisSummary = "正在停止种子分析...";
+        SeedAnalysisRouteProgressText = "正在停止路线模拟...";
+        StatusMessage = SeedAnalysisSummary;
     }
 
     private void ApplySeedAnalysis(Sts2SeedAnalysis analysis)
@@ -175,8 +212,6 @@ internal sealed partial class MainWindowViewModel
     {
         SeedAnalysisActs.Clear();
         SeedAnalysisOpeningActs.Clear();
-        ClearSeedAnalysisRelicVisibility();
-        ClearSeedAnalysisEventVisibility();
         ClearSeedAnalysisRouteResults();
         HasSeedAnalysisResult = false;
     }
@@ -220,6 +255,22 @@ internal sealed partial class MainWindowViewModel
                 .Replace("Weak", " 前置", StringComparison.Ordinal)
                 .Replace("Elite", " 精英", StringComparison.Ordinal)
                 .Replace("Boss", " Boss", StringComparison.Ordinal));
+    }
+
+    internal static string GetEventVisibilityDisplayName(string eventId)
+    {
+        if (IsAncientEventVisibilityId(eventId))
+        {
+            return AncientDisplayCatalog.GetDisplayText(eventId, eventId);
+        }
+
+        return FormatEventId(eventId, _staticSeedAnalysisEventLocalization);
+    }
+
+    private static bool IsAncientEventVisibilityId(string eventId)
+    {
+        return AncientDisplayCatalog.AllowedForAct2.Any(option => string.Equals(option.Id, eventId, StringComparison.OrdinalIgnoreCase)) ||
+               AncientDisplayCatalog.AllowedForAct3.Any(option => string.Equals(option.Id, eventId, StringComparison.OrdinalIgnoreCase));
     }
 
     private static string FormatRarity(string rarity)

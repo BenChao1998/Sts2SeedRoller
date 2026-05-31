@@ -640,15 +640,15 @@ sealed class EventReflection
             ?? throw new InvalidOperationException("Missing event state Create.");
         _startActMethod = _stateType.GetMethod("StartAct", BindingFlags.Instance | BindingFlags.Public)
             ?? throw new InvalidOperationException("Missing StartAct.");
-        _consumeRegularCombatMethod = _stateType.GetMethod("ConsumeRegularCombat", BindingFlags.Instance | BindingFlags.Public)
+        _consumeRegularCombatMethod = _stateType.GetMethod("ConsumeRegularCombat", [typeof(GameRng)])
             ?? throw new InvalidOperationException("Missing ConsumeRegularCombat.");
-        _consumeEliteStopMethod = _stateType.GetMethod("ConsumeEliteStop", BindingFlags.Instance | BindingFlags.Public)
+        _consumeEliteStopMethod = _stateType.GetMethod("ConsumeEliteStop", [typeof(GameRng)])
             ?? throw new InvalidOperationException("Missing ConsumeEliteStop.");
         _consumeTreasureStopMethod = _stateType.GetMethod("ConsumeTreasureStop", [typeof(GameRng), typeof(GameRng)])
             ?? throw new InvalidOperationException("Missing ConsumeTreasureStop.");
-        _consumeShopStopMethod = _stateType.GetMethod("ConsumeShopStop", BindingFlags.Instance | BindingFlags.Public)
+        _consumeShopStopMethod = _stateType.GetMethod("ConsumeShopStop", [typeof(GameRng)])
             ?? throw new InvalidOperationException("Missing ConsumeShopStop.");
-        _applyShownEventMethod = _stateType.GetMethod("ApplyShownEvent", BindingFlags.Instance | BindingFlags.Public)
+        _applyShownEventMethod = _stateType.GetMethod("ApplyShownEvent", [typeof(string), typeof(GameRng)])
             ?? throw new InvalidOperationException("Missing ApplyShownEvent.");
         _totalFloorProperty = _stateType.GetProperty("TotalFloor", BindingFlags.Instance | BindingFlags.Public)
             ?? throw new InvalidOperationException("Missing TotalFloor.");
@@ -695,6 +695,7 @@ sealed class RelicRouteStateFactory
     private readonly object _pools;
     private readonly IReadOnlyDictionary<string, string> _rarityMap;
     private readonly MethodInfo _primeMethod;
+    private readonly int _primeParameterCount;
     private readonly ProbeOptions _options;
 
     public RelicRouteStateFactory(Sts2RunPreviewer previewer, ProbeOptions options)
@@ -726,6 +727,9 @@ sealed class RelicRouteStateFactory
             ?? throw new InvalidOperationException("Unable to create primer.");
         _primeMethod = primerType.GetMethod("Prime", BindingFlags.Instance | BindingFlags.Public)
             ?? throw new InvalidOperationException("Missing Prime method.");
+        _primeParameterCount = _primeMethod.GetParameters().Length;
+        Console.WriteLine("RelicShufflePrimer.Prime signature: " +
+                          string.Join(", ", _primeMethod.GetParameters().Select(parameter => $"{parameter.ParameterType.Name} {parameter.Name}")));
         Primer = primer;
     }
 
@@ -734,7 +738,15 @@ sealed class RelicRouteStateFactory
     public RelicRouteState Create()
     {
         var upFrontRng = new GameRng(_options.SeedValue, "up_front");
-        _primeMethod.Invoke(Primer, [upFrontRng, _options.Character, 1, Sts2AncientAvailability.FromLegacyDarvFlag(true)]);
+        var ancientAvailability = Sts2AncientAvailability.FromLegacyDarvFlag(true);
+        object?[] primeArgs = _primeParameterCount switch
+        {
+            5 => [upFrontRng, _options.Character, 1, ancientAvailability, null],
+            4 => [upFrontRng, _options.Character, 1, ancientAvailability],
+            3 => [upFrontRng, _options.Character, ancientAvailability],
+            _ => throw new InvalidOperationException($"Unsupported Prime signature with {_primeParameterCount} parameters.")
+        };
+        _primeMethod.Invoke(Primer, primeArgs);
 
         var getSharedSequenceMethod = _pools.GetType().GetMethod("GetSharedSequence", BindingFlags.Instance | BindingFlags.Public)!;
         var getCombinedSequenceMethod = _pools.GetType().GetMethod("GetCombinedSequence", BindingFlags.Instance | BindingFlags.Public)!;

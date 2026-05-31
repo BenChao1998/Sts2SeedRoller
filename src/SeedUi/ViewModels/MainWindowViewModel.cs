@@ -20,6 +20,7 @@ using SeedModel.Neow;
 using SeedModel.Run;
 using SeedModel.Seeds;
 using SeedModel.Sts2;
+using SeedModel.Sts2.RunValidation;
 using SeedUi.Commands;
 
 namespace SeedUi.ViewModels;
@@ -97,6 +98,8 @@ internal sealed partial class MainWindowViewModel : ObservableObject
     private readonly AsyncRelayCommand _loadDatasetCommand;
     private readonly AsyncRelayCommand _loadConfigCommand;
     private readonly AsyncRelayCommand _saveConfigCommand;
+    private readonly RelayCommand _selectRunValidationFileCommand;
+    private readonly AsyncRelayCommand _validateRunArchiveCommand;
     private readonly RelayCommand _clearResultsCommand;
     private readonly AsyncRelayCommand _exportResultsCommand;
     private readonly RelayCommand _copyResultCommand;
@@ -124,6 +127,10 @@ internal sealed partial class MainWindowViewModel : ObservableObject
     private SeedEventMetadata _selectedEvent;
     private CancellationTokenSource? _rollCancellation;
     private bool _isRolling;
+    private bool _isRunValidationRunning;
+    private string _runValidationFilePath = string.Empty;
+    private string _runValidationStatus = "请选择 .run 存档后开始验证。";
+    private Sts2RunValidationResultViewModel? _runValidationResult;
 
     public bool IsRolling
     {
@@ -313,6 +320,8 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         _loadDatasetCommand = new AsyncRelayCommand(LoadDatasetAsync);
         _loadConfigCommand = new AsyncRelayCommand(LoadConfigAsync);
         _saveConfigCommand = new AsyncRelayCommand(SaveConfigAsync);
+        _selectRunValidationFileCommand = new RelayCommand(SelectRunValidationFile);
+        _validateRunArchiveCommand = new AsyncRelayCommand(ValidateRunArchiveAsync, CanValidateRunArchive);
         _clearResultsCommand = new RelayCommand(ClearResults);
         _exportResultsCommand = new AsyncRelayCommand(ExportResultsAsync, () => Results.Count > 0);
         _copyResultCommand = new RelayCommand(CopySeedToClipboard, parameter => parameter is RollResultViewModel);
@@ -765,6 +774,10 @@ internal sealed partial class MainWindowViewModel : ObservableObject
 
     public ICommand SaveConfigCommand => _saveConfigCommand;
 
+    public ICommand SelectRunValidationFileCommand => _selectRunValidationFileCommand;
+
+    public ICommand ValidateRunArchiveCommand => _validateRunArchiveCommand;
+
     public ICommand ClearLogsCommand { get; }
 
 
@@ -1172,6 +1185,50 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         private set => SetProperty(ref _rollProgressText, value);
     }
 
+    public bool IsRunValidationRunning
+    {
+        get => _isRunValidationRunning;
+        private set
+        {
+            if (SetProperty(ref _isRunValidationRunning, value))
+            {
+                _validateRunArchiveCommand.RaiseCanExecuteChanged();
+            }
+        }
+    }
+
+    public string RunValidationFilePath
+    {
+        get => _runValidationFilePath;
+        set
+        {
+            if (SetProperty(ref _runValidationFilePath, value?.Trim() ?? string.Empty))
+            {
+                _validateRunArchiveCommand.RaiseCanExecuteChanged();
+            }
+        }
+    }
+
+    public string RunValidationStatus
+    {
+        get => _runValidationStatus;
+        private set => SetProperty(ref _runValidationStatus, value);
+    }
+
+    public Sts2RunValidationResultViewModel? RunValidationResult
+    {
+        get => _runValidationResult;
+        private set
+        {
+            if (SetProperty(ref _runValidationResult, value))
+            {
+                RaisePropertyChanged(nameof(HasRunValidationResult));
+            }
+        }
+    }
+
+    public bool HasRunValidationResult => RunValidationResult != null;
+
     public int SelectedTabIndex
     {
         get => _selectedTabIndex;
@@ -1207,6 +1264,61 @@ internal sealed partial class MainWindowViewModel : ObservableObject
     private bool CanRoll() =>
         !_isRolling &&
         _dataset != null;
+
+    private bool CanValidateRunArchive() =>
+        !IsRunValidationRunning &&
+        !string.IsNullOrWhiteSpace(RunValidationFilePath);
+
+    private void SelectRunValidationFile()
+    {
+        var dialog = new OpenFileDialog
+        {
+            Filter = "Slay the Spire 2 run (*.run)|*.run|JSON 文件 (*.json)|*.json|所有文件 (*.*)|*.*",
+            Title = "选择存档验证文件"
+        };
+
+        if (dialog.ShowDialog() == true)
+        {
+            RunValidationFilePath = dialog.FileName;
+            RunValidationStatus = $"已选择：{Path.GetFileName(dialog.FileName)}";
+        }
+    }
+
+    private async Task ValidateRunArchiveAsync()
+    {
+        if (string.IsNullOrWhiteSpace(RunValidationFilePath))
+        {
+            RunValidationStatus = "请先选择 .run 存档。";
+            return;
+        }
+
+        IsRunValidationRunning = true;
+        RunValidationResult = null;
+        RunValidationStatus = "正在验证存档，请稍候…";
+        StatusMessage = RunValidationStatus;
+
+        try
+        {
+            var filePath = RunValidationFilePath;
+            var workspaceRoot = UiDataPathResolver.FindWorkspaceRoot();
+            var result = await Task.Run(() => Sts2RunValidationService.ValidateFile(filePath, workspaceRoot));
+            RunValidationResult = new Sts2RunValidationResultViewModel(result);
+            RunValidationStatus = $"验证完成：{result.SummaryText}";
+            StatusMessage = RunValidationStatus;
+            LogInfo($"存档验证完成：{Path.GetFileName(filePath)} {result.SummaryText}");
+        }
+        catch (Exception ex)
+        {
+            RunValidationResult = null;
+            RunValidationStatus = $"验证失败：{ex.Message}";
+            StatusMessage = RunValidationStatus;
+            LogError(RunValidationStatus);
+        }
+        finally
+        {
+            IsRunValidationRunning = false;
+        }
+    }
 
     private async Task LoadDatasetAsync()
     {
@@ -2199,7 +2311,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
             ScannedSeeds = p.Scanned;
             HitSeeds = p.HitSeeds;
             HitOptions = p.HitOptions;
-            RollProgressText = $"已扫描 {p.Scanned:N0}，命中 {p.HitSeeds} 个种子、{p.HitOptions} 个选项";
+            RollProgressText = BuildRollProgressText(p);
         });
 
         var quantityText = config.StopOnFirstMatch ? "命中即停" : config.RollCount.ToString(CultureInfo.InvariantCulture);
@@ -2254,8 +2366,41 @@ internal sealed partial class MainWindowViewModel : ObservableObject
     private static int NormalizeRollCount(int requested, SeedRollMode mode) =>
         Math.Max(1, requested);
 
-    private static List<SeedWorkItem> CreateWorkItems(RollConfig config, CancellationToken token, out bool wasCancelled)
+    private int ResolveNeowMatchCount(
+        NeowGenerator neowGenerator,
+        SeedRunFilter filter,
+        CharacterId character,
+        uint seedValue)
     {
+        if (!filter.ExactRouteFilter.HasCriteria)
+        {
+            return 1;
+        }
+
+        var neowContext = NeowGenerationContext.Create(
+            seedValue,
+            playerCount: 1,
+            scrollBoxesEligible: true,
+            hasRunModifiers: false,
+            character: character,
+            ascensionLevel: SelectedAscensionLevel);
+        var neowOptions = neowGenerator.Generate(neowContext);
+        if (!filter.NeowFilter.HasCriteria)
+        {
+            return Math.Max(1, neowOptions.Count);
+        }
+
+        return Math.Max(1, neowOptions.Count(filter.NeowFilter.Matches));
+    }
+
+    private List<SeedWorkItem> CreateWorkItems(
+        NeowOptionDataset dataset,
+        SeedRunFilter filter,
+        RollConfig config,
+        CancellationToken token,
+        out bool wasCancelled)
+    {
+        var neowGenerator = new NeowGenerator(dataset);
         var items = new List<SeedWorkItem>(config.RollCount);
         wasCancelled = false;
         for (var i = 0; i < config.RollCount; i++)
@@ -2267,7 +2412,11 @@ internal sealed partial class MainWindowViewModel : ObservableObject
             }
 
             var (seedText, seedValue) = config.ResolveSeed(i);
-            items.Add(new SeedWorkItem(i, seedText, seedValue));
+            items.Add(new SeedWorkItem(
+                i,
+                seedText,
+                seedValue,
+                ResolveNeowMatchCount(neowGenerator, filter, config.Character, seedValue)));
         }
 
         return items;
@@ -2323,7 +2472,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         IProgress<RollProgress> progress,
         CancellationToken token)
     {
-        var workItems = CreateWorkItems(config, token, out var creationCancelled);
+        var workItems = CreateWorkItems(dataset, filter, config, token, out var creationCancelled);
         var hits = new ConcurrentBag<RollHit>();
         var totalTarget = workItems.Count;
         var state = new RollAggregationState
@@ -2392,6 +2541,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         var nextIndex = 0;
         string? firstSeed = null;
         string? lastSeed = null;
+        var neowGenerator = new NeowGenerator(dataset);
 
         while (Volatile.Read(ref state.CancellationFlag) == 0)
         {
@@ -2405,7 +2555,11 @@ internal sealed partial class MainWindowViewModel : ObservableObject
                 }
 
                 var (seedText, seedValue) = config.ResolveSeed(nextIndex);
-                batch.Add(new SeedWorkItem(nextIndex, seedText, seedValue));
+                batch.Add(new SeedWorkItem(
+                    nextIndex,
+                    seedText,
+                    seedValue,
+                    ResolveNeowMatchCount(neowGenerator, filter, config.Character, seedValue)));
                 nextIndex++;
                 firstSeed ??= seedText;
                 lastSeed = seedText;
@@ -2489,82 +2643,119 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         var hitFlag = 0;
         var partitioner = Partitioner.Create(workItems, loadBalance: true);
         var ancientAvailability = ResolveEffectiveAncientAvailability("roll");
+        var nextRouteProgressReportTimestamp = Stopwatch.GetTimestamp();
+        var parallelOptions = new ParallelOptions
+        {
+            CancellationToken = token
+        };
 
-        Parallel.ForEach(
-            partitioner,
-            () => new RollWorkerState(
-                dataset,
-                _ancientPreviewer,
-                filter,
-                config.Character,
-                config.CharacterName,
-                GetConfiguredUnlockedCharacters(),
-                ancientAvailability,
-                includeAct2,
-                includeAct3,
-                SelectedAscensionLevel,
-                requireAct2Match,
-                requireAct3Match,
-                LogInfo),
-            (workItem, loopState, workerState) =>
-            {
-                if (Volatile.Read(ref state.CancellationFlag) == 1)
+        try
+        {
+            Parallel.ForEach(
+                partitioner,
+                parallelOptions,
+                () => new RollWorkerState(
+                    dataset,
+                    _ancientPreviewer,
+                    filter,
+                    config.Character,
+                    config.CharacterName,
+                    GetConfiguredUnlockedCharacters(),
+                    ancientAvailability,
+                    includeAct2,
+                    includeAct3,
+                    SelectedAscensionLevel,
+                    requireAct2Match,
+                    requireAct3Match,
+                    LogInfo),
+                (workItem, loopState, workerState) =>
                 {
-                    loopState.Stop();
-                    return workerState;
-                }
-
-                if (token.IsCancellationRequested)
-                {
-                    Interlocked.Exchange(ref state.CancellationFlag, 1);
-                    loopState.Stop();
-                    return workerState;
-                }
-
-                if (stopOnFirstMatch && Volatile.Read(ref hitFlag) == 1)
-                {
-                    loopState.Stop();
-                    return workerState;
-                }
-
-                var processResult = workerState.Process(workItem);
-                var hit = processResult.Hit;
-                AccumulateDiagnostics(state, processResult.Diagnostics);
-                var scanned = Interlocked.Increment(ref state.TotalScanned);
-                UpdateMinIndex(ref state.MinIndex, workItem.Index);
-                UpdateMaxIndex(ref state.MaxIndex, workItem.Index);
-
-                if (hit != null)
-                {
-                    hits.Add(hit);
-                    Interlocked.Increment(ref state.TotalHitSeeds);
-                    Interlocked.Add(ref state.TotalHitOptions, hit.OptionCount);
-
-                    if (stopOnFirstMatch)
+                    if (Volatile.Read(ref state.CancellationFlag) == 1)
                     {
-                        Interlocked.Exchange(ref hitFlag, 1);
                         loopState.Stop();
+                        return workerState;
                     }
-                }
 
-                if (!stopOnFirstMatch)
-                {
-                    if (ShouldReportProgress(scanned, totalTarget, progressReportInterval))
+                    if (token.IsCancellationRequested)
                     {
-                        ReportProgress(progress, scanned, Volatile.Read(ref state.TotalHitSeeds), Volatile.Read(ref state.TotalHitOptions));
+                        Interlocked.Exchange(ref state.CancellationFlag, 1);
+                        loopState.Stop();
+                        return workerState;
                     }
-                }
-                else
-                {
-                    if (hit != null || ShouldReportProgress(scanned, totalTarget, progressReportInterval))
-                    {
-                        ReportProgress(progress, scanned, Volatile.Read(ref state.TotalHitSeeds), Volatile.Read(ref state.TotalHitOptions));
-                    }
-                }
 
-                return workerState;
-            },
-            _ => { });
+                    if (stopOnFirstMatch && Volatile.Read(ref hitFlag) == 1)
+                    {
+                        loopState.Stop();
+                        return workerState;
+                    }
+
+                    workerState.SetProgressReporter(update =>
+                    {
+                        var now = Stopwatch.GetTimestamp();
+                        var totalRouteBudget = Math.Max(1L, filter.ExactRouteFilter.MaxRouteChecks);
+                        var nextReport = Volatile.Read(ref nextRouteProgressReportTimestamp);
+                        if (now < nextReport &&
+                            update.StartedRoutes < totalRouteBudget)
+                        {
+                            return;
+                        }
+
+                        var nextTimestamp = now + Stopwatch.Frequency / 5;
+                        Interlocked.Exchange(ref nextRouteProgressReportTimestamp, nextTimestamp);
+                        ReportProgress(
+                            progress,
+                            Volatile.Read(ref state.TotalScanned),
+                            Volatile.Read(ref state.TotalHitSeeds),
+                            Volatile.Read(ref state.TotalHitOptions),
+                            update.StartedRoutes,
+                            update.CheckedRoutes,
+                            totalRouteBudget,
+                            workItem.SeedText);
+                    });
+
+                    var processResult = workerState.Process(workItem, token);
+                    var hit = processResult.Hit;
+                    AccumulateDiagnostics(state, processResult.Diagnostics);
+                    var scanned = Interlocked.Increment(ref state.TotalScanned);
+                    UpdateMinIndex(ref state.MinIndex, workItem.Index);
+                    UpdateMaxIndex(ref state.MaxIndex, workItem.Index);
+
+                    if (hit != null)
+                    {
+                        hits.Add(hit);
+                        Interlocked.Increment(ref state.TotalHitSeeds);
+                        Interlocked.Add(ref state.TotalHitOptions, hit.OptionCount);
+
+                        if (stopOnFirstMatch)
+                        {
+                            Interlocked.Exchange(ref hitFlag, 1);
+                            loopState.Stop();
+                        }
+                    }
+
+                    if (!stopOnFirstMatch)
+                    {
+                        if (ShouldReportProgress(scanned, totalTarget, progressReportInterval))
+                        {
+                            ReportProgress(progress, scanned, Volatile.Read(ref state.TotalHitSeeds), Volatile.Read(ref state.TotalHitOptions));
+                        }
+                    }
+                    else
+                    {
+                        if (hit != null || ShouldReportProgress(scanned, totalTarget, progressReportInterval))
+                        {
+                            ReportProgress(progress, scanned, Volatile.Read(ref state.TotalHitSeeds), Volatile.Read(ref state.TotalHitOptions));
+                        }
+                    }
+
+                    return workerState;
+                },
+                _ => { });
+        }
+        catch (OperationCanceledException) when (token.IsCancellationRequested)
+        {
+            Interlocked.Exchange(ref state.CancellationFlag, 1);
+        }
 
         return Volatile.Read(ref hitFlag) == 1;
     }
@@ -2572,6 +2763,11 @@ internal sealed partial class MainWindowViewModel : ObservableObject
     private static int GetProgressReportInterval(SeedRunFilter filter)
     {
         if (filter.ShopFilter.HasCriteria)
+        {
+            return 25;
+        }
+
+        if (filter.ExactRouteFilter.HasCriteria)
         {
             return 25;
         }
@@ -2622,7 +2818,8 @@ internal sealed partial class MainWindowViewModel : ObservableObject
             $"avgRelicMatch={state.RelicTargetedMatchElapsedMilliseconds / samples}ms | " +
             $"avgShop={state.ShopElapsedMilliseconds / samples}ms | " +
             $"avgFinalEvent={state.FinalEventAnalysisElapsedMilliseconds / samples}ms | " +
-            $"avgFinalRelic={state.FinalRelicAnalysisElapsedMilliseconds / samples}ms");
+            $"avgFinalRelic={state.FinalRelicAnalysisElapsedMilliseconds / samples}ms | " +
+            $"avgExactRoute={state.ExactRouteElapsedMilliseconds / samples}ms");
     }
 
     private static void AccumulateDiagnostics(RollAggregationState state, SeedRunDiagnostics? diagnostics)
@@ -2642,6 +2839,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         Interlocked.Add(ref state.ShopElapsedMilliseconds, diagnostics.ShopElapsedMilliseconds);
         Interlocked.Add(ref state.FinalEventAnalysisElapsedMilliseconds, diagnostics.FinalEventAnalysisElapsedMilliseconds);
         Interlocked.Add(ref state.FinalRelicAnalysisElapsedMilliseconds, diagnostics.FinalRelicAnalysisElapsedMilliseconds);
+        Interlocked.Add(ref state.ExactRouteElapsedMilliseconds, diagnostics.ExactRouteElapsedMilliseconds);
     }
 
     private static (string FirstSeed, string LastSeed) ResolveSeedRange(
@@ -2692,7 +2890,35 @@ internal sealed partial class MainWindowViewModel : ObservableObject
 
     private static void ReportProgress(IProgress<RollProgress> progress, int scanned, int hitSeeds, int hitOptions)
     {
-        progress.Report(new RollProgress(scanned, hitSeeds, hitOptions));
+        progress.Report(new RollProgress(scanned, hitSeeds, hitOptions, null, null, null, null));
+    }
+
+    private static void ReportProgress(
+        IProgress<RollProgress> progress,
+        int scanned,
+        int hitSeeds,
+        int hitOptions,
+        int? routeStarted,
+        int? routeChecked,
+        long? routeMaxChecks,
+        string? routeSeedText)
+    {
+        progress.Report(new RollProgress(scanned, hitSeeds, hitOptions, routeStarted, routeChecked, routeMaxChecks, routeSeedText));
+    }
+
+    private static string BuildRollProgressText(RollProgress progress)
+    {
+        var text = $"已扫描 {progress.Scanned:N0}，命中 {progress.HitSeeds} 个种子、{progress.HitOptions} 个选项";
+        if (progress.RouteStarted.HasValue || progress.RouteChecked.HasValue)
+        {
+            var routeDone = Math.Max(progress.RouteStarted.GetValueOrDefault(), progress.RouteChecked.GetValueOrDefault());
+            var routeTotal = progress.RouteMaxChecks.GetValueOrDefault();
+            var routeTotalText = routeTotal > 0 ? $"/{routeTotal:N0}" : string.Empty;
+            var seedText = string.IsNullOrWhiteSpace(progress.RouteSeedText) ? string.Empty : $" {progress.RouteSeedText}";
+            text += $"；当前种子{seedText}路线 {routeDone:N0}{routeTotalText}";
+        }
+
+        return text;
     }
 
     private static void UpdateMinIndex(ref int current, int candidate)
@@ -2835,44 +3061,32 @@ internal sealed partial class MainWindowViewModel : ObservableObject
             SeaGlassPreviewSamples = GetSeaGlassSampleCount()
         };
 
-        var shopFilter = IncludeShop
-            ? new Sts2ShopFilter
+        var shopFilter = Sts2ShopFilter.Empty;
+        var poolFilter = Sts2PoolFilter.Empty;
+        var exactRouteFilter = IncludePoolFilter && HasRollExactRouteTargets
+            ? new Sts2ExactRouteFilter
             {
-                MaxFirstShopRow = ParsePositiveIntOrNull(ShopMaxFirstRow),
-                CardIds = ShopCardFilterChips.Select(chip => chip.Value).ToList(),
-                RelicIds = ShopRelicFilterChips.Select(chip => chip.Value).ToList(),
-                PotionIds = ShopPotionFilterChips.Select(chip => chip.Value).ToList()
+                EventTargets = RollExactRouteEventTargetChips
+                    .Select(chip => new Sts2ExactRouteEventTargetRequest(chip.ActNumber, chip.Value))
+                    .ToList(),
+                RelicTargets = RollExactRouteRelicTargetChips
+                    .Select(chip => new Sts2ExactRouteRelicTargetRequest(chip.ActNumber, chip.Value))
+                    .ToList(),
+                MaxRouteChecks = GetRollExactRouteMaxChecks(),
+                SimulationMode = IsRollExactRouteFastMode
+                    ? Sts2ExactRouteSimulationMode.FastShopLimited
+                    : Sts2ExactRouteSimulationMode.Strict,
+                ShopOutputLimit = GetRollExactRouteShopOutputLimit()
             }
-            : Sts2ShopFilter.Empty;
-
-        var poolFilter = IncludePoolFilter
-            ? new Sts2PoolFilter
-            {
-                Act1EventIds = Act1EventPoolFilterChips.Select(chip => chip.Value).ToList(),
-                Act2EventIds = Act2EventPoolFilterChips.Select(chip => chip.Value).ToList(),
-                Act3EventIds = Act3EventPoolFilterChips.Select(chip => chip.Value).ToList(),
-                HighProbabilityEventIds = Act1EventPoolFilterChips.Concat(Act2EventPoolFilterChips).Concat(Act3EventPoolFilterChips).Select(chip => chip.Value).Distinct(StringComparer.OrdinalIgnoreCase).ToList(),
-                VisibilitySamples = GetVisibilitySampleCount(),
-                HighProbabilityEventSeenThreshold = GetHighProbabilityEventSeenThreshold(),
-                HighProbabilityEventEarlyThreshold = null,
-                HighProbabilityEventAverageFirstOpportunityMax = GetOptionalPositiveDouble(HighProbabilityEventAverageFirstOpportunityMaxText),
-                HighProbabilityEventMostCommonSource = GetHighProbabilityEventMostCommonSource(),
-                HighProbabilityRelicIds = HighProbabilityRelicFilterChips.Select(chip => chip.Value).ToList(),
-                HighProbabilitySeenThreshold = GetHighProbabilitySeenThreshold(),
-                HighProbabilityNonShopThreshold = GetOptionalThresholdPercent(HighProbabilityNonShopThresholdPercentText),
-                HighProbabilityShopThreshold = GetOptionalThresholdPercent(HighProbabilityShopThresholdPercentText),
-                HighProbabilityEarlyThreshold = GetOptionalThresholdPercent(HighProbabilityEarlyThresholdPercentText),
-                HighProbabilityAverageFirstOpportunityMax = GetOptionalPositiveDouble(HighProbabilityAverageFirstOpportunityMaxText),
-                HighProbabilityMostCommonSource = GetHighProbabilityMostCommonSource()
-            }
-            : Sts2PoolFilter.Empty;
+            : Sts2ExactRouteFilter.Empty;
 
         return new SeedRunFilter
         {
             NeowFilter = neowFilter,
             AncientFilter = ancientFilter,
             ShopFilter = shopFilter,
-            PoolFilter = poolFilter
+            PoolFilter = poolFilter,
+            ExactRouteFilter = exactRouteFilter
         };
     }
 
@@ -2903,6 +3117,14 @@ internal sealed partial class MainWindowViewModel : ObservableObject
                 $"A3:[{string.Join(", ", filter.PoolFilter.Act3EventIds)}]; " +
                 $"高概率事件:[{string.Join(", ", filter.PoolFilter.HighProbabilityEventIds)}]; " +
                 $"高概率遗物:[{string.Join(", ", filter.PoolFilter.HighProbabilityRelicIds)}])");
+        }
+
+        if (filter.ExactRouteFilter.HasCriteria)
+        {
+            parts.Add(
+                $"精确路线=开启(events:[{string.Join(", ", filter.ExactRouteFilter.EventTargets.Select(target => $"{target.ActNumber}:{target.EventId}"))}]; " +
+                $"relics:[{string.Join(", ", filter.ExactRouteFilter.RelicTargets.Select(target => $"{target.ActNumber}:{target.RelicId}"))}]; " +
+                $"maxChecks={filter.ExactRouteFilter.MaxRouteChecks}; mode={filter.ExactRouteFilter.SimulationMode}; shopLimit={filter.ExactRouteFilter.ShopOutputLimit})");
         }
 
         return parts.Count > 0 ? string.Join(" | ", parts) : "无";
@@ -3299,6 +3521,13 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         Act1EventPoolFilterChips.Clear();
         Act2EventPoolFilterChips.Clear();
         Act3EventPoolFilterChips.Clear();
+        RollExactRouteEventTargetChips.Clear();
+        RollExactRouteRelicTargetChips.Clear();
+        RollExactRouteEventCatalogFilter = string.Empty;
+        RollExactRouteRelicCatalogFilter = string.Empty;
+        RollExactRouteMaxChecksText = DefaultRollExactRouteMaxChecks.ToString(CultureInfo.InvariantCulture);
+        IsRollExactRouteFastMode = true;
+        RollExactRouteShopOutputLimitText = DefaultRollExactRouteShopOutputLimit.ToString(CultureInfo.InvariantCulture);
         HighProbabilityEventSeenThresholdPercentText = (Sts2PoolFilter.DefaultHighProbabilityEventSeenThreshold * 100d)
             .ToString("0.##", CultureInfo.InvariantCulture);
         HighProbabilityEventEarlyThresholdPercentText = string.Empty;
@@ -3429,6 +3658,18 @@ internal sealed partial class MainWindowViewModel : ObservableObject
             1,
             1_000_000).ToString(CultureInfo.InvariantCulture);
         IncludePoolFilter = config.IncludePoolFilter;
+        ResetRouteTargetChips(RollExactRouteEventTargetChips, config.ExactRouteEventTargets, _eventVisibilityCatalog, isEvent: true);
+        ResetRouteTargetChips(RollExactRouteRelicTargetChips, config.ExactRouteRelicTargets, _poolRelicCatalog, isEvent: false);
+        RollExactRouteMaxChecksText = Math.Clamp(
+            config.ExactRouteMaxChecks.GetValueOrDefault(DefaultRollExactRouteMaxChecks),
+            1,
+            MaxRollExactRouteMaxChecks).ToString(CultureInfo.InvariantCulture);
+        IsRollExactRouteFastMode = config.ExactRouteSimulationMode == null ||
+            string.Equals(config.ExactRouteSimulationMode, nameof(Sts2ExactRouteSimulationMode.FastShopLimited), StringComparison.OrdinalIgnoreCase);
+        RollExactRouteShopOutputLimitText = Math.Clamp(
+            config.ExactRouteShopOutputLimit.GetValueOrDefault(DefaultRollExactRouteShopOutputLimit),
+            1,
+            MaxRollExactRouteShopOutputLimit).ToString(CultureInfo.InvariantCulture);
         ResetChips(Act1EventPoolFilterChips, config.Act1EventIds, _poolEventCatalog);
         ResetChips(Act2EventPoolFilterChips, config.Act2EventIds, _poolEventCatalog);
         ResetChips(Act3EventPoolFilterChips, config.Act3EventIds, _poolEventCatalog);
@@ -3455,11 +3696,11 @@ internal sealed partial class MainWindowViewModel : ObservableObject
             1,
             MaxVisibilitySampleCount).ToString(CultureInfo.InvariantCulture);
         ResetChips(HighProbabilityRelicFilterChips, highProbabilityRelicIds, _poolRelicCatalog);
-        IncludeShop = config.IncludeShop;
-        ShopMaxFirstRow = config.ShopMaxFirstRow?.ToString(CultureInfo.InvariantCulture) ?? string.Empty;
-        ResetChips(ShopCardFilterChips, config.ShopCardIds, _cardCatalog);
-        ResetChips(ShopRelicFilterChips, config.ShopRelicIds, _relicCatalog);
-        ResetChips(ShopPotionFilterChips, config.ShopPotionIds, _potionCatalog);
+        IncludeShop = false;
+        ShopMaxFirstRow = string.Empty;
+        ShopCardFilterChips.Clear();
+        ShopRelicFilterChips.Clear();
+        ShopPotionFilterChips.Clear();
 
         RelicFilterChips.Clear();
         CardFilterChips.Clear();
@@ -3482,6 +3723,37 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         {
             var label = catalog.FirstOrDefault(item => string.Equals(item.Value, value, StringComparison.OrdinalIgnoreCase))?.Display ?? value;
             target.Add(new FilterChipViewModel(value, label));
+        }
+    }
+
+    private static void ResetRouteTargetChips(
+        ObservableCollection<SeedAnalysisRouteTargetChipViewModel> target,
+        IEnumerable<ExactRouteTargetConfig>? values,
+        IReadOnlyList<CatalogItem> catalog,
+        bool isEvent)
+    {
+        target.Clear();
+        if (values == null)
+        {
+            return;
+        }
+
+        foreach (var value in values)
+        {
+            if (string.IsNullOrWhiteSpace(value.Id))
+            {
+                continue;
+            }
+
+            var catalogItem = catalog.FirstOrDefault(item =>
+                    string.Equals(item.Value, value.Id, StringComparison.OrdinalIgnoreCase))
+                ?? new CatalogItem(value.Id, value.Id, value.Id);
+            var actLabel = GetRouteActLabel(value.ActNumber);
+            target.Add(new SeedAnalysisRouteTargetChipViewModel(
+                catalogItem.Value,
+                catalogItem.Display,
+                value.ActNumber,
+                actLabel));
         }
     }
 
@@ -3577,6 +3849,17 @@ internal sealed partial class MainWindowViewModel : ObservableObject
                 IncludeAct2 = IncludeAct2,
                 IncludeAct3 = IncludeAct3,
                 IncludePoolFilter = IncludePoolFilter,
+                ExactRouteEventTargets = RollExactRouteEventTargetChips
+                    .Select(chip => new ExactRouteTargetConfig { ActNumber = chip.ActNumber, Id = chip.Value })
+                    .ToList(),
+                ExactRouteRelicTargets = RollExactRouteRelicTargetChips
+                    .Select(chip => new ExactRouteTargetConfig { ActNumber = chip.ActNumber, Id = chip.Value })
+                    .ToList(),
+                ExactRouteMaxChecks = GetRollExactRouteMaxChecks(),
+                ExactRouteSimulationMode = IsRollExactRouteFastMode
+                    ? nameof(Sts2ExactRouteSimulationMode.FastShopLimited)
+                    : nameof(Sts2ExactRouteSimulationMode.Strict),
+                ExactRouteShopOutputLimit = GetRollExactRouteShopOutputLimit(),
                 Act1EventIds = Act1EventPoolFilterChips.Select(chip => chip.Value).ToList(),
                 Act2EventIds = Act2EventPoolFilterChips.Select(chip => chip.Value).ToList(),
                 Act3EventIds = Act3EventPoolFilterChips.Select(chip => chip.Value).ToList(),
@@ -3593,11 +3876,11 @@ internal sealed partial class MainWindowViewModel : ObservableObject
                 HighProbabilityMostCommonSource = GetHighProbabilityMostCommonSource()?.ToString(),
                 VisibilitySamples = GetVisibilitySampleCount(),
                 HighProbabilityRelicIds = HighProbabilityRelicFilterChips.Select(chip => chip.Value).ToList(),
-                IncludeShop = IncludeShop,
-                ShopMaxFirstRow = ParsePositiveIntOrNull(ShopMaxFirstRow),
-                ShopCardIds = ShopCardFilterChips.Select(chip => chip.Value).ToList(),
-                ShopRelicIds = ShopRelicFilterChips.Select(chip => chip.Value).ToList(),
-                ShopPotionIds = ShopPotionFilterChips.Select(chip => chip.Value).ToList(),
+                IncludeShop = false,
+                ShopMaxFirstRow = null,
+                ShopCardIds = new List<string>(),
+                ShopRelicIds = new List<string>(),
+                ShopPotionIds = new List<string>(),
                 Act2AncientId = Act2AncientFilter,
                 Act3AncientId = Act3AncientFilter,
                 Act2OptionIds = Act2OptionFilterChips.Select(chip => chip.Value).ToList(),
@@ -3838,9 +4121,16 @@ internal sealed partial class MainWindowViewModel : ObservableObject
 
     internal sealed record SeedModeOption(SeedRollMode Value, string DisplayName);
 
-    internal sealed record RollProgress(int Scanned, int HitSeeds, int HitOptions);
+    internal sealed record RollProgress(
+        int Scanned,
+        int HitSeeds,
+        int HitOptions,
+        int? RouteStarted,
+        int? RouteChecked,
+        long? RouteMaxChecks,
+        string? RouteSeedText);
 
-    private sealed record SeedWorkItem(int Index, string SeedText, uint SeedValue);
+    private sealed record SeedWorkItem(int Index, string SeedText, uint SeedValue, int NeowMatchCount);
 
     private sealed record RollHit(int Index, RollResultViewModel Result, int OptionCount);
 
@@ -3864,6 +4154,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         public long ShopElapsedMilliseconds;
         public long FinalEventAnalysisElapsedMilliseconds;
         public long FinalRelicAnalysisElapsedMilliseconds;
+        public long ExactRouteElapsedMilliseconds;
     }
 
     internal sealed record RollExecutionResult(
@@ -3937,6 +4228,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         private readonly bool _requireAct2Match;
         private readonly bool _requireAct3Match;
         private readonly Action<string>? _logInfo;
+        private Action<Sts2ExactRouteProgress>? _progressReporter;
 
         public RollWorkerState(
             NeowOptionDataset dataset,
@@ -3969,8 +4261,18 @@ internal sealed partial class MainWindowViewModel : ObservableObject
             _logInfo = logInfo;
         }
 
-        public RollProcessResult Process(SeedWorkItem workItem)
+        public void SetProgressReporter(Action<Sts2ExactRouteProgress>? progressReporter)
         {
+            _progressReporter = progressReporter;
+        }
+
+        public RollProcessResult Process(SeedWorkItem workItem, CancellationToken cancellationToken)
+        {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return new RollProcessResult(null, null);
+            }
+
             var runContext = new SeedRunEvaluationContext
             {
                 RunSeed = workItem.SeedValue,
@@ -3985,7 +4287,10 @@ internal sealed partial class MainWindowViewModel : ObservableObject
                 IncludeAct3 = _includeAct3
             };
 
-            var match = _evaluator.Evaluate(runContext, _filter);
+            var exactRouteProgress = _progressReporter == null
+                ? null
+                : new Progress<Sts2ExactRouteProgress>(_progressReporter);
+            var match = _evaluator.Evaluate(runContext, _filter, cancellationToken, exactRouteProgress);
             if (!match.IsFinalMatch)
             {
                 return new RollProcessResult(null, match.Diagnostics);
@@ -4026,6 +4331,8 @@ internal sealed partial class MainWindowViewModel : ObservableObject
                 _requireAct2Match,
                 _requireAct3Match,
                 _ascensionLevel,
+                match.ExactRouteAnalysis,
+                _filter.ExactRouteFilter,
                 match.ShopPreview,
                 match.ShopFilterMatched);
             viewModelStopwatch.Stop();
@@ -4033,7 +4340,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
             if (match.Diagnostics != null)
             {
                 _logInfo?.Invoke(
-                    $"[耗时] Seed={workItem.SeedText} | total={match.Diagnostics.TotalElapsedMilliseconds}ms | neow={match.Diagnostics.NeowElapsedMilliseconds}ms | ancient={match.Diagnostics.AncientElapsedMilliseconds}ms | pools={match.Diagnostics.PoolAnalysisElapsedMilliseconds}ms | eventMatch={match.Diagnostics.EventTargetedMatchElapsedMilliseconds}ms | relicMatch={match.Diagnostics.RelicTargetedMatchElapsedMilliseconds}ms | shop={match.Diagnostics.ShopElapsedMilliseconds}ms | finalEvent={match.Diagnostics.FinalEventAnalysisElapsedMilliseconds}ms | finalRelic={match.Diagnostics.FinalRelicAnalysisElapsedMilliseconds}ms | vm={viewModelStopwatch.ElapsedMilliseconds}ms");
+                    $"[耗时] Seed={workItem.SeedText} | total={match.Diagnostics.TotalElapsedMilliseconds}ms | neow={match.Diagnostics.NeowElapsedMilliseconds}ms | ancient={match.Diagnostics.AncientElapsedMilliseconds}ms | pools={match.Diagnostics.PoolAnalysisElapsedMilliseconds}ms | eventMatch={match.Diagnostics.EventTargetedMatchElapsedMilliseconds}ms | relicMatch={match.Diagnostics.RelicTargetedMatchElapsedMilliseconds}ms | shop={match.Diagnostics.ShopElapsedMilliseconds}ms | finalEvent={match.Diagnostics.FinalEventAnalysisElapsedMilliseconds}ms | finalRelic={match.Diagnostics.FinalRelicAnalysisElapsedMilliseconds}ms | exactRoute={match.Diagnostics.ExactRouteElapsedMilliseconds}ms | vm={viewModelStopwatch.ElapsedMilliseconds}ms");
             }
 
             return new RollProcessResult(new RollHit(workItem.Index, viewModel, displayNeow.Count), match.Diagnostics);
@@ -4322,6 +4629,16 @@ internal sealed partial class MainWindowViewModel : ObservableObject
 
         public bool IncludePoolFilter { get; init; }
 
+        public List<ExactRouteTargetConfig>? ExactRouteEventTargets { get; init; }
+
+        public List<ExactRouteTargetConfig>? ExactRouteRelicTargets { get; init; }
+
+        public long? ExactRouteMaxChecks { get; init; }
+
+        public string? ExactRouteSimulationMode { get; init; }
+
+        public int? ExactRouteShopOutputLimit { get; init; }
+
         public string? Act2AncientId { get; init; }
 
         public string? Act3AncientId { get; init; }
@@ -4396,6 +4713,13 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         public List<Act1DerivedBindingConditionConfig>? Act1DerivedBindings { get; init; }
 
         public bool StopOnFirstMatch { get; init; }
+    }
+
+    internal sealed class ExactRouteTargetConfig
+    {
+        public int? ActNumber { get; init; }
+
+        public string Id { get; init; } = string.Empty;
     }
 
     internal sealed class Act1DerivedBindingConditionConfig

@@ -23,11 +23,15 @@ public sealed record SeedRunMatch
 
     public bool PoolFilterMatched { get; init; }
 
+    public bool ExactRouteFilterMatched { get; init; } = true;
+
     public Sts2SeedAnalysis? PoolAnalysis { get; init; }
 
     public Sts2EventVisibilityAnalysis? EventVisibilityAnalysis { get; init; }
 
     public Sts2RelicVisibilityAnalysis? RelicVisibilityAnalysis { get; init; }
+
+    public Sts2ExactRouteAnalysis? ExactRouteAnalysis { get; init; }
 
     public SeedRunDiagnostics? Diagnostics { get; init; }
 }
@@ -51,4 +55,6 @@ public sealed record SeedRunDiagnostics
     public long FinalEventAnalysisElapsedMilliseconds { get; init; }
 
     public long FinalRelicAnalysisElapsedMilliseconds { get; init; }
+
+    public long ExactRouteElapsedMilliseconds { get; init; }
 }

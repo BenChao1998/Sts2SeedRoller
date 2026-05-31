@@ -118,15 +118,37 @@ internal sealed class Sts2ExactRouteAnalyzer
         var simulator = new RouteSimulator(_world, _workspaceRoot, dataset, request, actPoolMap, ancientByAct, unlockedCharacters);
 
         var matches = new List<Sts2ExactRouteMatch>();
+        var coverageMatches = new List<Sts2ExactRouteMatch>();
         var checkedRoutes = 0;
+        long nextProgressReport = 1;
+        var progressReportInterval = Math.Max(1, Math.Min(250, Math.Max(1, request.MaxRouteChecks) / 20));
         var stop = false;
         for (var i1 = 0; i1 < allRoutes[1].Count && !stop; i1++)
         {
+            if (request.CancellationToken.IsCancellationRequested)
+            {
+                stop = true;
+                break;
+            }
+
             for (var i2 = 0; i2 < allRoutes[2].Count && !stop; i2++)
             {
+                if (request.CancellationToken.IsCancellationRequested)
+                {
+                    stop = true;
+                    break;
+                }
+
                 for (var i3 = 0; i3 < allRoutes[3].Count && !stop; i3++)
                 {
+                    if (request.CancellationToken.IsCancellationRequested)
+                    {
+                        stop = true;
+                        break;
+                    }
+
                     checkedRoutes++;
+                    request.Progress?.Report(new Sts2ExactRouteProgress(checkedRoutes, Math.Max(0, checkedRoutes - 1), matches.Count));
                     var route = new[]
                     {
                         allRoutes[1][i1],
@@ -137,7 +159,14 @@ internal sealed class Sts2ExactRouteAnalyzer
                     var match = simulator.TrySimulate(route);
                     if (match != null)
                     {
+                        coverageMatches.Add(match);
                         matches.Add(match);
+                    }
+
+                    if (checkedRoutes >= nextProgressReport)
+                    {
+                        request.Progress?.Report(new Sts2ExactRouteProgress(checkedRoutes, checkedRoutes, matches.Count));
+                        nextProgressReport = checkedRoutes + progressReportInterval;
                     }
 
                     if (checkedRoutes >= Math.Max(1, request.MaxRouteChecks))
@@ -158,9 +187,128 @@ internal sealed class Sts2ExactRouteAnalyzer
             CheckedRoutes = checkedRoutes,
             FoundRouteCount = matches.Count,
             WasTruncated = checkedRoutes >= Math.Max(1, request.MaxRouteChecks),
+            ShopOutputBranchesDropped = simulator.ShopOutputBranchesDropped,
             MapActs = mapActs,
-            Matches = limitedMatches
+            Matches = limitedMatches,
+            Coverage = BuildCoverage(coverageMatches)
         };
+    }
+
+    private static Sts2ExactRouteCoverage BuildCoverage(IReadOnlyList<Sts2ExactRouteMatch> matches)
+    {
+        return new Sts2ExactRouteCoverage
+        {
+            TotalRoutes = matches.Count,
+            EventCoverage = BuildEventCoverage(matches),
+            RelicCoverage = BuildRelicCoverage(matches)
+        };
+    }
+
+    private static IReadOnlyList<Sts2ExactRouteCoverageItem> BuildEventCoverage(IReadOnlyList<Sts2ExactRouteMatch> matches)
+    {
+        var totalRoutes = matches.Count;
+        if (totalRoutes == 0)
+        {
+            return Array.Empty<Sts2ExactRouteCoverageItem>();
+        }
+
+        return matches
+            .SelectMany((match, routeIndex) => match.Acts.SelectMany(act => act.Rooms
+                .Where(room => !string.IsNullOrWhiteSpace(room.EventId))
+                .Select(room => new CoverageOccurrence(
+                    routeIndex,
+                    act.ActNumber,
+                    room.EventId!,
+                    room.Row,
+                    room.RoomType))))
+            .GroupBy(item => (item.ActNumber, item.Id), StringComparerTuple.Instance)
+            .Select(group => CreateCoverageItem(group.Key.ActNumber, group.Key.Id, totalRoutes, group))
+            .OrderByDescending(item => item.SeenRouteCount)
+            .ThenBy(item => item.ActNumber)
+            .ThenBy(item => item.Id, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+    }
+
+    private static IReadOnlyList<Sts2ExactRouteCoverageItem> BuildRelicCoverage(IReadOnlyList<Sts2ExactRouteMatch> matches)
+    {
+        var totalRoutes = matches.Count;
+        if (totalRoutes == 0)
+        {
+            return Array.Empty<Sts2ExactRouteCoverageItem>();
+        }
+
+        return matches
+            .SelectMany((match, routeIndex) => match.Acts.SelectMany(act => act.Rooms
+                .SelectMany(room => BuildRelicCoverageOccurrences(routeIndex, act.ActNumber, room))))
+            .GroupBy(item => (item.ActNumber, item.Id), StringComparerTuple.Instance)
+            .Select(group => CreateCoverageItem(group.Key.ActNumber, group.Key.Id, totalRoutes, group))
+            .OrderByDescending(item => item.SeenRouteCount)
+            .ThenBy(item => item.ActNumber)
+            .ThenBy(item => item.Id, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+    }
+
+    private static IEnumerable<CoverageOccurrence> BuildRelicCoverageOccurrences(
+        int routeIndex,
+        int actNumber,
+        Sts2ExactRouteRoom room)
+    {
+        foreach (var relicId in room.RelicIds)
+        {
+            yield return new CoverageOccurrence(routeIndex, actNumber, relicId, room.Row, room.RoomType);
+        }
+
+        foreach (var relicId in room.DisplayRelicIds)
+        {
+            yield return new CoverageOccurrence(routeIndex, actNumber, relicId, room.Row, "ShopDisplay");
+        }
+    }
+
+    private static Sts2ExactRouteCoverageItem CreateCoverageItem(
+        int actNumber,
+        string id,
+        int totalRoutes,
+        IEnumerable<CoverageOccurrence> occurrences)
+    {
+        var occurrenceList = occurrences.ToList();
+        var firstRows = occurrenceList
+            .GroupBy(item => item.RouteIndex)
+            .Select(group => group.Min(item => item.Row))
+            .ToList();
+
+        return new Sts2ExactRouteCoverageItem
+        {
+            Id = id,
+            ActNumber = actNumber,
+            SeenRouteCount = occurrenceList.Select(item => item.RouteIndex).Distinct().Count(),
+            TotalRouteCount = totalRoutes,
+            FirstRowMin = firstRows.Count > 0 ? firstRows.Min() : null,
+            FirstRowMax = firstRows.Count > 0 ? firstRows.Max() : null,
+            Sources = occurrenceList
+                .Select(item => item.Source)
+                .Where(source => !string.IsNullOrWhiteSpace(source))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(source => source, StringComparer.OrdinalIgnoreCase)
+                .ToList()
+        };
+    }
+
+    private sealed record CoverageOccurrence(
+        int RouteIndex,
+        int ActNumber,
+        string Id,
+        int Row,
+        string Source);
+
+    private sealed class StringComparerTuple : IEqualityComparer<(int ActNumber, string Id)>
+    {
+        public static StringComparerTuple Instance { get; } = new();
+
+        public bool Equals((int ActNumber, string Id) x, (int ActNumber, string Id) y) =>
+            x.ActNumber == y.ActNumber && string.Equals(x.Id, y.Id, StringComparison.OrdinalIgnoreCase);
+
+        public int GetHashCode((int ActNumber, string Id) obj) =>
+            HashCode.Combine(obj.ActNumber, StringComparer.OrdinalIgnoreCase.GetHashCode(obj.Id));
     }
 
     public Sts2SeaGlassPreview AnalyzeSeaGlassPreview(
@@ -465,8 +613,15 @@ internal sealed class Sts2ExactRouteAnalyzer
             _relicFactory = new RewardRelicStateFactory(world, dataset, request);
         }
 
+        public long ShopOutputBranchesDropped { get; private set; }
+
         public Sts2ExactRouteMatch? TrySimulate(IReadOnlyList<Sts2GeneratedActRoute> routes)
         {
+            if (_request.CancellationToken.IsCancellationRequested)
+            {
+                return null;
+            }
+
             var orderedActs = routes
                 .OrderBy(route => route.ActNumber)
                 .ToList();
@@ -485,6 +640,11 @@ internal sealed class Sts2ExactRouteAnalyzer
 
             for (var actPlanIndex = 0; actPlanIndex < orderedActs.Count; actPlanIndex++)
             {
+                if (_request.CancellationToken.IsCancellationRequested)
+                {
+                    return null;
+                }
+
                 var act = orderedActs[actPlanIndex];
                 var steps = act.Nodes
                     .Zip(act.Nodes.Skip(1), (from, to) => new Sts2ExactRouteStep
@@ -502,14 +662,29 @@ internal sealed class Sts2ExactRouteAnalyzer
                 var nextActBranches = new List<SimulationBranch>();
                 foreach (var seedBranch in branches)
                 {
+                    if (_request.CancellationToken.IsCancellationRequested)
+                    {
+                        return null;
+                    }
+
                     var activeBranches = BeginActBranches(seedBranch, act.ActNumber, ancientId, ancientRelicOptions);
 
                     for (var nodeIndex = 0; nodeIndex < act.Nodes.Count; nodeIndex++)
                     {
+                        if (_request.CancellationToken.IsCancellationRequested)
+                        {
+                            return null;
+                        }
+
                         var node = act.Nodes[nodeIndex];
                         var roomBranches = new List<SimulationBranch>();
                         foreach (var branch in activeBranches)
                         {
+                            if (_request.CancellationToken.IsCancellationRequested)
+                            {
+                                return null;
+                            }
+
                             roomBranches.AddRange(AdvanceBranchForRoom(branch, act.ActNumber, node));
                         }
 
@@ -903,7 +1078,21 @@ internal sealed class Sts2ExactRouteAnalyzer
             }
 
             AddCandidate(defaultBranch, Array.Empty<string>(), "default");
+            ApplyFastShopOutputLimit(branches);
             return branches;
+        }
+
+        private void ApplyFastShopOutputLimit(List<SimulationBranch> branches)
+        {
+            if (_request.SimulationMode != Sts2ExactRouteSimulationMode.FastShopLimited ||
+                _request.ShopOutputLimit <= 0 ||
+                branches.Count <= _request.ShopOutputLimit)
+            {
+                return;
+            }
+
+            ShopOutputBranchesDropped += branches.Count - _request.ShopOutputLimit;
+            branches.RemoveRange(_request.ShopOutputLimit, branches.Count - _request.ShopOutputLimit);
         }
 
         private IEnumerable<SimulationBranch> ExpandRanwidBranches(
@@ -1797,6 +1986,7 @@ internal sealed class Sts2ExactRouteAnalyzer
                 sharedBag,
                 playerBag,
                 new GameRng(_request.SeedValue, "treasure_room_relics"),
+                new GameRng(_request.SeedValue, "niche"),
                 new GameRng(playerSeed, "rewards"),
                 new GameRng(playerSeed, "shops"),
                 _rewardModel,
@@ -1834,6 +2024,7 @@ internal sealed class Sts2ExactRouteAnalyzer
             RelicBag sharedBag,
             RelicBag playerBag,
             GameRng treasureRng,
+            GameRng nicheRng,
             GameRng rewardsRng,
             GameRng shopsRng,
             RewardSimulationModel rewardModel,
@@ -1843,6 +2034,7 @@ internal sealed class Sts2ExactRouteAnalyzer
             SharedBag = sharedBag;
             PlayerBag = playerBag;
             TreasureRng = treasureRng;
+            NicheRng = nicheRng;
             RewardsRng = rewardsRng;
             ShopsRng = shopsRng;
             RewardModel = rewardModel;
@@ -1855,6 +2047,8 @@ internal sealed class Sts2ExactRouteAnalyzer
         public RelicBag PlayerBag { get; }
 
         public GameRng TreasureRng { get; }
+
+        public GameRng NicheRng { get; }
 
         public GameRng RewardsRng { get; }
 
@@ -2371,6 +2565,7 @@ internal sealed class Sts2ExactRouteAnalyzer
                 SharedBag.Clone(),
                 PlayerBag.Clone(),
                 new GameRng(TreasureRng.Seed, TreasureRng.Counter),
+                new GameRng(NicheRng.Seed, NicheRng.Counter),
                 new GameRng(RewardsRng.Seed, RewardsRng.Counter),
                 new GameRng(ShopsRng.Seed, ShopsRng.Counter),
                 RewardModel,
@@ -2766,6 +2961,9 @@ internal sealed class Sts2ExactRouteAnalyzer
                         metadata => metadata.ParsedRarity == CardRarity.Rare,
                         simulateUpgradeRoll: false);
                     break;
+                case NeowOptionIds.Kaleidoscope:
+                    ReplayKaleidoscope();
+                    break;
                 case NeowOptionIds.LeadPaperweight:
                     ReplayCardReward(
                         RewardModel.GetColorlessCardPool(),
@@ -2794,6 +2992,44 @@ internal sealed class Sts2ExactRouteAnalyzer
                     break;
             }
         }
+
+        private void ReplayKaleidoscope()
+        {
+            var otherCharacters = RewardModel.AllCharacterCardPools.Keys
+                .Where(character => character != RewardModel.Character)
+                .OrderBy(GetKaleidoscopeStableSortKey, StringComparer.Ordinal)
+                .ToList();
+            if (otherCharacters.Count == 0)
+            {
+                return;
+            }
+
+            for (var bundleIndex = 0; bundleIndex < 2; bundleIndex++)
+            {
+                var shuffledCharacters = otherCharacters.ToList();
+                NicheRng.Shuffle(shuffledCharacters);
+                foreach (var character in shuffledCharacters.Take(3))
+                {
+                    if (!RewardModel.AllCharacterCardPools.TryGetValue(character, out var pool) || pool.Count == 0)
+                    {
+                        continue;
+                    }
+
+                    ReplayCardReward(pool, CardRarityOddsType.RegularEncounter, 1);
+                }
+            }
+        }
+
+        private static string GetKaleidoscopeStableSortKey(CharacterId character) =>
+            character switch
+            {
+                CharacterId.Defect => "DEFECT",
+                CharacterId.Ironclad => "IRONCLAD",
+                CharacterId.Necrobinder => "NECROBINDER",
+                CharacterId.Regent => "REGENT",
+                CharacterId.Silent => "SILENT",
+                _ => character.ToString().ToUpperInvariant()
+            };
 
         private void ReplayCardReward(
             IEnumerable<string> pool,
@@ -2980,7 +3216,9 @@ internal sealed class Sts2ExactRouteAnalyzer
         {
             var current = PotionChance;
             var roll = RewardsRng.NextFloat();
-            if (roll < current)
+            var eliteBonus = isElite ? 0.125f : 0f;
+            var threshold = current + eliteBonus;
+            if (roll < threshold)
             {
                 PotionChance -= 0.1f;
             }
@@ -2989,8 +3227,7 @@ internal sealed class Sts2ExactRouteAnalyzer
                 PotionChance += 0.1f;
             }
 
-            var eliteBonus = isElite ? 0.125f : 0f;
-            return roll < current + eliteBonus;
+            return roll < threshold;
         }
 
         private void RollPotionReward()
@@ -3162,6 +3399,7 @@ internal sealed class Sts2ExactRouteAnalyzer
     {
         private RewardSimulationModel(
             CharacterId character,
+            IReadOnlyDictionary<CharacterId, IReadOnlyList<string>> allCharacterCardPools,
             IReadOnlyList<string> cardPool,
             IReadOnlyDictionary<CardRarity, string[]> cardPoolByRarity,
             IReadOnlyList<string> prismaticCardPool,
@@ -3179,6 +3417,7 @@ internal sealed class Sts2ExactRouteAnalyzer
             IReadOnlyDictionary<PotionRarity, string[]> potionPoolByRarity)
         {
             Character = character;
+            AllCharacterCardPools = allCharacterCardPools;
             CardPool = cardPool;
             CardPoolByRarity = cardPoolByRarity;
             PrismaticCardPool = prismaticCardPool;
@@ -3197,6 +3436,8 @@ internal sealed class Sts2ExactRouteAnalyzer
         }
 
         public CharacterId Character { get; }
+
+        public IReadOnlyDictionary<CharacterId, IReadOnlyList<string>> AllCharacterCardPools { get; }
 
         public IReadOnlyList<string> CardPool { get; }
 
@@ -3233,6 +3474,9 @@ internal sealed class Sts2ExactRouteAnalyzer
             var characterPool = dataset.CharacterCardPoolMap.TryGetValue(character, out var characterCards)
                 ? characterCards
                 : Array.Empty<string>();
+            var allCharacterCardPools = dataset.CharacterCardPoolMap.ToDictionary(
+                pair => pair.Key,
+                pair => (IReadOnlyList<string>)pair.Value.ToArray());
 
             var merchantCards = characterPool
                 .Where(cardId => dataset.CardMetadataMap.TryGetValue(cardId, out var metadata) &&
@@ -3293,6 +3537,7 @@ internal sealed class Sts2ExactRouteAnalyzer
 
             return new RewardSimulationModel(
                 character,
+                allCharacterCardPools,
                 cardPool,
                 cardPoolByRarity,
                 prismaticCardPool,

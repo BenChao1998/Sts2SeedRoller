@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Win32;
 using SeedModel.Sts2;
+using SeedUi.Commands;
 
 namespace SeedUi.ViewModels;
 
@@ -13,6 +15,7 @@ internal sealed partial class MainWindowViewModel
     private string _progressSaveAncientRuleText = "当前古神规则：默认全解锁";
     private bool _isProgressSaveLoaded;
     private bool _hasProgressSavePath;
+    private RelayCommand? _selectProgressSaveCommand;
 
     public string ProgressSaveLoadStatus
     {
@@ -54,6 +57,24 @@ internal sealed partial class MainWindowViewModel
     {
         get => _hasProgressSavePath;
         private set => SetProperty(ref _hasProgressSavePath, value);
+    }
+
+    public RelayCommand SelectProgressSaveCommand =>
+        _selectProgressSaveCommand ??= new RelayCommand(SelectProgressSave);
+
+    private void SelectProgressSave()
+    {
+        var dialog = new OpenFileDialog
+        {
+            Filter = "progress.save|progress.save|所有文件 (*.*)|*.*",
+            Title = "选择 progress.save",
+            FileName = "progress.save"
+        };
+
+        if (dialog.ShowDialog() == true)
+        {
+            UseProgressSaveFile(dialog.FileName);
+        }
     }
 
     public void UseProgressSaveFile(string path)

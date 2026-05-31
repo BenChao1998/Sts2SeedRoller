@@ -1,3 +1,4 @@
+using System.Threading;
 using SeedModel.Neow;
 
 namespace SeedModel.Sts2;
@@ -30,6 +31,10 @@ public sealed class Sts2ExactRouteAnalysisRequest
 
     public Sts2ExactRouteShopStrategy ShopStrategy { get; init; } = Sts2ExactRouteShopStrategy.TargetRelicsOnly;
 
+    public Sts2ExactRouteSimulationMode SimulationMode { get; init; } = Sts2ExactRouteSimulationMode.Strict;
+
+    public int ShopOutputLimit { get; init; }
+
     public Sts2ExactRoutePreference Preference { get; init; } = Sts2ExactRoutePreference.None;
 
     public NeowOptionResult? Act1OpeningOption { get; init; }
@@ -45,6 +50,10 @@ public sealed class Sts2ExactRouteAnalysisRequest
     public int MaxResults { get; init; } = 3;
 
     public long MaxRouteChecks { get; init; } = 20_000;
+
+    public IProgress<Sts2ExactRouteProgress>? Progress { get; init; }
+
+    public CancellationToken CancellationToken { get; init; }
 
     public IReadOnlyList<Sts2ExactRouteEventTargetRequest> GetResolvedEventTargets()
     {
@@ -80,11 +89,19 @@ public sealed record Sts2ExactRouteEventTargetRequest(int? ActNumber, string Eve
 
 public sealed record Sts2ExactRouteRelicTargetRequest(int? ActNumber, string RelicId);
 
+public sealed record Sts2ExactRouteProgress(int StartedRoutes, int CheckedRoutes, int FoundRoutes);
+
 public enum Sts2ExactRouteShopStrategy
 {
     TargetRelicsOnly = 0,
     NoPurchase = 1,
     CardRemovalOnly = 2
+}
+
+public enum Sts2ExactRouteSimulationMode
+{
+    Strict = 0,
+    FastShopLimited = 1
 }
 
 public enum Sts2ExactRoutePreference
@@ -108,9 +125,46 @@ public sealed class Sts2ExactRouteAnalysis
 
     public required bool WasTruncated { get; init; }
 
+    public required long ShopOutputBranchesDropped { get; init; }
+
     public required IReadOnlyList<Sts2ExactMapAct> MapActs { get; init; }
 
     public required IReadOnlyList<Sts2ExactRouteMatch> Matches { get; init; }
+
+    public Sts2ExactRouteCoverage Coverage { get; init; } = Sts2ExactRouteCoverage.Empty;
+}
+
+public sealed class Sts2ExactRouteCoverage
+{
+    public static Sts2ExactRouteCoverage Empty { get; } = new()
+    {
+        TotalRoutes = 0,
+        EventCoverage = Array.Empty<Sts2ExactRouteCoverageItem>(),
+        RelicCoverage = Array.Empty<Sts2ExactRouteCoverageItem>()
+    };
+
+    public required int TotalRoutes { get; init; }
+
+    public required IReadOnlyList<Sts2ExactRouteCoverageItem> EventCoverage { get; init; }
+
+    public required IReadOnlyList<Sts2ExactRouteCoverageItem> RelicCoverage { get; init; }
+}
+
+public sealed class Sts2ExactRouteCoverageItem
+{
+    public required string Id { get; init; }
+
+    public required int ActNumber { get; init; }
+
+    public required int SeenRouteCount { get; init; }
+
+    public required int TotalRouteCount { get; init; }
+
+    public int? FirstRowMin { get; init; }
+
+    public int? FirstRowMax { get; init; }
+
+    public required IReadOnlyList<string> Sources { get; init; }
 }
 
 public sealed class Sts2ExactMapAct

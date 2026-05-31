@@ -870,7 +870,7 @@ internal sealed partial class MainWindowViewModel
         {
             var absoluteIndex = job.NextIndex + offset;
             var seedText = ResolveArchiveSeed(job, absoluteIndex);
-            items.Add(new SeedWorkItem(absoluteIndex, seedText, SeedFormatter.ToUIntSeed(seedText)));
+            items.Add(new SeedWorkItem(absoluteIndex, seedText, SeedFormatter.ToUIntSeed(seedText), 1));
         }
 
         return items;
@@ -1227,7 +1227,9 @@ internal sealed partial class MainWindowViewModel
             ancientPreview: run.Sts2Preview,
             requiresAct2: false,
             requiresAct3: false,
-            run.Ascension);
+            run.Ascension,
+            exactRouteAnalysis: null,
+            exactRouteFilter: null);
     }
 
     private static string? EmptyToNull(string? value) =>

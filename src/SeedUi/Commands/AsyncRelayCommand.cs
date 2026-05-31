@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -22,7 +23,14 @@ internal sealed class AsyncRelayCommand : ICommand
 
     public async void Execute(object? parameter)
     {
-        await _executeAsync();
+        try
+        {
+            await _executeAsync();
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine(ex);
+        }
     }
 
     public void RaiseCanExecuteChanged()
