@@ -55,7 +55,7 @@ internal sealed partial class MainWindowViewModel
     private RelayCommand? _addRollExactRouteRelicTargetCommand;
     private RelayCommand? _removeRollExactRouteRelicTargetCommand;
     private bool _includePoolFilter;
-    private string _poolFilterSummary = "分析池：关闭";
+    private string _poolFilterSummary = $"种子分析筛选：{SeedAnalysisFeatureDisabledMessage}";
     private string _act1EventPoolCatalogFilter = string.Empty;
     private string _act2EventPoolCatalogFilter = string.Empty;
     private string _act3EventPoolCatalogFilter = string.Empty;
@@ -917,6 +917,12 @@ internal sealed partial class MainWindowViewModel
 
     private void UpdatePoolFilterSummaryCore()
     {
+        if (!IsSeedAnalysisFeatureEnabled)
+        {
+            PoolFilterSummary = $"种子分析筛选：{SeedAnalysisFeatureDisabledText}";
+            return;
+        }
+
         if (!IncludePoolFilter)
         {
             PoolFilterSummary = "\u79cd\u5b50\u5206\u6790\u7b5b\u9009\uff1a\u5173\u95ed";

@@ -32,6 +32,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
     private const int MaxLogEntries = 500;
     private const int ProgressReportMinimum = 1_000;
     private const int DefaultPartitionSize = 4_096;
+    private const string SeedAnalysisFeatureDisabledMessage = "0.107.1 暂未适配，暂时关闭。";
     private const string EmbeddedDatasetResource = "SeedUi.Data.Neow.options.json";
     private const string EmbeddedActsResource = "SeedUi.Data.sts2.acts.json";
     private const string EmbeddedAncientOptionsResource = "SeedUi.Data.ancients.options.json";
@@ -130,7 +131,13 @@ internal sealed partial class MainWindowViewModel : ObservableObject
     private bool _isRunValidationRunning;
     private string _runValidationFilePath = string.Empty;
     private string _runValidationStatus = "请选择 .run 存档后开始验证。";
+    private RunValidationVersionOption _selectedRunValidationVersionOption;
+    private bool _runValidationOpeningOptionsOnly;
     private Sts2RunValidationResultViewModel? _runValidationResult;
+
+    public bool IsSeedAnalysisFeatureEnabled => false;
+
+    public string SeedAnalysisFeatureDisabledText => SeedAnalysisFeatureDisabledMessage;
 
     public bool IsRolling
     {
@@ -278,6 +285,8 @@ internal sealed partial class MainWindowViewModel : ObservableObject
     {
         GameVersionOptions = BuildGameVersionOptions();
         _selectedGameVersion = GameVersionOptions.First();
+        RunValidationVersionOptions = BuildRunValidationVersionOptions();
+        _selectedRunValidationVersionOption = RunValidationVersionOptions.First();
 
         EventOptions = SeedEventRegistry.All;
         _selectedEvent = EventOptions.First();
@@ -464,6 +473,8 @@ internal sealed partial class MainWindowViewModel : ObservableObject
     }
 
     public IReadOnlyList<GameVersionOption> GameVersionOptions { get; }
+
+    public IReadOnlyList<RunValidationVersionOption> RunValidationVersionOptions { get; }
 
     public GameVersionOption SelectedGameVersion
     {
@@ -1215,6 +1226,18 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         private set => SetProperty(ref _runValidationStatus, value);
     }
 
+    public RunValidationVersionOption SelectedRunValidationVersionOption
+    {
+        get => _selectedRunValidationVersionOption;
+        set => SetProperty(ref _selectedRunValidationVersionOption, value ?? RunValidationVersionOptions.First());
+    }
+
+    public bool RunValidationOpeningOptionsOnly
+    {
+        get => _runValidationOpeningOptionsOnly;
+        set => SetProperty(ref _runValidationOpeningOptionsOnly, value);
+    }
+
     public Sts2RunValidationResultViewModel? RunValidationResult
     {
         get => _runValidationResult;
@@ -1301,7 +1324,14 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         {
             var filePath = RunValidationFilePath;
             var workspaceRoot = UiDataPathResolver.FindWorkspaceRoot();
-            var result = await Task.Run(() => Sts2RunValidationService.ValidateFile(filePath, workspaceRoot));
+            var options = new Sts2RunValidationOptions
+            {
+                DataVersionOverride = SelectedRunValidationVersionOption.DataVersion,
+                Scope = RunValidationOpeningOptionsOnly
+                    ? Sts2RunValidationScope.OpeningOptionsOnly
+                    : Sts2RunValidationScope.FullRun
+            };
+            var result = await Task.Run(() => Sts2RunValidationService.ValidateFile(filePath, workspaceRoot, options));
             RunValidationResult = new Sts2RunValidationResultViewModel(result);
             RunValidationStatus = $"验证完成：{result.SummaryText}";
             StatusMessage = RunValidationStatus;
@@ -3063,7 +3093,7 @@ internal sealed partial class MainWindowViewModel : ObservableObject
 
         var shopFilter = Sts2ShopFilter.Empty;
         var poolFilter = Sts2PoolFilter.Empty;
-        var exactRouteFilter = IncludePoolFilter && HasRollExactRouteTargets
+        var exactRouteFilter = IsSeedAnalysisFeatureEnabled && IncludePoolFilter && HasRollExactRouteTargets
             ? new Sts2ExactRouteFilter
             {
                 EventTargets = RollExactRouteEventTargetChips
@@ -4576,6 +4606,8 @@ internal sealed partial class MainWindowViewModel : ObservableObject
 
     internal sealed record GameVersionOption(string Id, string DisplayName, string Description);
 
+    internal sealed record RunValidationVersionOption(string? DataVersion, string DisplayName, string Description);
+
     private static IReadOnlyList<GameVersionOption> BuildGameVersionOptions()
     {
         var discoveredVersions = UiDataPathResolver.GetAvailableVersionDirectories();
@@ -4601,6 +4633,22 @@ internal sealed partial class MainWindowViewModel : ObservableObject
         return string.Equals(version, "0.99.1", StringComparison.OrdinalIgnoreCase)
             ? "内置数据，数据来源于 seed_info.json 提取"
             : "版本目录数据";
+    }
+
+    private static IReadOnlyList<RunValidationVersionOption> BuildRunValidationVersionOptions()
+    {
+        var options = new List<RunValidationVersionOption>
+        {
+            new(null, "自动（读取存档版本）", "优先使用存档版本，缺失时使用默认验证数据")
+        };
+
+        options.AddRange(UiDataPathResolver.GetAvailableVersionDirectories()
+            .Select(version => new RunValidationVersionOption(
+                version,
+                $"v{version}",
+                BuildGameVersionDescription(version))));
+
+        return options;
     }
 
     internal sealed class AppConfig

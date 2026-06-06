@@ -111,6 +111,24 @@
                              Height="34"
                              VerticalContentAlignment="Center"
                              TextWrapping="NoWrap"/>
+                    <Grid Margin="0 10 0 0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="220"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Margin="0 0 16 0">
+                            <TextBlock Text="验证版本" FontSize="12" Foreground="#666" Margin="0 0 0 4"/>
+                            <ComboBox ItemsSource="{Binding RunValidationVersionOptions}"
+                                      SelectedItem="{Binding SelectedRunValidationVersionOption}"
+                                      DisplayMemberPath="DisplayName"
+                                      Height="30"/>
+                        </StackPanel>
+                        <CheckBox Grid.Column="1"
+                                  Content="只验证第一/二/三幕开始选项"
+                                  IsChecked="{Binding RunValidationOpeningOptionsOnly}"
+                                  VerticalAlignment="Bottom"
+                                  Margin="0 0 0 6"/>
+                    </Grid>
                     <TextBlock Text="{Binding RunValidationStatus}" FontSize="12" Foreground="#666" TextWrapping="Wrap" Margin="0 8 0 0"/>
                 </StackPanel>
                 <Button Grid.Column="1"
@@ -190,10 +208,12 @@
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0" Text="{Binding GameVersion, StringFormat=版本：{0}}" FontSize="12" Foreground="#777"/>
-                    <TextBlock Grid.Column="1" Text="{Binding FinalRelicMatchText, StringFormat=最终遗物：{0}}" FontSize="12" Foreground="#777"/>
-                    <TextBlock Grid.Column="2" Text="{Binding FirstMismatchFloor, StringFormat=首个不匹配楼层：{0}}" FontSize="12" Foreground="#777"/>
+                    <TextBlock Grid.Column="0" Text="{Binding GameVersion, StringFormat=存档版本：{0}}" FontSize="12" Foreground="#777"/>
+                    <TextBlock Grid.Column="1" Text="{Binding ValidationDataVersion, StringFormat=验证数据：{0}}" FontSize="12" Foreground="#777"/>
+                    <TextBlock Grid.Column="2" Text="{Binding ValidationScope, StringFormat=范围：{0}}" FontSize="12" Foreground="#777"/>
+                    <TextBlock Grid.Column="3" Text="{Binding FinalRelicMatchText, StringFormat=最终遗物：{0}}" FontSize="12" Foreground="#777"/>
                 </Grid>
             </StackPanel>
         </Border>

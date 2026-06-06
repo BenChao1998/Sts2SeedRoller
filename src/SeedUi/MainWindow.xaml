@@ -163,7 +163,9 @@
                                  Checked="NavConfig_Checked"/>
                     <RadioButton x:Name="NavSeedAnalysis" Style="{StaticResource NavButtonStyle}"
                                  Content="种子分析" Tag="&#xE8B7;"
-                                 ToolTip="按当前策略分析种子并预览精确路线"
+                                 IsEnabled="{Binding IsSeedAnalysisFeatureEnabled}"
+                                 ToolTipService.ShowOnDisabled="True"
+                                 ToolTip="{Binding SeedAnalysisFeatureDisabledText}"
                                  Checked="NavSeedAnalysis_Checked"/>
                     <RadioButton x:Name="NavResult" Style="{StaticResource NavButtonStyle}"
                                  Content="运行结果" Tag="&#xE9D2;"
@@ -455,7 +457,19 @@
                             </Border>
 
                             <!-- 种子分析筛选 -->
-                            <Border Style="{StaticResource CardStyle}" Margin="0 0 0 16">
+                            <Border Margin="0 0 0 16"
+                                    IsEnabled="{Binding IsSeedAnalysisFeatureEnabled}"
+                                    ToolTip="{Binding SeedAnalysisFeatureDisabledText}"
+                                    ToolTipService.ShowOnDisabled="True">
+                                <Border.Style>
+                                    <Style TargetType="Border" BasedOn="{StaticResource CardStyle}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsSeedAnalysisFeatureEnabled}" Value="False">
+                                                <Setter Property="Opacity" Value="0.55"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
                                 <StackPanel>
                                     <StackPanel Orientation="Horizontal" Margin="0 0 0 16">
                                         <TextBlock Text="&#x79CD;&#x5B50;&#x5206;&#x6790;&#x7B5B;&#x9009;" FontSize="16" FontWeight="SemiBold" Foreground="#333"/>

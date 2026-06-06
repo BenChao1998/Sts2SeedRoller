@@ -11,6 +11,10 @@ public sealed class Sts2RunValidationResult
 
     public required string GameVersion { get; init; }
 
+    public required string ValidationDataVersion { get; init; }
+
+    public required Sts2RunValidationScope ValidationScope { get; init; }
+
     public required string SeedText { get; init; }
 
     public required string CharacterId { get; init; }
@@ -52,6 +56,24 @@ public sealed class Sts2RunValidationResult
     public string SummaryText => $"{GeneratedMatches}/{GeneratedComparisons} ({MatchRateText})";
 }
 
+public sealed class Sts2RunValidationOptions
+{
+    public string? DataVersionOverride { get; init; }
+
+    public Sts2RunValidationScope Scope { get; init; } = Sts2RunValidationScope.FullRun;
+}
+
+public enum Sts2RunValidationScope
+{
+    FullRun,
+    OpeningOptionsOnly
+}
+
+public static class Sts2RunValidationCategories
+{
+    public const string OpeningOption = "开始选项";
+}
+
 public sealed class Sts2RunValidationFloorResult
 {
     public required int Floor { get; init; }
@@ -74,6 +96,12 @@ public sealed class Sts2RunValidationFloorResult
 public static class Sts2RunValidationService
 {
     public static Sts2RunValidationResult ValidateFile(string runFilePath, string? workspaceRoot = null)
+        => ValidateFile(runFilePath, workspaceRoot, options: null);
+
+    public static Sts2RunValidationResult ValidateFile(
+        string runFilePath,
+        string? workspaceRoot,
+        Sts2RunValidationOptions? options)
     {
         if (string.IsNullOrWhiteSpace(runFilePath))
         {
@@ -89,11 +117,18 @@ public static class Sts2RunValidationService
         {
             using var document = JsonDocument.Parse(File.ReadAllText(runFilePath));
             var replay = Sts2LogReplayParser.Parse(document.RootElement);
-            var replayResult = LogDrivenReplay.Run(replay);
-            var comparisons = GeneratedRunComparer.Compare(
-                replay,
-                preCombatReplayMode: PreCombatReplayMode.ReplayDelicateFrondWithPotionSlots);
-            var markdown = ReplayReportFormatter.Format(replay, replayResult, comparisons);
+            var validationOptions = options ?? new Sts2RunValidationOptions();
+            var validationDataVersion = ResolveValidationDataVersion(replay.GameVersion, validationOptions.DataVersionOverride);
+            var validationReplay = replay with { GameVersion = validationDataVersion };
+            var replayResult = validationOptions.Scope == Sts2RunValidationScope.OpeningOptionsOnly
+                ? new ReplayResult(Array.Empty<string>(), Array.Empty<ReplayTraceEntry>(), Array.Empty<string>())
+                : LogDrivenReplay.Run(validationReplay);
+            var comparisons = validationOptions.Scope == Sts2RunValidationScope.OpeningOptionsOnly
+                ? OpeningOptionComparer.Compare(validationReplay)
+                : GeneratedRunComparer.Compare(
+                    validationReplay,
+                    preCombatReplayMode: PreCombatReplayMode.ReplayDelicateFrondWithPotionSlots);
+            var markdown = ReplayReportFormatter.Format(validationReplay, replayResult, comparisons);
             var comparable = comparisons
                 .Where(item => item.IsMatch.HasValue)
                 .ToArray();
@@ -104,6 +139,8 @@ public static class Sts2RunValidationService
                 FilePath = runFilePath,
                 RunId = replay.RunId,
                 GameVersion = replay.GameVersion,
+                ValidationDataVersion = validationDataVersion,
+                ValidationScope = validationOptions.Scope,
                 SeedText = replay.SeedText,
                 CharacterId = replay.CharacterId,
                 Ascension = replay.Ascension,
@@ -122,6 +159,21 @@ public static class Sts2RunValidationService
                 FloorsResults = comparisons.SelectMany(ToFloorResults).ToArray()
             };
         });
+    }
+
+    private static string ResolveValidationDataVersion(string? replayGameVersion, string? dataVersionOverride)
+    {
+        var requested = string.IsNullOrWhiteSpace(dataVersionOverride)
+            ? ExactRewardStateBridge.ResolveRunValidationDataVersion(replayGameVersion)
+            : dataVersionOverride.Trim();
+
+        var neowDataPath = Path.Combine("data", requested, "neow", "options.json");
+        if (!File.Exists(neowDataPath))
+        {
+            throw new FileNotFoundException($"Run validation data version '{requested}' is not available. Expected file: {neowDataPath}", neowDataPath);
+        }
+
+        return requested;
     }
 
     private static T InWorkspace<T>(string? workspaceRoot, Func<T> action)
@@ -144,6 +196,17 @@ public static class Sts2RunValidationService
 
     private static IEnumerable<Sts2RunValidationFloorResult> ToFloorResults(GeneratedFloorComparison comparison)
     {
+        if (comparison.Notes?.Contains("开始选项", StringComparison.OrdinalIgnoreCase) == true)
+        {
+            yield return CreateFloorResult(
+                comparison,
+                Sts2RunValidationCategories.OpeningOption,
+                comparison.RelicMatch,
+                comparison.ExpectedRelics,
+                comparison.GeneratedRelics);
+            yield break;
+        }
+
         if (comparison.CardMatch.HasValue)
         {
             yield return CreateFloorResult(

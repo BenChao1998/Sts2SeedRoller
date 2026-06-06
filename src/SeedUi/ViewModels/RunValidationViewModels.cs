@@ -11,12 +11,18 @@ internal sealed class Sts2RunValidationResultViewModel
         FileName = Path.GetFileName(result.FilePath);
         RunId = result.RunId.ToString();
         GameVersion = string.IsNullOrWhiteSpace(result.GameVersion) ? "未知" : result.GameVersion;
+        ValidationDataVersion = string.IsNullOrWhiteSpace(result.ValidationDataVersion) ? "未知" : result.ValidationDataVersion;
+        ValidationScope = result.ValidationScope == Sts2RunValidationScope.OpeningOptionsOnly
+            ? "仅开始选项"
+            : "完整验证";
         SeedText = result.SeedText;
         CharacterId = result.CharacterId;
         Ascension = result.Ascension.ToString();
         PlayerCount = result.PlayerCount.ToString();
         Floors = result.Floors.ToString();
-        FinalRelicMatchText = result.FinalRelicMatch ? "匹配" : "不匹配";
+        FinalRelicMatchText = result.ValidationScope == Sts2RunValidationScope.OpeningOptionsOnly
+            ? "-"
+            : result.FinalRelicMatch ? "匹配" : "不匹配";
         GeneratedSummary = result.SummaryText;
         GeneratedComparisons = result.GeneratedComparisons.ToString();
         GeneratedMatches = result.GeneratedMatches.ToString();
@@ -44,6 +50,10 @@ internal sealed class Sts2RunValidationResultViewModel
     public string RunId { get; }
 
     public string GameVersion { get; }
+
+    public string ValidationDataVersion { get; }
+
+    public string ValidationScope { get; }
 
     public string SeedText { get; }
 

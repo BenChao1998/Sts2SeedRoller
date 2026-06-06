@@ -19,6 +19,11 @@ public partial class MainWindow : HandyControl.Controls.Window
 
     private void NavigateToPage(int tabIndex)
     {
+        if (tabIndex == 1 && DataContext is MainWindowViewModel { IsSeedAnalysisFeatureEnabled: false })
+        {
+            tabIndex = 0;
+        }
+
         if (NavConfig != null) NavConfig.IsChecked = tabIndex == 0;
         if (NavSeedAnalysis != null) NavSeedAnalysis.IsChecked = tabIndex == 1;
         if (NavResult != null) NavResult.IsChecked = tabIndex == 2;

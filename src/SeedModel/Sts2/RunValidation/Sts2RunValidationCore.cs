@@ -1307,6 +1307,7 @@ internal static class GeneratedRunComparer
         var unknownOutcomes = UnknownRoomTraceProbe.GetPredictedOutcomesByFloor(replay);
         var finalRelicCursor = generatedOwnedRelics.Count;
         var potionInventory = PotionInventoryState.Create(replay);
+        var relicRuntime = RelicRuntimeState.Create(generatedOwnedRelics);
 
         foreach (var floor in replay.Floors)
         {
@@ -1324,10 +1325,11 @@ internal static class GeneratedRunComparer
                         : isElite
                             ? CardRarityOddsType.EliteEncounter
                             : CardRarityOddsType.RegularEncounter;
+                    var combatRelicRuntime = relicRuntime.PreviewAfterCombatEnd();
                     var alignment = GeneratedFloorComparison.FindUniqueRewardRngSkipAlignment(
                         floor,
-                        state.PreviewCombatCards(oddsType, isElite, isBoss),
-                        state.PreviewCombatSkips(oddsType, isElite, isBoss, maxSkip: isBoss ? 16 : 12));
+                        state.PreviewCombatCards(oddsType, isElite, isBoss, combatRelicRuntime),
+                        state.PreviewCombatSkips(oddsType, isElite, isBoss, maxSkip: isBoss ? 16 : 12, combatRelicRuntime));
 
                     if (isBoss)
                     {
@@ -1336,14 +1338,22 @@ internal static class GeneratedRunComparer
                             comparisons.Add(GeneratedFloorComparison.ForRewardCards(floor, alignment.GeneratedCards, alignment.Notes));
                         }
 
-                        state.ConsumeBossRewards();
+                        state.ConsumeBossRewards(combatRelicRuntime);
+                        relicRuntime.AfterCombatEnd();
                         break;
                     }
 
                     if (isElite)
                     {
-                        var outcome = state.RollElite(actNumber);
+                        if (floor.CardChoices.Count == 0 && floor.RelicChoices.Count == 0)
+                        {
+                            comparisons.Add(GeneratedFloorComparison.Note(floor.Floor, floor.RoomType, "elite combat has no reward choices logged, likely run ended before rewards"));
+                            break;
+                        }
+
+                        var outcome = state.RollElite(actNumber, combatRelicRuntime);
                         comparisons.Add(GeneratedFloorComparison.ForReward(floor, outcome.GeneratedCards, outcome.GeneratedRelics, alignment.Notes));
+                        relicRuntime.AfterCombatEnd();
                         break;
                     }
 
@@ -1352,7 +1362,8 @@ internal static class GeneratedRunComparer
                         comparisons.Add(GeneratedFloorComparison.ForRewardCards(floor, alignment.GeneratedCards, alignment.Notes));
                     }
 
-                    state.ConsumeRegularCombat();
+                    state.ConsumeRegularCombat(combatRelicRuntime);
+                    relicRuntime.AfterCombatEnd();
                     break;
                 }
                 case "M":
@@ -1366,10 +1377,11 @@ internal static class GeneratedRunComparer
 
                     var preludeTrace = state.PreviewCombatRewardPrelude(isElite: false, isBoss: false);
                     var pickTrace = state.PreviewCombatCardPickTrace(CardRarityOddsType.RegularEncounter, isElite: false, isBoss: false);
+                    var combatRelicRuntime = relicRuntime.PreviewAfterCombatEnd();
                     var alignment = GeneratedFloorComparison.FindUniqueRewardRngSkipAlignment(
                         floor,
-                        state.PreviewCombatCards(CardRarityOddsType.RegularEncounter, isElite: false, isBoss: false),
-                        state.PreviewCombatSkips(CardRarityOddsType.RegularEncounter, isElite: false, isBoss: false, maxSkip: 12));
+                        state.PreviewCombatCards(CardRarityOddsType.RegularEncounter, isElite: false, isBoss: false, combatRelicRuntime),
+                        state.PreviewCombatSkips(CardRarityOddsType.RegularEncounter, isElite: false, isBoss: false, maxSkip: 12, combatRelicRuntime));
                     var generatedCards = alignment.GeneratedCards;
                     var notes = GeneratedFloorComparison.ApplyOracleOverrideIfAvailable(
                         replay,
@@ -1393,17 +1405,26 @@ internal static class GeneratedRunComparer
                         comparisons.Add(GeneratedFloorComparison.ForRewardCards(floor, generatedCards, notes, cardMatchOverride));
                     }
 
-                    state.ConsumeRegularCombat();
+                    state.ConsumeRegularCombat(combatRelicRuntime);
+                    relicRuntime.AfterCombatEnd();
                     break;
                 }
                 case "E":
                 {
+                    if (floor.CardChoices.Count == 0 && floor.RelicChoices.Count == 0)
+                    {
+                        comparisons.Add(GeneratedFloorComparison.Note(floor.Floor, floor.RoomType, "elite combat has no reward choices logged, likely run ended before rewards"));
+                        break;
+                    }
+
+                    var combatRelicRuntime = relicRuntime.PreviewAfterCombatEnd();
                     var alignment = GeneratedFloorComparison.FindUniqueRewardRngSkipAlignment(
                         floor,
-                        state.PreviewCombatCards(CardRarityOddsType.EliteEncounter, isElite: true, isBoss: false),
-                        state.PreviewCombatSkips(CardRarityOddsType.EliteEncounter, isElite: true, isBoss: false, maxSkip: 12));
-                    var outcome = state.RollElite(actNumber);
+                        state.PreviewCombatCards(CardRarityOddsType.EliteEncounter, isElite: true, isBoss: false, combatRelicRuntime),
+                        state.PreviewCombatSkips(CardRarityOddsType.EliteEncounter, isElite: true, isBoss: false, maxSkip: 12, combatRelicRuntime));
+                    var outcome = state.RollElite(actNumber, combatRelicRuntime);
                     comparisons.Add(GeneratedFloorComparison.ForReward(floor, outcome.GeneratedCards, outcome.GeneratedRelics, alignment.Notes));
+                    relicRuntime.AfterCombatEnd();
                     break;
                 }
                 case "T":
@@ -1443,6 +1464,18 @@ internal static class GeneratedRunComparer
                         state.ApplyShopAction(action, actNumber);
                     }
 
+                    break;
+                }
+                case "V" when IsBrainLeechShareKnowledge(floor):
+                {
+                    var generatedCards = state.PreviewColorlessNonCombatCards(
+                        CardRarityOddsType.RegularEncounter,
+                        cardCount: 4);
+                    comparisons.Add(GeneratedFloorComparison.Note(
+                        floor.Floor,
+                        floor.RoomType,
+                        $"event card reward mode=brain-leech-share-knowledge colorless non-combat; logged gained={string.Join("/", floor.PickedCardIds)}, generated choices={string.Join("/", generatedCards)}"));
+                    state.ConsumeColorlessNonCombatCards(CardRarityOddsType.RegularEncounter, cardCount: 4);
                     break;
                 }
                 case "V" when floor.CardChoices.Count == 3:
@@ -1602,6 +1635,15 @@ internal static class GeneratedRunComparer
                 }
                 case "V" when floor.PickedRelicIds.Count > 0:
                 {
+                    if (IsTeaMasterCourtesyRelicChoice(floor))
+                    {
+                        comparisons.Add(GeneratedFloorComparison.ForRewardRelics(
+                            floor,
+                            floor.RelicChoices,
+                            "event relic mode=tea-master fixed courtesy relic"));
+                        break;
+                    }
+
                     if (IsDollRoom(floor))
                     {
                         var dollRoomRelic = state.PreviewDollRoomRandomRelic();
@@ -1644,10 +1686,11 @@ internal static class GeneratedRunComparer
                 {
                     var preludeTrace = state.PreviewCombatRewardPrelude(isElite: false, isBoss: true);
                     var pickTrace = state.PreviewCombatCardPickTrace(CardRarityOddsType.BossEncounter, isElite: false, isBoss: true);
+                    var combatRelicRuntime = relicRuntime.PreviewAfterCombatEnd();
                     var alignment = GeneratedFloorComparison.FindUniqueRewardRngSkipAlignment(
                         floor,
-                        state.PreviewCombatCards(CardRarityOddsType.BossEncounter, isElite: false, isBoss: true),
-                        state.PreviewCombatSkips(CardRarityOddsType.BossEncounter, isElite: false, isBoss: true, maxSkip: 16));
+                        state.PreviewCombatCards(CardRarityOddsType.BossEncounter, isElite: false, isBoss: true, combatRelicRuntime),
+                        state.PreviewCombatSkips(CardRarityOddsType.BossEncounter, isElite: false, isBoss: true, maxSkip: 16, combatRelicRuntime));
                     var notes = alignment.Notes;
                     if (floor.CardChoices.Count > 0 &&
                         !GeneratedFloorComparison.SameCardReward(floor.CardChoices, alignment.GeneratedCards))
@@ -1664,7 +1707,8 @@ internal static class GeneratedRunComparer
                         comparisons.Add(GeneratedFloorComparison.ForRewardCards(floor, generatedCards, notes));
                     }
 
-                    state.ConsumeBossRewards();
+                    state.ConsumeBossRewards(combatRelicRuntime);
+                    relicRuntime.AfterCombatEnd();
                     break;
                 }
             }
@@ -1679,6 +1723,12 @@ internal static class GeneratedRunComparer
             var inferredObtained = InferObtainedRelicsFromFinalOrder(replay, generatedOwnedRelics, ref finalRelicCursor, obtained);
             state.RemoveFromRelicBags(inferredObtained);
             state.Obtain(inferredObtained);
+            relicRuntime.Obtain(inferredObtained);
+            if (floor.TransformedCards.Count > 0)
+            {
+                state.ConsumeRewardRng(floor.TransformedCards.Count);
+            }
+
             potionInventory.ApplyAfterFloor(floor, skipUseRemoval: combatPotionUseAppliedBeforeRewards);
         }
 
@@ -1712,8 +1762,19 @@ internal static class GeneratedRunComparer
                floor.CardChoices.Count == 3;
     }
 
+    private static bool IsBrainLeechShareKnowledge(ReplayFloor floor)
+    {
+        return IsEvent(floor, "BRAIN_LEECH") &&
+               floor.CardChoices.Count == 0 &&
+               floor.PickedCardIds.Count > 0;
+    }
+
     private static bool IsDollRoom(ReplayFloor floor) =>
         IsEvent(floor, "DOLL_ROOM");
+
+    private static bool IsTeaMasterCourtesyRelicChoice(ReplayFloor floor) =>
+        IsEvent(floor, "TEA_MASTER") &&
+        floor.PickedRelicIds.Any(relicId => string.Equals(relicId, "TEA_OF_DISCOURTESY", StringComparison.OrdinalIgnoreCase));
 
     private static bool IsCrystalSphereUncoverFuture(ReplayFloor floor) =>
         IsEvent(floor, "CRYSTAL_SPHERE") &&
@@ -1990,6 +2051,61 @@ internal sealed class PotionInventoryState
         {
             _potions.RemoveAt(index);
         }
+    }
+}
+
+internal sealed class RelicRuntimeState
+{
+    private bool _hasLastingCandy;
+    private int _lastingCandyCombatsSeen;
+
+    private RelicRuntimeState()
+    {
+    }
+
+    public static RelicRuntimeState Create(IEnumerable<string> ownedRelics)
+    {
+        var state = new RelicRuntimeState();
+        state.Obtain(ownedRelics);
+        return state;
+    }
+
+    public RelicRuntimeState PreviewAfterCombatEnd()
+    {
+        var clone = new RelicRuntimeState
+        {
+            _hasLastingCandy = _hasLastingCandy,
+            _lastingCandyCombatsSeen = _lastingCandyCombatsSeen
+        };
+        clone.AfterCombatEnd();
+        return clone;
+    }
+
+    public void AfterCombatEnd()
+    {
+        if (_hasLastingCandy)
+        {
+            _lastingCandyCombatsSeen++;
+        }
+    }
+
+    public void Obtain(IEnumerable<string> relicIds)
+    {
+        foreach (var relicId in relicIds)
+        {
+            if (string.Equals(relicId, "LASTING_CANDY", StringComparison.OrdinalIgnoreCase))
+            {
+                _hasLastingCandy = true;
+            }
+        }
+    }
+
+    public bool ShouldApplyLastingCandyCardReward(CardRarityOddsType oddsType)
+    {
+        return _hasLastingCandy &&
+               _lastingCandyCombatsSeen > 0 &&
+               _lastingCandyCombatsSeen % 2 == 0 &&
+               oddsType != CardRarityOddsType.Shop;
     }
 }
 
@@ -2516,9 +2632,10 @@ internal sealed class ExactRewardStateBridge
         }
     }
 
-    public void ConsumeRegularCombat()
+    public void ConsumeRegularCombat(RelicRuntimeState? relicRuntime = null)
     {
         _consumeRegularCombat.Invoke(_state, null);
+        ConsumePostBaseCardRewardRelicHooks(CardRarityOddsType.RegularEncounter, relicRuntime);
     }
 
     public void ConsumeEventCardReward(bool direct)
@@ -2532,16 +2649,17 @@ internal sealed class ExactRewardStateBridge
         _ = RollCombatLikeRewards(CardRarityOddsType.RegularEncounter, isElite: false, isBoss: false);
     }
 
-    public GeneratedRewardOutcome RollElite(int actNumber)
+    public GeneratedRewardOutcome RollElite(int actNumber, RelicRuntimeState? relicRuntime = null)
     {
-        var generatedCards = PreviewCombatCards(CardRarityOddsType.EliteEncounter, isElite: true, isBoss: false);
+        var generatedCards = PreviewCombatCards(CardRarityOddsType.EliteEncounter, isElite: true, isBoss: false, relicRuntime);
         var generatedRelics = InvokeStringEnumerable(_showElite, actNumber);
+        ConsumePostBaseCardRewardRelicHooks(CardRarityOddsType.EliteEncounter, relicRuntime);
         return new GeneratedRewardOutcome(generatedCards, generatedRelics);
     }
 
-    public void ConsumeBossRewards()
+    public void ConsumeBossRewards(RelicRuntimeState? relicRuntime = null)
     {
-        _ = RollBossRewardsInOfficialOrder();
+        _ = RollBossRewardsInOfficialOrder(relicRuntime);
     }
 
     public IReadOnlyList<string> ShowTreasure(int actNumber)
@@ -2807,14 +2925,14 @@ internal sealed class ExactRewardStateBridge
         }
     }
 
-    public IReadOnlyList<string> PreviewCombatCards(CardRarityOddsType oddsType, bool isElite, bool isBoss)
+    public IReadOnlyList<string> PreviewCombatCards(CardRarityOddsType oddsType, bool isElite, bool isBoss, RelicRuntimeState? relicRuntime = null)
     {
         var clone = _clone.Invoke(_state, null)
             ?? throw new InvalidOperationException("Reward state clone returned null.");
-        return new ExactRewardStateBridge(clone, _dataVersion).RollCombatLikeRewards(oddsType, isElite, isBoss);
+        return new ExactRewardStateBridge(clone, _dataVersion).RollCombatLikeRewards(oddsType, isElite, isBoss, relicRuntime);
     }
 
-    public IReadOnlyList<RewardRngSkipProbe> PreviewCombatSkips(CardRarityOddsType oddsType, bool isElite, bool isBoss, int maxSkip)
+    public IReadOnlyList<RewardRngSkipProbe> PreviewCombatSkips(CardRarityOddsType oddsType, bool isElite, bool isBoss, int maxSkip, RelicRuntimeState? relicRuntime = null)
     {
         var result = new List<RewardRngSkipProbe>(maxSkip + 1);
         for (var skip = 0; skip <= maxSkip; skip++)
@@ -2823,7 +2941,7 @@ internal sealed class ExactRewardStateBridge
                 ?? throw new InvalidOperationException("Reward state clone returned null.");
             var bridge = new ExactRewardStateBridge(clone, _dataVersion);
             bridge.ConsumeRewardRng(skip);
-            result.Add(new RewardRngSkipProbe(skip, bridge.RollCombatLikeRewards(oddsType, isElite, isBoss)));
+            result.Add(new RewardRngSkipProbe(skip, bridge.RollCombatLikeRewards(oddsType, isElite, isBoss, relicRuntime)));
         }
 
         return result;
@@ -3290,7 +3408,7 @@ internal sealed class ExactRewardStateBridge
         }
     }
 
-    private IReadOnlyList<string> RollCombatLikeRewards(CardRarityOddsType oddsType, bool isElite, bool isBoss)
+    private IReadOnlyList<string> RollCombatLikeRewards(CardRarityOddsType oddsType, bool isElite, bool isBoss, RelicRuntimeState? relicRuntime = null)
     {
         var hasPotionReward = (bool)(_rollPotionRewardChance.Invoke(_state, [isElite])
             ?? throw new InvalidOperationException("RollPotionRewardChance returned null."));
@@ -3301,10 +3419,21 @@ internal sealed class ExactRewardStateBridge
             _rollPotionReward.Invoke(_state, null);
         }
 
-        return RollThreeRewardCards(oddsType);
+        return RollRewardCardsWithRelicHooks(oddsType, relicRuntime);
     }
 
-    private IReadOnlyList<string> RollBossRewardsInOfficialOrder()
+    private void ConsumePostBaseCardRewardRelicHooks(CardRarityOddsType oddsType, RelicRuntimeState? relicRuntime)
+    {
+        if (relicRuntime?.ShouldApplyLastingCandyCardReward(oddsType) != true)
+        {
+            return;
+        }
+
+        _ = RollOneLastingCandyPowerCard(oddsType);
+        ClearRewardCardBuffer();
+    }
+
+    private IReadOnlyList<string> RollBossRewardsInOfficialOrder(RelicRuntimeState? relicRuntime = null)
     {
         var hasPotionReward = (bool)(_rollPotionRewardChance.Invoke(_state, [false])
             ?? throw new InvalidOperationException("RollPotionRewardChance returned null."));
@@ -3314,7 +3443,40 @@ internal sealed class ExactRewardStateBridge
             _rollPotionReward.Invoke(_state, null);
         }
 
-        return RollThreeRewardCards(CardRarityOddsType.BossEncounter);
+        return RollRewardCardsWithRelicHooks(CardRarityOddsType.BossEncounter, relicRuntime);
+    }
+
+    private IReadOnlyList<string> RollRewardCardsWithRelicHooks(
+        CardRarityOddsType oddsType,
+        RelicRuntimeState? relicRuntime)
+    {
+        var cards = new List<string>(RollThreeRewardCardsWithoutClearing(oddsType));
+        if (relicRuntime?.ShouldApplyLastingCandyCardReward(oddsType) == true)
+        {
+            var extra = RollOneLastingCandyPowerCard(oddsType);
+            if (!string.IsNullOrWhiteSpace(extra))
+            {
+                cards.Add(extra);
+            }
+        }
+
+        ClearRewardCardBuffer();
+        return cards;
+    }
+
+    private IReadOnlyList<string> RollThreeRewardCardsWithoutClearing(CardRarityOddsType oddsType)
+    {
+        var cards = new List<string>(3);
+        for (var i = 0; i < 3; i++)
+        {
+            var cardId = RollOneRewardCardWithoutAutoClear(oddsType);
+            if (!string.IsNullOrWhiteSpace(cardId))
+            {
+                cards.Add(cardId);
+            }
+        }
+
+        return cards;
     }
 
     private IReadOnlyList<RewardCardPickTrace> RollCombatLikeRewardTrace(CardRarityOddsType oddsType, bool isElite, bool isBoss)
@@ -3368,18 +3530,59 @@ internal sealed class ExactRewardStateBridge
 
     private IReadOnlyList<string> RollThreeRewardCards(CardRarityOddsType oddsType)
     {
-        var cards = new List<string>(3);
-        for (var i = 0; i < 3; i++)
-        {
-            var cardId = RollOneRewardCardWithoutAutoClear(oddsType);
-            if (!string.IsNullOrWhiteSpace(cardId))
-            {
-                cards.Add(cardId);
-            }
-        }
-
+        var cards = new List<string>(RollThreeRewardCardsWithoutClearing(oddsType));
         ClearRewardCardBuffer();
         return cards;
+    }
+
+    private string? RollOneLastingCandyPowerCard(CardRarityOddsType oddsType)
+    {
+        var candidates = GetAvailableRewardCardCandidates((CardRarity?)null, requiredType: "Power");
+        if (candidates.Count == 0)
+        {
+            return null;
+        }
+
+        var cardId = RollOneRewardCardFromCustomPoolWithOfficialCreateForReward(candidates, oddsType);
+        if (!string.IsNullOrWhiteSpace(cardId))
+        {
+            AddRewardCardToBuffer(cardId);
+        }
+
+        return cardId;
+    }
+
+    private string? RollOneRewardCardFromCustomPoolWithOfficialCreateForReward(
+        IReadOnlyList<string> pool,
+        CardRarityOddsType oddsType)
+    {
+        if (pool.Count == 0)
+        {
+            return null;
+        }
+
+        var rarity = RollCardRarityWithBaseOdds(oddsType);
+        var allowedRarities = pool
+            .Select(cardId => ParseCardRarity(CardMetadataIndex.Get(cardId, _dataVersion)?.Rarity))
+            .ToHashSet();
+        var selectedRarity = GetNextAllowedRarity(rarity, allowedRarities.Contains);
+        if (selectedRarity == CardRarity.None)
+        {
+            return null;
+        }
+
+        var candidates = pool
+            .Where(cardId => ParseCardRarity(CardMetadataIndex.Get(cardId, _dataVersion)?.Rarity) == selectedRarity)
+            .ToArray();
+        if (candidates.Length == 0)
+        {
+            return null;
+        }
+
+        var rng = _rewardsRng.GetValue(_state) as GameRng
+            ?? throw new InvalidOperationException("RewardsRng was not a GameRng.");
+        var cardId = rng.NextItem(candidates);
+        return cardId;
     }
 
     private IReadOnlyList<string> RollNonCombatCardsWithRng(
@@ -3600,6 +3803,43 @@ internal sealed class ExactRewardStateBridge
                              metadata.ParsedRarity == rarity &&
                              string.Equals(metadata.Type, requiredType, StringComparison.OrdinalIgnoreCase) &&
                              !current.Contains(cardId))
+            .ToArray();
+    }
+
+    private IReadOnlyList<string> GetAvailableRewardCardCandidates(CardRarity? rarity, string? requiredType = null)
+    {
+        var rewardModel = _state.GetType().GetProperty("RewardModel", BindingFlags.Instance | BindingFlags.Public)?.GetValue(_state)
+            ?? throw new InvalidOperationException("Missing RewardModel property.");
+        var ownedRelics = _state.GetType().GetProperty("OwnedRelics", BindingFlags.Instance | BindingFlags.Public)?.GetValue(_state)
+            ?? throw new InvalidOperationException("Missing OwnedRelics property.");
+        var ownedContains = ownedRelics.GetType().GetMethod("Contains", BindingFlags.Instance | BindingFlags.Public, [typeof(string)])
+            ?? throw new InvalidOperationException("Missing OwnedRelics.Contains method.");
+        var prismatic = (bool)(ownedContains.Invoke(ownedRelics, ["PRISMATIC_GEM"]) ?? false);
+        string[] pool;
+        if (rarity.HasValue)
+        {
+            var getRewardCardPool = rewardModel.GetType().GetMethod("GetRewardCardPool", BindingFlags.Instance | BindingFlags.Public, [typeof(CardRarity), typeof(bool)])
+                ?? throw new InvalidOperationException("Missing RewardModel.GetRewardCardPool method.");
+            pool = ((IEnumerable)(getRewardCardPool.Invoke(rewardModel, [rarity.Value, prismatic])
+                    ?? throw new InvalidOperationException("GetRewardCardPool returned null.")))
+                .Cast<object>()
+                .Select(item => item.ToString() ?? string.Empty)
+                .Where(item => !string.IsNullOrWhiteSpace(item))
+                .ToArray();
+        }
+        else
+        {
+            pool = GetRewardDataset(_dataVersion).CharacterCardPoolMap.TryGetValue(_character, out var cards)
+                ? cards.ToArray()
+                : Array.Empty<string>();
+        }
+
+        var current = ReadCurrentRewardCards().ToHashSet(StringComparer.OrdinalIgnoreCase);
+        return pool.Where(candidate =>
+                !current.Contains(candidate) &&
+                IsNonCombatRewardCandidate(candidate, rarityFilter: rarity) &&
+                (requiredType == null ||
+                 string.Equals(CardMetadataIndex.Get(candidate, _dataVersion)?.Type, requiredType, StringComparison.OrdinalIgnoreCase)))
             .ToArray();
     }
 
@@ -3830,6 +4070,22 @@ internal sealed class ExactRewardStateBridge
             CardRarity.Rare => CardRarity.Common,
             _ => CardRarity.None
         };
+
+    private static CardRarity GetNextAllowedRarity(CardRarity rarity, Func<CardRarity, bool> isAllowed)
+    {
+        var seen = new HashSet<CardRarity>();
+        while (!isAllowed(rarity) && rarity != CardRarity.None)
+        {
+            if (!seen.Add(rarity))
+            {
+                return CardRarity.None;
+            }
+
+            rarity = GetNextHighestRarity(rarity);
+        }
+
+        return rarity;
+    }
 
     private CardRarity RollCardRarityWithBaseOdds(CardRarityOddsType oddsType)
     {
@@ -5698,6 +5954,141 @@ internal static class LogDrivenReplay
     }
 }
 
+internal static class OpeningOptionComparer
+{
+    public static IReadOnlyList<GeneratedFloorComparison> Compare(ReplayRun replay)
+    {
+        if (!SeedFormatter.TryNormalize(replay.SeedText, out var normalizedSeed, out var seedError))
+        {
+            return [GeneratedFloorComparison.Note(0, "", $"invalid seed {replay.SeedText}: {seedError}")];
+        }
+
+        if (!TryParseCharacter(replay.CharacterId, out var character))
+        {
+            return [GeneratedFloorComparison.Note(0, "", $"unsupported character: {replay.CharacterId}")];
+        }
+
+        var seedValue = SeedFormatter.ToUIntSeed(normalizedSeed);
+        var dataVersion = ExactRewardStateBridge.ResolveRunValidationDataVersion(replay.GameVersion);
+        var dataRoot = Path.Combine("data", dataVersion);
+        var dataset = new NeowEventGeneratorFactory().LoadDataset(Path.Combine(dataRoot, "neow", "options.json"));
+        var rows = new List<GeneratedFloorComparison>();
+
+        var act1Options = new NeowGenerator(dataset).Generate(NeowGenerationContext.Create(
+                seed: seedValue,
+                ascensionLevel: replay.Ascension,
+                character: character,
+                playerCount: replay.PlayerCount))
+            .Select(option => option.RelicId)
+            .Where(id => !string.IsNullOrWhiteSpace(id))
+            .ToArray();
+        var act1Floor = replay.Floors.FirstOrDefault(floor => floor.Floor == 1) ??
+                        replay.Floors.FirstOrDefault(floor => floor.PickedAncientIds.Count > 0 || floor.AncientChoices.Count > 0);
+        rows.Add(BuildOpeningComparison(1, act1Floor, act1Options, "第一幕开始选项"));
+
+        try
+        {
+            var ancientDataPath = Path.Combine(dataRoot, "ancients", File.Exists(Path.Combine(dataRoot, "ancients", "options.zhs.json"))
+                ? "options.zhs.json"
+                : "options.json");
+            var actDataPath = Path.Combine(dataRoot, "sts2", "acts.json");
+            var previewer = Sts2RunPreviewer.CreateFromDataFiles(ancientDataPath, actDataPath);
+            var preview = previewer.Preview(new Sts2RunRequest
+            {
+                SeedText = normalizedSeed,
+                SeedValue = seedValue,
+                Character = character,
+                AscensionLevel = replay.Ascension,
+                PlayerCount = replay.PlayerCount,
+                IncludeAct2 = true,
+                IncludeAct3 = true
+            }, dataset);
+            foreach (var actNumber in new[] { 2, 3 })
+            {
+                var actPreview = preview.Acts.FirstOrDefault(act => act.ActNumber == actNumber);
+                var generated = actPreview?.AncientOptions
+                    .Select(option => option.RelicId ?? option.OptionId)
+                    .Where(id => !string.IsNullOrWhiteSpace(id))
+                    .ToArray() ?? Array.Empty<string>();
+                var floor = replay.Floors.FirstOrDefault(candidate => ResolveActNumber(candidate.Floor) == actNumber &&
+                                                                      (candidate.PickedAncientIds.Count > 0 || candidate.AncientChoices.Count > 0));
+                rows.Add(BuildOpeningComparison(actNumber, floor, generated, $"第{actNumber}幕开始选项"));
+            }
+        }
+        catch (Exception ex)
+        {
+            rows.Add(GeneratedFloorComparison.Note(0, "", $"opening option preview failed: {ex.Message}"));
+        }
+
+        return rows;
+    }
+
+    private static GeneratedFloorComparison BuildOpeningComparison(
+        int actNumber,
+        ReplayFloor? floor,
+        IReadOnlyList<string> generatedOptions,
+        string label)
+    {
+        var floorNumber = floor?.Floor ?? GetOpeningFloorNumber(actNumber);
+        if (floor == null)
+        {
+            return GeneratedFloorComparison.ForOpeningOption(
+                floorNumber,
+                "A",
+                expected: Array.Empty<string>(),
+                generatedOptions,
+                match: null,
+                $"{label}：未到达/无记录");
+        }
+
+        var hasFullChoiceList = floor.AncientChoices.Count > 0;
+        var expected = hasFullChoiceList ? floor.AncientChoices : floor.PickedAncientIds;
+        var picked = floor.PickedAncientIds;
+        bool? match = hasFullChoiceList
+            ? SameIdSet(expected, generatedOptions)
+            : (picked.Count == 0 ? null : picked.All(id => generatedOptions.Contains(id, StringComparer.OrdinalIgnoreCase)));
+        var notes = hasFullChoiceList
+            ? label
+            : $"{label}；存档未记录完整候选，仅验证已选择项是否存在于生成候选中";
+
+        return GeneratedFloorComparison.ForOpeningOption(
+            floorNumber,
+            string.IsNullOrWhiteSpace(floor.RoomType) ? "A" : floor.RoomType,
+            expected,
+            generatedOptions,
+            match,
+            notes);
+    }
+
+    private static bool SameIdSet(IReadOnlyList<string> left, IReadOnlyList<string> right)
+    {
+        return left.Count == right.Count &&
+               left.All(item => right.Contains(item, StringComparer.OrdinalIgnoreCase));
+    }
+
+    private static bool TryParseCharacter(string value, out CharacterId character)
+    {
+        var normalized = value.Replace("_", string.Empty, StringComparison.OrdinalIgnoreCase);
+        return CharacterIdExtensions.TryParse(normalized, out character);
+    }
+
+    private static int GetOpeningFloorNumber(int actNumber) =>
+        actNumber switch
+        {
+            1 => 1,
+            2 => 18,
+            _ => 34
+        };
+
+    private static int ResolveActNumber(int floor) =>
+        floor switch
+        {
+            <= 16 => 1,
+            <= 33 => 2,
+            _ => 3
+        };
+}
+
 internal static class ReplayReportFormatter
 {
     public static string Format(
@@ -5858,6 +6249,7 @@ internal static class Sts2LogReplayParser
             var pickedRelics = ReadPickedChoiceIds(floor, "relic_choices", "relic_id").ToArray();
             var ancientChoices = ReadChoiceIds(floor, "ancient_choices", "relic_id").ToArray();
             var pickedAncients = ReadPickedChoiceIds(floor, "ancient_choices", "relic_id").ToArray();
+            var transformedCards = ReadTransformedCards(floor).ToArray();
             var shopActions = ReadShopActions(floor).ToArray();
             var goldBefore = TryReadInt(floor, "gold_before");
             var goldAfter = TryReadInt(floor, "gold_after");
@@ -5875,6 +6267,7 @@ internal static class Sts2LogReplayParser
                 HasCombat: floor.TryGetProperty("combat", out var combat) && combat.ValueKind == JsonValueKind.Object,
                 CardChoices: cardChoices,
                 PickedCardIds: pickedCards,
+                TransformedCards: transformedCards,
                 PotionChoiceIds: potionChoices,
                 PickedPotionChoiceIds: pickedPotionChoices,
                 PotionUsedIds: usedPotions,
@@ -5908,6 +6301,32 @@ internal static class Sts2LogReplayParser
                 ActionType: action.TryGetProperty("action_type", out var actionType) ? actionType.GetString() ?? string.Empty : string.Empty,
                 ItemId: action.TryGetProperty("item_id", out var itemId) ? itemId.GetString() ?? string.Empty : string.Empty);
         }
+    }
+
+    private static IEnumerable<ReplayTransformedCard> ReadTransformedCards(JsonElement floor)
+    {
+        if (!floor.TryGetProperty("cards_transformed", out var transformed) ||
+            transformed.ValueKind != JsonValueKind.Array)
+        {
+            yield break;
+        }
+
+        foreach (var item in transformed.EnumerateArray())
+        {
+            var originalId = ReadNestedCardId(item, "original_card");
+            var finalId = ReadNestedCardId(item, "final_card");
+            if (!string.IsNullOrWhiteSpace(originalId) && !string.IsNullOrWhiteSpace(finalId))
+            {
+                yield return new ReplayTransformedCard(originalId, finalId);
+            }
+        }
+    }
+
+    private static string ReadNestedCardId(JsonElement element, string propertyName)
+    {
+        return element.TryGetProperty(propertyName, out var card) && card.ValueKind == JsonValueKind.Object
+            ? NormalizeModelId(card.TryGetProperty("id", out var id) ? id.GetString() ?? string.Empty : string.Empty)
+            : string.Empty;
     }
 
     private static IEnumerable<ReplayCardCount> ReadFinalDeck(JsonElement finalDeck)
@@ -6100,6 +6519,7 @@ internal static class Sts2LocalRunReplayParser
                     : default;
                 var mapPointType = ReadString(point, "map_point_type");
                 var roomType = MapRoomType(mapPointType);
+                var eventText = room.ValueKind == JsonValueKind.Object ? ReadString(room, "model_id") : null;
                 if (roomType == "V" &&
                     room.ValueKind == JsonValueKind.Object &&
                     ReadString(room, "room_type").Equals("treasure", StringComparison.OrdinalIgnoreCase))
@@ -6108,15 +6528,28 @@ internal static class Sts2LocalRunReplayParser
                 }
                 var cardChoices = ReadCardChoices(stats).ToArray();
                 var pickedCards = ReadPickedCardChoices(stats).ToArray();
+                if (cardChoices.Length == 0 &&
+                    IsEventId(eventText, "BRAIN_LEECH"))
+                {
+                    pickedCards = ReadModelChoices(stats, "cards_gained", "id").ToArray();
+                }
+
                 var potionChoices = ReadModelChoices(stats, "potion_choices", "choice").ToArray();
                 var pickedPotionChoices = ReadPickedModelChoices(stats, "potion_choices", "choice").ToArray();
                 var usedPotions = ReadDirectModelList(stats, "potion_used").ToArray();
                 var discardedPotions = ReadDirectModelList(stats, "potion_discarded").ToArray();
+                var transformedCards = ReadTransformedCards(stats).ToArray();
                 var relicChoices = ReadModelChoices(stats, "relic_choices", "choice").ToArray();
                 var pickedRelics = ReadPickedModelChoices(stats, "relic_choices", "choice").ToArray();
-                var ancientChoices = floorNumber == 1 ? relicChoices : Array.Empty<string>();
-                var pickedAncients = floorNumber == 1 ? pickedRelics : Array.Empty<string>();
-                if (floorNumber == 1)
+                var ancientChoices = ReadAncientChoices(stats).ToArray();
+                var pickedAncients = ReadPickedAncientChoices(stats).ToArray();
+                if (roomType == "A" && ancientChoices.Length == 0 && relicChoices.Length > 0)
+                {
+                    ancientChoices = relicChoices;
+                    pickedAncients = pickedRelics;
+                }
+
+                if (roomType == "A")
                 {
                     relicChoices = Array.Empty<string>();
                     pickedRelics = Array.Empty<string>();
@@ -6129,7 +6562,7 @@ internal static class Sts2LocalRunReplayParser
                 yield return new ReplayFloor(
                     Floor: floorNumber,
                     RoomType: roomType,
-                    EventText: room.ValueKind == JsonValueKind.Object ? ReadString(room, "model_id") : null,
+                    EventText: eventText,
                     GoldBefore: ReadNullableInt(stats, "current_gold") is int after ? after + ReadInt(stats, "gold_spent") - ReadInt(stats, "gold_gained") + ReadInt(stats, "gold_lost") : null,
                     GoldAfter: ReadNullableInt(stats, "current_gold"),
                     GoldGained: ReadNullableInt(stats, "gold_gained"),
@@ -6137,6 +6570,7 @@ internal static class Sts2LocalRunReplayParser
                     HasCombat: room.ValueKind == JsonValueKind.Object && IsCombatRoom(ReadString(room, "room_type")),
                     CardChoices: cardChoices,
                     PickedCardIds: pickedCards,
+                    TransformedCards: transformedCards,
                     PotionChoiceIds: potionChoices,
                     PickedPotionChoiceIds: pickedPotionChoices,
                     PotionUsedIds: usedPotions,
@@ -6158,9 +6592,12 @@ internal static class Sts2LocalRunReplayParser
             yield return new ReplayShopAction("remove_card", removed);
         }
 
-        foreach (var cardId in ReadModelChoices(stats, "cards_gained", "id"))
+        if (!HasPickedCardChoice(stats))
         {
-            yield return new ReplayShopAction("buy_card", cardId);
+            foreach (var cardId in ReadModelChoices(stats, "cards_gained", "id"))
+            {
+                yield return new ReplayShopAction("buy_card", cardId);
+            }
         }
 
         var relicOffers = ReadModelChoices(stats, "relic_choices", "choice").ToHashSet(StringComparer.OrdinalIgnoreCase);
@@ -6182,6 +6619,17 @@ internal static class Sts2LocalRunReplayParser
         }
     }
 
+    private static bool HasPickedCardChoice(JsonElement stats)
+    {
+        if (!stats.TryGetProperty("card_choices", out var choices) || choices.ValueKind != JsonValueKind.Array)
+        {
+            return false;
+        }
+
+        return choices.EnumerateArray().Any(choice =>
+            choice.TryGetProperty("was_picked", out var picked) && picked.ValueKind == JsonValueKind.True);
+    }
+
     private static IEnumerable<ReplayCardCount> ReadFinalDeck(JsonElement deck)
     {
         return deck.EnumerateArray()
@@ -6189,6 +6637,32 @@ internal static class Sts2LocalRunReplayParser
             .Where(id => !string.IsNullOrWhiteSpace(id))
             .GroupBy(id => id, StringComparer.OrdinalIgnoreCase)
             .Select(group => new ReplayCardCount(group.Key, group.Count()));
+    }
+
+    private static IEnumerable<ReplayTransformedCard> ReadTransformedCards(JsonElement stats)
+    {
+        if (!stats.TryGetProperty("cards_transformed", out var transformed) ||
+            transformed.ValueKind != JsonValueKind.Array)
+        {
+            yield break;
+        }
+
+        foreach (var item in transformed.EnumerateArray())
+        {
+            var originalId = ReadNestedCardId(item, "original_card");
+            var finalId = ReadNestedCardId(item, "final_card");
+            if (!string.IsNullOrWhiteSpace(originalId) && !string.IsNullOrWhiteSpace(finalId))
+            {
+                yield return new ReplayTransformedCard(originalId, finalId);
+            }
+        }
+    }
+
+    private static string ReadNestedCardId(JsonElement element, string propertyName)
+    {
+        return element.TryGetProperty(propertyName, out var card) && card.ValueKind == JsonValueKind.Object
+            ? NormalizeModelId(ReadString(card, "id"))
+            : string.Empty;
     }
 
     private static IEnumerable<string> ReadFinalRelics(JsonElement relics)
@@ -6306,6 +6780,45 @@ internal static class Sts2LocalRunReplayParser
         }
     }
 
+    private static IEnumerable<string> ReadAncientChoices(JsonElement stats)
+    {
+        if (!stats.TryGetProperty("ancient_choice", out var choices) || choices.ValueKind != JsonValueKind.Array)
+        {
+            yield break;
+        }
+
+        foreach (var choice in choices.EnumerateArray())
+        {
+            var id = NormalizeModelId(ReadString(choice, "TextKey"));
+            if (!string.IsNullOrWhiteSpace(id))
+            {
+                yield return id;
+            }
+        }
+    }
+
+    private static IEnumerable<string> ReadPickedAncientChoices(JsonElement stats)
+    {
+        if (!stats.TryGetProperty("ancient_choice", out var choices) || choices.ValueKind != JsonValueKind.Array)
+        {
+            yield break;
+        }
+
+        foreach (var choice in choices.EnumerateArray())
+        {
+            if (!choice.TryGetProperty("was_chosen", out var picked) || picked.ValueKind != JsonValueKind.True)
+            {
+                continue;
+            }
+
+            var id = NormalizeModelId(ReadString(choice, "TextKey"));
+            if (!string.IsNullOrWhiteSpace(id))
+            {
+                yield return id;
+            }
+        }
+    }
+
     private static string MapRoomType(string mapPointType)
     {
         return mapPointType.ToLowerInvariant() switch
@@ -6335,6 +6848,12 @@ internal static class Sts2LocalRunReplayParser
         return normalized.Equals("SILENT", StringComparison.OrdinalIgnoreCase)
             ? "SILENT"
             : normalized;
+    }
+
+    private static bool IsEventId(string? value, string eventId)
+    {
+        return string.Equals(value, eventId, StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(value, $"EVENT.{eventId}", StringComparison.OrdinalIgnoreCase);
     }
 
     private static string NormalizeModelId(string value)
@@ -6587,6 +7106,40 @@ internal sealed record GeneratedFloorComparison(
             Notes: notes);
     }
 
+    public static GeneratedFloorComparison ForOpeningOption(
+        int floor,
+        string roomType,
+        IReadOnlyList<string> expected,
+        IReadOnlyList<string> generated,
+        bool? match,
+        string? notes = null)
+    {
+        return new GeneratedFloorComparison(
+            floor,
+            roomType,
+            ExpectedCards: Array.Empty<string>(),
+            GeneratedCards: Array.Empty<string>(),
+            ExpectedShopColoredCards: Array.Empty<string>(),
+            GeneratedShopColoredCards: Array.Empty<string>(),
+            ExpectedShopColorlessCards: Array.Empty<string>(),
+            GeneratedShopColorlessCards: Array.Empty<string>(),
+            ExpectedRelics: expected,
+            GeneratedRelics: generated,
+            ExpectedShopRelics: Array.Empty<string>(),
+            GeneratedShopRelics: Array.Empty<string>(),
+            ExpectedShopPotions: Array.Empty<string>(),
+            GeneratedShopPotions: Array.Empty<string>(),
+            GeneratedShopColoredCardPrices: Array.Empty<string>(),
+            GeneratedShopColorlessCardPrices: Array.Empty<string>(),
+            GeneratedShopRelicPrices: Array.Empty<string>(),
+            GeneratedShopPotionPrices: Array.Empty<string>(),
+            CardMatch: null,
+            RelicMatch: match,
+            ShopRelicMatch: null,
+            ShopPotionMatch: null,
+            Notes: notes);
+    }
+
     public static GeneratedFloorComparison ForRewardRelics(ReplayFloor floor, IReadOnlyList<string> generatedRelics, string? notes = null)
     {
         return new GeneratedFloorComparison(
@@ -6705,8 +7258,11 @@ internal sealed record GeneratedFloorComparison(
         List<string>? deferredNotes = null)
     {
         inferredActions ??= Array.Empty<ReplayShopAction>();
+        var generatedColoredCards = shop.ColoredCards.Select(entry => entry.Id).ToArray();
+        var generatedColorlessCards = shop.ColorlessCards.Select(entry => entry.Id).ToArray();
+        var generatedCards = generatedColoredCards.Concat(generatedColorlessCards).ToArray();
         var expectedCards = MergeExpectedShopItems(
-            floor.CardChoices,
+            ExtractExpectedShopCards(floor.CardChoices, generatedCards.Length),
             floor.ShopActions
                 .Concat(inferredActions)
                 .Where(action => string.Equals(action.ActionType, "buy_card", StringComparison.OrdinalIgnoreCase))
@@ -6723,9 +7279,6 @@ internal sealed record GeneratedFloorComparison(
                 .Concat(inferredActions)
                 .Where(action => string.Equals(action.ActionType, "buy_potion", StringComparison.OrdinalIgnoreCase))
                 .Select(action => action.ItemId));
-        var generatedColoredCards = shop.ColoredCards.Select(entry => entry.Id).ToArray();
-        var generatedColorlessCards = shop.ColorlessCards.Select(entry => entry.Id).ToArray();
-        var generatedCards = generatedColoredCards.Concat(generatedColorlessCards).ToArray();
         var expectedColorlessCards = expectedCards.Where(IsColorlessShopCard).ToArray();
         var expectedColoredCards = expectedCards.Where(card => !IsColorlessShopCard(card)).ToArray();
         var generatedRelics = shop.Relics.Select(entry => entry.Id).ToArray();
@@ -7085,6 +7638,16 @@ internal sealed record GeneratedFloorComparison(
         return $"{entry.Id}({price})";
     }
 
+    private static IReadOnlyList<string> ExtractExpectedShopCards(IReadOnlyList<string> cardChoices, int generatedShopCardCount)
+    {
+        if (generatedShopCardCount <= 0 || cardChoices.Count <= generatedShopCardCount)
+        {
+            return cardChoices;
+        }
+
+        return cardChoices.Skip(cardChoices.Count - generatedShopCardCount).ToArray();
+    }
+
     private static IReadOnlyList<string> MergeExpectedShopItems(
         IReadOnlyList<string> visibleChoices,
         IEnumerable<string> purchasedItems)
@@ -7251,6 +7814,7 @@ internal sealed record ReplayFloor(
     bool HasCombat,
     IReadOnlyList<string> CardChoices,
     IReadOnlyList<string> PickedCardIds,
+    IReadOnlyList<ReplayTransformedCard> TransformedCards,
     IReadOnlyList<string> PotionChoiceIds,
     IReadOnlyList<string> PickedPotionChoiceIds,
     IReadOnlyList<string> PotionUsedIds,
@@ -7260,6 +7824,8 @@ internal sealed record ReplayFloor(
     IReadOnlyList<string> AncientChoices,
     IReadOnlyList<string> PickedAncientIds,
     IReadOnlyList<ReplayShopAction> ShopActions);
+
+internal sealed record ReplayTransformedCard(string OriginalCardId, string FinalCardId);
 
 internal sealed record ReplayShopAction(string ActionType, string ItemId);
 

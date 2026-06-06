@@ -26,7 +26,7 @@ if (!eventMetadata.IsImplemented)
     return 1;
 }
 
-var dataPath = ResolveDataPath(arguments.Get("--data"), eventMetadata.DefaultDataPath);
+var dataPath = ResolvePrimaryDataPath(arguments.Get("--data"), eventMetadata);
 var seedValue = arguments.Get("--seed") ?? "0";
 var playerValue = arguments.Get("--players") ?? "1";
 var countValue = arguments.Get("--count") ?? "1";
@@ -293,6 +293,21 @@ static string ResolveDataPath(string? overrideValue, string fallback)
     }
 
     return Path.Combine(AppContext.BaseDirectory, normalized);
+}
+
+static string ResolvePrimaryDataPath(string? overrideValue, SeedEventMetadata eventMetadata)
+{
+    if (!string.IsNullOrWhiteSpace(overrideValue))
+    {
+        return ResolveDataPath(overrideValue, eventMetadata.DefaultDataPath);
+    }
+
+    if (eventMetadata.Type == SeedEventType.Act1Neow)
+    {
+        return ResolveDataPath(null, Path.Combine(ResolveBundledVersionDirectory("neow"), "options.json"));
+    }
+
+    return ResolveDataPath(null, eventMetadata.DefaultDataPath);
 }
 
 static string ResolveAncientDataPath(string? overrideValue)
