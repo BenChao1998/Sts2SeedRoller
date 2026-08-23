@@ -42,15 +42,21 @@ internal sealed class NeowRewardPreviewer
     private const string ClawCardId = "CLAW";
     private const int ScarcityAscensionLevel = 7;
 
+    // Official Neow.AllPossibleOptions enumeration order (CurseOptions + PositiveOptions
+    // + conditional options), as enumerated by NeowsBones.GetValidRelics. The shuffle
+    // indexes depend on this order, and the order of the two granted relics fixes how
+    // much of the shared niche stream is consumed (NewLeaf/Kaleidoscope AfterObtained)
+    // before the NeowsBones curse is rolled.
     private static readonly string[] NeowsBonesRelicPool =
     [
         NeowOptionIds.CursedPearl,
         NeowOptionIds.HeftyTablet,
         NeowOptionIds.LargeCapsule,
         NeowOptionIds.LeafyPoultice,
-        NeowOptionIds.PrecariousShears,
-        NeowOptionIds.SilverCrucible,
         NeowOptionIds.NeowsBones,
+        NeowOptionIds.PrecariousShears,
+        NeowOptionIds.SilkenTress,
+        NeowOptionIds.SilverCrucible,
         NeowOptionIds.ArcaneScroll,
         NeowOptionIds.BoomingConch,
         NeowOptionIds.FishingRod,
@@ -58,18 +64,17 @@ internal sealed class NeowRewardPreviewer
         NeowOptionIds.Kaleidoscope,
         NeowOptionIds.LeadPaperweight,
         NeowOptionIds.LostCoffer,
+        NeowOptionIds.MassiveScroll,
         NeowOptionIds.NeowsTorment,
         NeowOptionIds.NewLeaf,
-        NeowOptionIds.PreciseScissors,
         NeowOptionIds.PhialHolster,
-        NeowOptionIds.SilkenTress,
+        NeowOptionIds.PreciseScissors,
+        NeowOptionIds.ScrollBoxes,
         NeowOptionIds.WingedBoots,
-        NeowOptionIds.MassiveScroll,
         NeowOptionIds.LavaRock,
         NeowOptionIds.NeowsTalisman,
         NeowOptionIds.NutritiousOyster,
         NeowOptionIds.Pomander,
-        NeowOptionIds.ScrollBoxes,
         NeowOptionIds.SmallCapsule,
         NeowOptionIds.StoneHumidifier
     ];
@@ -387,7 +392,8 @@ internal sealed class NeowRewardPreviewer
 
     private IReadOnlyList<RewardDetail> BuildLeafyPreview(NeowGenerationContext context, CharacterId character)
     {
-        var rngSeed = unchecked((uint)((ulong)context.RunSeed + context.PlayerNetId));
+        var rngSeed = unchecked((uint)((ulong)context.RunSeed +
+            GameRng.PlayerStreamAddend(context.PlayerNetId, context.PlayerSlotIndex)));
         var rng = new GameRng(rngSeed, TransformationsSalt);
         return BuildLeafyPreview(context, character, rng);
     }
@@ -904,7 +910,8 @@ internal sealed class NeowRewardPreviewer
         {
             Context = context,
             RewardsRng = CreatePlayerRewardsRng(context),
-            TransformationsRng = new GameRng(unchecked((uint)((ulong)context.RunSeed + context.PlayerNetId)), TransformationsSalt),
+            TransformationsRng = new GameRng(unchecked((uint)((ulong)context.RunSeed +
+                GameRng.PlayerStreamAddend(context.PlayerNetId, context.PlayerSlotIndex))), TransformationsSalt),
             CombatPotionGenerationRng = CreateRunRng(context, "combat_potion_generation"),
             NicheRng = CreateRunRng(context, "niche"),
             RelicBag = CreateRelicGrabBag(context)
@@ -1036,7 +1043,8 @@ internal sealed class NeowRewardPreviewer
 
     private GameRng CreatePlayerRewardsRng(NeowGenerationContext context)
     {
-        var seed = unchecked((uint)((ulong)context.RunSeed + context.PlayerNetId));
+        var seed = unchecked((uint)((ulong)context.RunSeed +
+            GameRng.PlayerStreamAddend(context.PlayerNetId, context.PlayerSlotIndex)));
         return new GameRng(seed, PlayerRewardsSalt);
     }
 

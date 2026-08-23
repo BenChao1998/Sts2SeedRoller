@@ -21,6 +21,12 @@ public sealed class Sts2ExactRouteAnalysisRequest
 
     public ulong PlayerNetId { get; init; } = NeowGenerationContext.DefaultPlayerNetId;
 
+    /// <summary>
+    /// Player slot index used by the game (v0.107.1) when seeding per-player
+    /// streams. The solo player has slot index 0.
+    /// </summary>
+    public ulong PlayerSlotIndex { get; init; } = NeowGenerationContext.DefaultPlayerSlotIndex;
+
     public Sts2AncientAvailability? AncientAvailability { get; init; }
 
     public bool IncludeDarvSharedAncient { get; init; } = true;

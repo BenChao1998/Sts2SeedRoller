@@ -70,10 +70,28 @@ public sealed class Sts2RunPreviewer
 
         using var optionStream = File.OpenRead(optionDataPath);
         using var actStream = File.OpenRead(actDataPath);
+        GameRng.ConfigureEngine(InferVersionFromPath(actDataPath) ?? InferVersionFromPath(optionDataPath));
         return new Sts2RunPreviewer(
             AncientOptionCatalog.Load(optionStream),
             Sts2WorldData.Load(actStream),
             ResolveWorkspaceRoot(optionDataPath, actDataPath));
+    }
+
+    private static readonly System.Text.RegularExpressions.Regex VersionRegex =
+        new(@"\b\d+\.\d+\.\d+\b", System.Text.RegularExpressions.RegexOptions.Compiled);
+
+    private static string? InferVersionFromPath(string path)
+    {
+        foreach (var segment in path.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar).Reverse())
+        {
+            var match = VersionRegex.Match(segment);
+            if (match.Success)
+            {
+                return match.Value;
+            }
+        }
+
+        return null;
     }
 
     public static Sts2RunPreviewer Create(Stream optionDataStream, Stream actDataStream)
@@ -140,7 +158,11 @@ public sealed class Sts2RunPreviewer
                 continue;
             }
 
-            var eventRngSeed = unchecked((uint)((ulong)request.SeedValue + request.PlayerNetId));
+            // Game v0.107.1 seeds each ancient event with
+            // Rng(runSeed + playerSlotIndex + hash(ancientId)); the solo player
+            // has slot index 0. PlayerStreamAddend selects the engine-correct addend.
+            var eventRngSeed = unchecked((uint)((ulong)request.SeedValue +
+                GameRng.PlayerStreamAddend(request.PlayerNetId, request.PlayerSlotIndex)));
             var eventRng = new GameRng(eventRngSeed, logic.Id);
             var context = generationContext with { ActIndex = result.ActIndex };
             var optionResults = logic.GenerateOptions(context, eventRng);

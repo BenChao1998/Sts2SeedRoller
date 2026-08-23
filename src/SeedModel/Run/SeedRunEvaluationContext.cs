@@ -19,6 +19,12 @@ public sealed record SeedRunEvaluationContext
 
     public ulong PlayerNetId { get; init; } = NeowGenerationContext.DefaultPlayerNetId;
 
+    /// <summary>
+    /// Player slot index used by the game (v0.107.1) when seeding per-player
+    /// streams (events, rewards, shops). The solo player has slot index 0.
+    /// </summary>
+    public ulong PlayerSlotIndex { get; init; } = NeowGenerationContext.DefaultPlayerSlotIndex;
+
     public bool ScrollBoxesEligible { get; init; }
 
     public bool HasRunModifiers { get; init; }

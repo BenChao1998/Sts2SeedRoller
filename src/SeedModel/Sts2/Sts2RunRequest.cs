@@ -20,6 +20,12 @@ public sealed record Sts2RunRequest
 
     public ulong PlayerNetId { get; init; } = NeowGenerationContext.DefaultPlayerNetId;
 
+    /// <summary>
+    /// Player slot index used by the game (v0.107.1) when seeding per-player
+    /// streams (events, rewards, shops). The solo player has slot index 0.
+    /// </summary>
+    public ulong PlayerSlotIndex { get; init; } = NeowGenerationContext.DefaultPlayerSlotIndex;
+
     public string? ActOneName { get; init; }
 
     public Sts2AncientAvailability? AncientAvailability { get; init; }

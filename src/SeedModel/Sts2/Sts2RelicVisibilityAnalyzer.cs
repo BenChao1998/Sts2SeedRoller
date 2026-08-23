@@ -1955,7 +1955,8 @@ internal sealed class Sts2RelicVisibilityAnalyzer
                 trackedOnly: true);
             ApplyPlayerCountRestrictions(sharedBag, playerBag, playerCount);
 
-            var playerSeed = unchecked((uint)((ulong)runSeed + playerNetId));
+            var playerSeed = unchecked((uint)((ulong)runSeed +
+                GameRng.PlayerStreamAddend(playerNetId)));
             return new BaselineState(
                 seedText,
                 character,
