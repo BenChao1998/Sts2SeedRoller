@@ -56,7 +56,8 @@ public sealed class SeedRunEvaluator
             hasRunModifiers: context.HasRunModifiers,
             character: context.Character,
             ascensionLevel: context.AscensionLevel,
-            playerNetId: context.PlayerNetId);
+            playerNetId: context.PlayerNetId,
+            playerSlotIndex: context.PlayerSlotIndex);
 
         var neowOptions = _neowGenerator.Generate(neowContext);
         var neowMatches = filter.NeowFilter.HasCriteria
@@ -236,7 +237,8 @@ public sealed class SeedRunEvaluator
                 else
                 {
                     // Fallback to the original direct shop simulation when act data is unavailable.
-                    var baseSeed = unchecked((uint)GameRng.GetDeterministicHashCode(context.SeedText) + (uint)context.PlayerNetId);
+                    var baseSeed = unchecked((uint)GameRng.GetDeterministicHashCode(context.SeedText) +
+                        GameRng.PlayerStreamAddend(context.PlayerNetId, context.PlayerSlotIndex));
                     var rewardsHash = (uint)GameRng.GetDeterministicHashCode("rewards");
                     var shopsHash = (uint)GameRng.GetDeterministicHashCode("shops");
                     var rewardsSeed = unchecked(baseSeed + rewardsHash);

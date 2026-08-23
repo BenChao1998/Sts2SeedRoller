@@ -34,3 +34,6 @@ src/**/results/
 /scratch/*probe_output.txt
 /scratch/*.txt
 /scratch/*.cs
+
+# Rider
+.idea

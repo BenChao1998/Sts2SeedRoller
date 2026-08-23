@@ -5,21 +5,71 @@ using System.Linq;
 namespace SeedModel.Rng;
 
 /// <summary>
-/// Deterministic RNG that mirrors MegaCrit.Sts2.Core.Random.Rng but without any
+/// Deterministic RNG that mirrors MegaCrit.Sts2.Core.Random.Rng without any
 /// dependency on the official assemblies.
 /// </summary>
+/// <remarks>
+/// The game (v0.107.1) draws every seeded stream from <c>MegaRandom</c>, an
+/// xoshiro256** generator. Earlier game versions used System.Random. The active
+/// engine is selected per loaded game version via <see cref="ConfigureEngine"/>;
+/// simulations targeting v0.107.1+ use the xoshiro engine so results match the
+/// live game, while older version datasets keep the System.Random engine.
+/// </remarks>
 public sealed class GameRng
 {
+    /// <summary>First game version verified to use the xoshiro256** MegaRandom engine.</summary>
+    public static readonly Version XoshiroEngineSinceVersion = new(0, 107, 1);
+
+    private static bool _useOfficialXoshiroEngine;
+
     private readonly Random _random;
+    private readonly MegaRandom? _megaRandom;
 
     public uint Seed { get; }
 
     public int Counter { get; private set; }
 
+    /// <summary>
+    /// Whether the active engine is the game's xoshiro256** MegaRandom.
+    /// </summary>
+    public static bool UseOfficialXoshiroEngine => _useOfficialXoshiroEngine;
+
+    /// <summary>
+    /// Selects the RNG engine matching the given game version. v0.107.1 and
+    /// later use the game's xoshiro256** generator; older versions use
+    /// System.Random. Call this whenever a dataset/game version is selected.
+    /// </summary>
+    public static void ConfigureEngine(string? gameVersion)
+    {
+        _useOfficialXoshiroEngine = Version.TryParse(gameVersion, out var parsed) &&
+                                    parsed >= XoshiroEngineSinceVersion;
+    }
+
+    /// <summary>
+    /// Seed addend for player-scoped streams (per-player events, rewards, shops).
+    /// The game seeds these with the player's <em>slot index</em> (0 for the
+    /// solo player) rather than the net id; older versions used the net id.
+    /// Returns the addend matching the active engine.
+    /// </summary>
+    public static uint PlayerStreamAddend(ulong playerNetId, ulong playerSlotIndex = 0)
+    {
+        return _useOfficialXoshiroEngine
+            ? unchecked((uint)playerSlotIndex)
+            : unchecked((uint)playerNetId);
+    }
+
     public GameRng(uint seed, int counter = 0)
     {
         Seed = seed;
-        _random = new Random(unchecked((int)seed));
+        if (_useOfficialXoshiroEngine)
+        {
+            _megaRandom = new MegaRandom(seed);
+        }
+        else
+        {
+            _random = new Random(unchecked((int)seed));
+        }
+
         FastForward(counter);
     }
 
@@ -43,13 +93,27 @@ public sealed class GameRng
         while (Counter < targetCounter)
         {
             Counter++;
-            _random.Next();
+            if (_megaRandom != null)
+            {
+                // Game's Rng.FastForwardCounter advances with one raw draw.
+                _megaRandom.NextIntRaw();
+            }
+            else
+            {
+                _random.Next();
+            }
         }
     }
 
     public bool NextBool()
     {
         Counter++;
+        if (_megaRandom != null)
+        {
+            // Game's Rng.NextBool: MegaRandom.Next(2) == 0 (single double draw).
+            return _megaRandom.Next(2) == 0;
+        }
+
         return _random.Next(2) == 0;
     }
 
@@ -59,8 +123,11 @@ public sealed class GameRng
         {
             throw new ArgumentOutOfRangeException(nameof(maxExclusive));
         }
+
         Counter++;
-        return _random.Next(maxExclusive);
+        return _megaRandom != null
+            ? _megaRandom.Next(maxExclusive)
+            : _random.Next(maxExclusive);
     }
 
     public int NextInt(int minInclusive, int maxExclusive)
@@ -69,14 +136,19 @@ public sealed class GameRng
         {
             throw new ArgumentOutOfRangeException(nameof(minInclusive));
         }
+
         Counter++;
-        return _random.Next(minInclusive, maxExclusive);
+        return _megaRandom != null
+            ? _megaRandom.Next(minInclusive, maxExclusive)
+            : _random.Next(minInclusive, maxExclusive);
     }
 
     public double NextDouble()
     {
         Counter++;
-        return _random.NextDouble();
+        return _megaRandom != null
+            ? _megaRandom.NextDouble()
+            : _random.NextDouble();
     }
 
     public int NextGaussianInt(int mean, int stdDev, int min, int max)
@@ -84,8 +156,8 @@ public sealed class GameRng
         int value;
         do
         {
-            var d = 1.0 - _random.NextDouble();
-            var angleSeed = 1.0 - _random.NextDouble();
+            var d = 1.0 - NextDouble();
+            var angleSeed = 1.0 - NextDouble();
             var normal = Math.Sqrt(-2.0 * Math.Log(d)) * Math.Sin(Math.PI * 2.0 * angleSeed);
             value = (int)Math.Round(mean + stdDev * normal);
         }
@@ -97,7 +169,7 @@ public sealed class GameRng
     public float NextFloat()
     {
         Counter++;
-        return (float)_random.NextDouble();
+        return (float)NextDouble();
     }
 
     public T? NextItem<T>(IEnumerable<T> items)

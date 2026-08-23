@@ -36,7 +36,8 @@ internal sealed class Sts2StandardShopPreviewer
         ArgumentNullException.ThrowIfNull(neowOptions);
         ArgumentNullException.ThrowIfNull(request);
 
-        var playerSeed = unchecked((uint)((ulong)GameRng.GetDeterministicHashCode(context.SeedText) + context.PlayerNetId));
+        var playerSeed = unchecked((uint)((ulong)GameRng.GetDeterministicHashCode(context.SeedText) +
+            GameRng.PlayerStreamAddend(context.PlayerNetId, context.PlayerSlotIndex)));
         var runRng = new RunRngSet(context.RunSeed);
         var ancientAvailability = context.ResolveAncientAvailability();
 

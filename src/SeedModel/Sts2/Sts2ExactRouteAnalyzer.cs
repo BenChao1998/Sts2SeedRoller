@@ -1980,7 +1980,8 @@ internal sealed class Sts2ExactRouteAnalyzer
                 upFrontRng,
                 trackedOnly: true);
             ApplyPlayerCountRestrictions(sharedBag, playerBag, _request.PlayerCount);
-            var playerSeed = unchecked((uint)((ulong)GameRng.GetDeterministicHashCode(_request.SeedText) + _request.PlayerNetId));
+            var playerSeed = unchecked((uint)((ulong)GameRng.GetDeterministicHashCode(_request.SeedText) +
+                GameRng.PlayerStreamAddend(_request.PlayerNetId, _request.PlayerSlotIndex)));
 
             var state = new RewardRelicState(
                 sharedBag,

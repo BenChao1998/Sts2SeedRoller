@@ -104,6 +104,9 @@ public sealed class NeowGenerator : ISeedEventGenerator<NeowGenerationContext, I
     public NeowGenerator(NeowOptionDataset dataset)
     {
         _dataset = dataset ?? throw new ArgumentNullException(nameof(dataset));
+        // The game's RNG engine changed across versions (System.Random ->
+        // xoshiro256** in v0.107.1); select the engine matching this dataset.
+        GameRng.ConfigureEngine(dataset.Version);
         _rewardPreviewer = new NeowRewardPreviewer(dataset);
     }
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -17,6 +17,7 @@ using Microsoft.Win32;
 using System.Windows.Input;
 using SeedModel.Events;
 using SeedModel.Neow;
+using SeedModel.Rng;
 using SeedModel.Run;
 using SeedModel.Seeds;
 using SeedModel.Sts2;
@@ -2183,6 +2184,8 @@ internal sealed partial class MainWindowViewModel : ObservableObject
 
         if (SetProperty(ref _selectedGameVersion, version, nameof(SelectedGameVersion)))
         {
+            // v0.107.1+ draws seeded streams from the game's xoshiro256** engine.
+            GameRng.ConfigureEngine(version.Id);
             ResetDatasetForEventChange();
             _ = LoadDatasetAsync();
 

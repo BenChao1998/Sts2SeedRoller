@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
@@ -2227,8 +2227,9 @@ internal sealed class ExactRewardStateBridge
             var seed = (uint)(rewardsRng.GetType().GetProperty("Seed", BindingFlags.Instance | BindingFlags.Public)?.GetValue(rewardsRng)
                 ?? throw new InvalidOperationException("Missing RewardsRng.Seed property."));
             var playerSeed = unchecked(seed - (uint)GetDeterministicHashCodeLocal("rewards"));
-            var runSeed = unchecked(playerSeed - (uint)NeowGenerationContext.DefaultPlayerNetId);
-            var eventSeed = unchecked(runSeed + (uint)NeowGenerationContext.DefaultPlayerNetId + (uint)GetDeterministicHashCodeLocal(normalizedEventId));
+            var addend = GameRng.PlayerStreamAddend(NeowGenerationContext.DefaultPlayerNetId);
+            var runSeed = unchecked(playerSeed - addend);
+            var eventSeed = unchecked(runSeed + addend + (uint)GetDeterministicHashCodeLocal(normalizedEventId));
             box = new StrongBox<GameRng>(new GameRng(eventSeed));
             boxes[normalizedEventId] = box;
         }
